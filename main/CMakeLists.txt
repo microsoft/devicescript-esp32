@@ -1,0 +1,17 @@
+idf_component_register(SRCS 
+    "main.c"
+    "tim.c"
+    "uart.c"
+    "jdlow.c"
+    "jdutil.c"
+    "dmesg.c"
+    "txq.c"
+    "ostream.c"
+    "istream.c"
+    "ctrl.c"
+    "tcp.c"
+    "wifi.c"
+    "ssl.c"
+    "certs.c"
+    "worker.c"
+  INCLUDE_DIRS ".")

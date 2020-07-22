@@ -1,5 +1,21 @@
+# JacDac for ESP32
 
-# Contributing
+This repo contains implementation of JacDac protocol for ESP32.
+
+It also contains implementation of WiFi and TCP JacDac services.
+
+## Building
+
+Install ESP-IDF. Make sure `IDF_PATH` is set.
+You can also install ccache to speed up builds.
+You will need to run `export.sh` from the IDF folder - the Makefile will remind you.
+
+To build run `make`.
+
+To deploy run `make r`.
+
+
+## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
