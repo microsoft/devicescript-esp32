@@ -64,7 +64,7 @@ static void scan_resp(void *arg) {
             memcpy(ent.ssid, src->ssid, sizeof(ent.ssid));
             ent.ssid[32] = 0;
 
-            int sz = JDWIFI_SCAN_ENTRY_HEADER_SIZE + strlen((char *)ent.ssid) + 1;
+            int sz = JDWIFI_SCAN_ENTRY_HEADER_SIZE + strlen((char *)ent.ssid);
             ostream_write(&scan_stream, &ent, sz);
         }
     }
