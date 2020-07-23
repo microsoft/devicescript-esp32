@@ -36,6 +36,7 @@ static void scan_resp(void *arg) {
         for (i = 0; i < sta_number; i++) {
             wifi_ap_record_t *src = &ap_list_buffer[i];
             jdwifi_scan_entry_t ent;
+            ent.reserved = 0;
 
             ESP_LOGI(TAG, "[%s][rssi=%d]", src->ssid, src->rssi);
 
