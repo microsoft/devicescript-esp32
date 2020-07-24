@@ -83,12 +83,12 @@ uint32_t now;
 
 void jd_app_handle_packet(jd_packet_t *pkt) {
     now = tim_get_micros();
-    ostream_process_ack(pkt);
+    opipe_process_ack(pkt);
 }
 
 void jd_app_handle_command(jd_packet_t *pkt) {
     if (pkt->service_number == JD_SERVICE_NUMBER_STREAM)
-        istream_handle_pkt(pkt);
+        ipipe_handle_pkt(pkt);
 }
 
 static void jdloop(void *_dummy) {

@@ -4,35 +4,35 @@
 
 void log_pin_pulse(int line, int times);
 
-typedef struct ostream_desc {
+typedef struct opipe_desc {
     // don't access members directly
     uint64_t device_identifier;
     uint16_t counter;
     uint16_t crc_value;
-    struct ostream_desc *next;
+    struct opipe_desc *next;
     TaskHandle_t *crc_task;
     SemaphoreHandle_t sem;
     jd_frame_t *frame;
-} ostream_desc_t;
-int ostream_open(ostream_desc_t *str, jd_packet_t *pkt);
-void ostream_write(ostream_desc_t *str, const void *data, unsigned len);
-void ostream_write_meta(ostream_desc_t *str, const void *data, unsigned len);
-void ostream_close(ostream_desc_t *str);
-int ostream_flush(ostream_desc_t *str);
-void ostream_process_ack(jd_packet_t *pkt);
+} opipe_desc_t;
+int opipe_open(opipe_desc_t *str, jd_packet_t *pkt);
+void opipe_write(opipe_desc_t *str, const void *data, unsigned len);
+void opipe_write_meta(opipe_desc_t *str, const void *data, unsigned len);
+void opipe_close(opipe_desc_t *str);
+int opipe_flush(opipe_desc_t *str);
+void opipe_process_ack(jd_packet_t *pkt);
 
-typedef struct istream_desc istream_desc_t;
-typedef void (*istream_handler_t)(istream_desc_t *istr, jd_packet_t *pkt);
-struct istream_desc {
-    istream_handler_t handler;
-    istream_handler_t meta_handler;
-    struct istream_desc *next;
+typedef struct ipipe_desc ipipe_desc_t;
+typedef void (*ipipe_handler_t)(ipipe_desc_t *istr, jd_packet_t *pkt);
+struct ipipe_desc {
+    ipipe_handler_t handler;
+    ipipe_handler_t meta_handler;
+    struct ipipe_desc *next;
     SemaphoreHandle_t sem;
     uint16_t counter;
 };
-int istream_open(istream_desc_t *str, istream_handler_t handler, istream_handler_t meta_handler);
-void istream_close(istream_desc_t *str);
-void istream_handle_pkt(jd_packet_t *pkt);
+int ipipe_open(ipipe_desc_t *str, ipipe_handler_t handler, ipipe_handler_t meta_handler);
+void ipipe_close(ipipe_desc_t *str);
+void ipipe_handle_pkt(jd_packet_t *pkt);
 
 void wifi_init(void);
 void jdtcp_init(void);

@@ -5,17 +5,17 @@ static portMUX_TYPE streamMux = portMUX_INITIALIZER_UNLOCKED;
 #define LOCK() portENTER_CRITICAL(&streamMux)
 #define UNLOCK() portEXIT_CRITICAL(&streamMux)
 
-static ostream_desc_t *streams;
+static opipe_desc_t *streams;
 
 int _jd_tx_push_frame(jd_frame_t *f, int wait);
 
-static void ostream_free(ostream_desc_t *str) {
+static void opipe_free(opipe_desc_t *str) {
     if (!str->sem)
         return;
     if (streams == str) {
         streams = str->next;
     } else {
-        for (ostream_desc_t *ss = streams; ss; ss = ss->next)
+        for (opipe_desc_t *ss = streams; ss; ss = ss->next)
             if (ss->next == str) {
                 ss->next = str->next;
                 break;
@@ -31,17 +31,17 @@ static void ostream_free(ostream_desc_t *str) {
     str->device_identifier = 0;
 }
 
-int ostream_open(ostream_desc_t *str, jd_packet_t *pkt) {
-    if (pkt->service_size < sizeof(jd_stream_cmd_t))
+int opipe_open(opipe_desc_t *str, jd_packet_t *pkt) {
+    if (pkt->service_size < sizeof(jd_pipe_cmd_t))
         return -1;
     LOCK();
-    ostream_free(str);
+    opipe_free(str);
     str->sem = xSemaphoreCreateMutex();
     str->crc_task = NULL;
     str->crc_value = 0;
-    jd_stream_cmd_t *sc = (jd_stream_cmd_t *)pkt->data;
+    jd_pipe_cmd_t *sc = (jd_pipe_cmd_t *)pkt->data;
     str->device_identifier = sc->device_identifier;
-    str->counter = sc->port_num << JD_STREAM_PORT_SHIFT;
+    str->counter = sc->port_num << JD_PIPE_PORT_SHIFT;
     str->frame = NULL;
     str->next = streams;
     streams = str;
@@ -49,11 +49,11 @@ int ostream_open(ostream_desc_t *str, jd_packet_t *pkt) {
     return 0;
 }
 
-void ostream_process_ack(jd_packet_t *pkt) {
+void opipe_process_ack(jd_packet_t *pkt) {
     if (pkt->service_number != JD_SERVICE_NUMBER_CRC_ACK)
         return;
     LOCK();
-    for (ostream_desc_t *s = streams; s; s = s->next) {
+    for (opipe_desc_t *s = streams; s; s = s->next) {
         if (s->crc_task && pkt->service_command == s->crc_value &&
             s->device_identifier == pkt->device_identifier) {
             xTaskNotifyGive(s->crc_task);
@@ -62,7 +62,7 @@ void ostream_process_ack(jd_packet_t *pkt) {
     UNLOCK();
 }
 
-static int do_flush(ostream_desc_t *str) {
+static int do_flush(opipe_desc_t *str) {
     jd_frame_t *f = str->frame;
     str->frame = NULL;
 
@@ -91,7 +91,7 @@ static int do_flush(ostream_desc_t *str) {
     return gotAck ? 0 : -1;
 }
 
-int ostream_flush(ostream_desc_t *str) {
+int opipe_flush(opipe_desc_t *str) {
     if (!str->sem)
         return -2;
 
@@ -101,12 +101,12 @@ int ostream_flush(ostream_desc_t *str) {
 
     // don't try to send close mark when flush closed, as this can lead to infinite recursion
     if (r < 0)
-        ostream_free(str);
+        opipe_free(str);
 
     return r;
 }
 
-static void ostream_write_ex(ostream_desc_t *str, const void *data, unsigned len, int flags) {
+static void opipe_write_ex(opipe_desc_t *str, const void *data, unsigned len, int flags) {
     if (!str->sem)
         return;
 
@@ -128,24 +128,24 @@ static void ostream_write_ex(ostream_desc_t *str, const void *data, unsigned len
     }
 
     str->counter =
-        ((str->counter + 1) & JD_STREAM_COUNTER_MASK) | (str->counter & ~JD_STREAM_COUNTER_MASK);
+        ((str->counter + 1) & JD_PIPE_COUNTER_MASK) | (str->counter & ~JD_PIPE_COUNTER_MASK);
 
     xSemaphoreGive(str->sem);
 }
 
-void ostream_write_meta(ostream_desc_t *str, const void *data, unsigned len) {
-    ostream_write_ex(str, data, len, JD_STREAM_METADATA_MASK);
+void opipe_write_meta(opipe_desc_t *str, const void *data, unsigned len) {
+    opipe_write_ex(str, data, len, JD_PIPE_METADATA_MASK);
 }
 
-void ostream_write(ostream_desc_t *str, const void *data, unsigned len) {
-    ostream_write_ex(str, data, len, 0);
+void opipe_write(opipe_desc_t *str, const void *data, unsigned len) {
+    opipe_write_ex(str, data, len, 0);
 }
 
-void ostream_close(ostream_desc_t *str) {
+void opipe_close(opipe_desc_t *str) {
     if (!str->sem)
         return;
 
-    ostream_write_ex(str, NULL, 0, JD_STREAM_CLOSE_MASK);
-    ostream_flush(str);
-    ostream_free(str);
+    opipe_write_ex(str, NULL, 0, JD_PIPE_CLOSE_MASK);
+    opipe_flush(str);
+    opipe_free(str);
 }

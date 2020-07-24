@@ -19,10 +19,10 @@ extern "C" {
 #define JD_SERVICE_NUMBER_CRC_ACK 0x3f
 #define JD_SERVICE_NUMBER_STREAM 0x3e
 
-#define JD_STREAM_COUNTER_MASK 0x001f
-#define JD_STREAM_CLOSE_MASK 0x0020
-#define JD_STREAM_METADATA_MASK 0x0040
-#define JD_STREAM_PORT_SHIFT 7
+#define JD_PIPE_COUNTER_MASK 0x001f
+#define JD_PIPE_CLOSE_MASK 0x0020
+#define JD_PIPE_METADATA_MASK 0x0040
+#define JD_PIPE_PORT_SHIFT 7
 
 // the COMMAND flag signifies that the device_identifier is the recipent
 // (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
@@ -125,12 +125,12 @@ struct _jd_frame_t {
 } JD_PACKED;
 typedef struct _jd_frame_t jd_frame_t;
 
-struct _jd_stream_cmd_t {
+struct _jd_pipe_cmd_t {
     uint64_t device_identifier;
     uint16_t port_num;
     uint16_t reserved;
 } JD_PACKED;
-typedef struct _jd_stream_cmd_t jd_stream_cmd_t;
+typedef struct _jd_pipe_cmd_t jd_pipe_cmd_t;
 
 #define JDSPI_MAGIC 0x7ACD
 #define JDSPI_MAGIC_NOOP 0xB3CD

@@ -17,13 +17,13 @@ static bool reconnect = true;
 static const char *TAG = "wifi";
 
 static EventGroupHandle_t wifi_event_group;
-static ostream_desc_t scan_stream;
+static opipe_desc_t scan_stream;
 static worker_t worker;
 
 static void wifi_cmd_scan(jd_packet_t *pkt) {
     wifi_scan_config_t scan_config = {0};
 
-    if (ostream_open(&scan_stream, pkt) < 0)
+    if (opipe_open(&scan_stream, pkt) < 0)
         return;
 
     ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, false));
@@ -70,12 +70,12 @@ static void scan_resp(void *arg) {
             ent.ssid[32] = 0;
 
             int sz = JDWIFI_SCAN_ENTRY_HEADER_SIZE + strlen((char *)ent.ssid);
-            ostream_write(&scan_stream, &ent, sz);
+            opipe_write(&scan_stream, &ent, sz);
         }
     }
 
     free(ap_list_buffer);
-    ostream_close(&scan_stream);
+    opipe_close(&scan_stream);
     ESP_LOGI(TAG, "sta scan done");
 }
 

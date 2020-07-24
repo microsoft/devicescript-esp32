@@ -29,8 +29,8 @@ jd_packet_ext_t *mk_packet_ext(jd_packet_t *pkt, void *userdata) {
 static worker_t worker;
 
 typedef struct connection {
-    istream_desc_t inp; // keep as first member!
-    ostream_desc_t outp;
+    ipipe_desc_t inp; // keep as first member!
+    opipe_desc_t outp;
     ssl_conn_t *ssl;
     struct connection *next;
 } conn_t;
@@ -50,7 +50,7 @@ struct ssl_open_cmd {
 
 static void conn_free(conn_t *conn) {
     LOG("free conn %p", conn);
-    ostream_close(&conn->outp);
+    opipe_close(&conn->outp);
     if (conn->ssl)
         ssl_close(conn->ssl);
     if (connlist == conn) {
@@ -68,7 +68,7 @@ static void conn_free(conn_t *conn) {
 static void signal_error(conn_t *conn, int err) {
     LOG("signal error %p - %d", conn, err);
     struct tcp_info info = {.tag = 0, err = err};
-    ostream_write_meta(&conn->outp, &info, sizeof(info));
+    opipe_write_meta(&conn->outp, &info, sizeof(info));
     conn_free(conn);
 }
 
@@ -84,7 +84,7 @@ static void data_handler_inner(jd_packet_ext_t *ext) {
     free(ext);
 }
 
-static void data_handler(istream_desc_t *istr, jd_packet_t *pkt) {
+static void data_handler(ipipe_desc_t *istr, jd_packet_t *pkt) {
     worker_run(worker, (TaskFunction_t)data_handler_inner, mk_packet_ext(pkt, istr));
 }
 
@@ -98,8 +98,8 @@ static void cmd_ssl_open(conn_t *conn, struct ssl_open_cmd *cmd) {
     if (r)
         signal_error(conn, r);
 
-    ostream_write(&conn->outp, NULL, 0); // poke output stream to indicate we managed to connect
-    ostream_flush(&conn->outp);
+    opipe_write(&conn->outp, NULL, 0); // poke output stream to indicate we managed to connect
+    opipe_flush(&conn->outp);
 
     LOG("ssl open done");
 }
@@ -128,18 +128,18 @@ static void meta_handler_inner(jd_packet_ext_t *ext) {
     free(ext);
 }
 
-static void meta_handler(istream_desc_t *istr, jd_packet_t *pkt) {
+static void meta_handler(ipipe_desc_t *istr, jd_packet_t *pkt) {
     worker_run(worker, (TaskFunction_t)meta_handler_inner, mk_packet_ext(pkt, istr));
 }
 
 static void open_stream(jd_packet_t *pkt) {
     conn_t *conn = calloc(1, sizeof(conn_t));
-    int r = ostream_open(&conn->outp, pkt);
+    int r = opipe_open(&conn->outp, pkt);
     if (r < 0) {
         free(conn);
         return;
     }
-    int port = istream_open(&conn->inp, data_handler, meta_handler);
+    int port = ipipe_open(&conn->inp, data_handler, meta_handler);
     jd_send(SERV_NUM, pkt->service_command, &port, 2); // return input port
     conn->next = connlist;
     connlist = conn;
@@ -156,8 +156,8 @@ static void flush_ssl(void *arg) {
                 conn_free(conn);
                 break; // do not continue, as the list got messed up - will do next time
             } else {
-                ostream_write(&conn->outp, buf, sz);
-                ostream_flush(&conn->outp);
+                opipe_write(&conn->outp, buf, sz);
+                opipe_flush(&conn->outp);
             }
         }
     }
