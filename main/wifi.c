@@ -4,15 +4,20 @@
 #include "nvs_flash.h"
 #include "esp_wifi.h"
 
-#define SERV_NUM 1
+const int CONNECTED_BIT = BIT0;
+const int DISCONNECTED_BIT = BIT1;
+
+struct srv_state {
+    SRV_COMMON;
+};
+
+static srv_t *wifi_state;
 
 static bool reconnect = true;
 static const char *TAG = "wifi";
 
 static EventGroupHandle_t wifi_event_group;
 static ostream_desc_t scan_stream;
-const int CONNECTED_BIT = BIT0;
-const int DISCONNECTED_BIT = BIT1;
 static worker_t worker;
 
 static void wifi_cmd_scan(jd_packet_t *pkt) {
@@ -83,7 +88,7 @@ static void got_ip_handler(void *arg, esp_event_base_t event_base, int32_t event
                            void *event_data) {
     xEventGroupClearBits(wifi_event_group, DISCONNECTED_BIT);
     xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-    jd_send_event(SERV_NUM, JDWIFI_EV_GOT_IP);
+    jd_send_event(wifi_state, JDWIFI_EV_GOT_IP);
 }
 
 static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
@@ -96,7 +101,7 @@ static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t e
     }
     xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(wifi_event_group, DISCONNECTED_BIT);
-    jd_send_event(SERV_NUM, JDWIFI_EV_LOST_IP);
+    jd_send_event(wifi_state, JDWIFI_EV_LOST_IP);
 }
 
 static void disconnect(void) {
@@ -128,12 +133,12 @@ static void do_connect(void *cfg_) {
 
     // do we need this?
     if (bits & CONNECTED_BIT)
-        jd_send(SERV_NUM, JDWIFI_CMD_CONNECT, NULL, 0);
+        jd_send(wifi_state->service_number, JDWIFI_CMD_CONNECT, NULL, 0);
 }
 
 static void wifi_cmd_disconnect(void *arg) {
     disconnect();
-    jd_send(SERV_NUM, JDWIFI_CMD_DISCONNECT, NULL, 0);
+    jd_send(wifi_state->service_number, JDWIFI_CMD_DISCONNECT, NULL, 0);
 }
 
 static int wifi_cmd_sta_join(jd_packet_t *pkt) {
@@ -232,7 +237,7 @@ void wifi_start() {
     initialized = true;
 }
 
-void wifi_handle_pkt(jd_packet_t *pkt) {
+void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
     ESP_LOGI(TAG, "wifi cmd: 0x%x", pkt->service_command);
     switch (pkt->service_command) {
     case JDWIFI_CMD_SCAN:
@@ -247,9 +252,13 @@ void wifi_handle_pkt(jd_packet_t *pkt) {
     }
 }
 
-void wifi_process() {}
+void wifi_process(srv_t *state) {}
 
-void wifi_init() {
+SRV_DEF(wifi, JD_SERVICE_CLASS_WIFI);
+void wifi_init(void) {
+    SRV_ALLOC(wifi);
+    wifi_state = state;
+
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());

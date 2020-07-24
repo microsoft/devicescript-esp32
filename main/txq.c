@@ -26,7 +26,7 @@ void jd_send(unsigned service_num, unsigned service_cmd, const void *data, unsig
     if (service_size > JD_SERIAL_PAYLOAD_SIZE)
         jd_panic();
 
-    uint64_t dev_id = device_id(); // before locking
+    uint64_t dev_id = jd_device_id(); // before locking
 
     void *trg;
     for (;;) {

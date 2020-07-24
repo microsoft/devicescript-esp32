@@ -34,17 +34,8 @@ int istream_open(istream_desc_t *str, istream_handler_t handler, istream_handler
 void istream_close(istream_desc_t *str);
 void istream_handle_pkt(jd_packet_t *pkt);
 
-uint64_t device_id(void);
-
-void ctrl_process();
-void ctrl_handle_packet(jd_packet_t *pkt);
-
-void wifi_process(void);
 void wifi_init(void);
-void wifi_handle_pkt(jd_packet_t *pkt);
-void jdtcp_process(void);
 void jdtcp_init(void);
-void jdtcp_handle_pkt(jd_packet_t *pkt);
 
 #define CHECK(cond)                                                                                \
     if (!(cond))                                                                                   \

@@ -1,8 +1,14 @@
 #include "jdesp.h"
 
+struct srv_state {
+    SRV_COMMON;
+};
+
+static srv_t *jdtcp_state;
+
 #define LOG(...) ESP_LOGI("TCP", __VA_ARGS__)
 
-#define SERV_NUM 2
+#define SERV_NUM jdtcp_state->service_number
 
 #define SSL_OPEN 0x0001
 
@@ -69,7 +75,7 @@ static void signal_error(conn_t *conn, int err) {
 static void data_handler_inner(jd_packet_ext_t *ext) {
     conn_t *conn = (conn_t *)ext->userdata;
     jd_packet_t *pkt = &ext->pkt;
-    //LOG("data sz=%d", pkt->service_size);
+    // LOG("data sz=%d", pkt->service_size);
     if (conn->ssl && pkt->service_size) {
         int r = ssl_write(conn->ssl, pkt->data, pkt->service_size);
         if (r < 0)
@@ -157,18 +163,21 @@ static void flush_ssl(void *arg) {
     }
 }
 
-void jdtcp_init(void) {
-    // this handles SSL tasks which need lots of stack
-    worker = worker_alloc("tcp", 10 * 1024);
-    worker_set_idle(worker, flush_ssl, NULL);
-}
+void jdtcp_process(srv_t *state) {}
 
-void jdtcp_process(void) {}
-
-void jdtcp_handle_pkt(jd_packet_t *pkt) {
+void jdtcp_handle_packet(srv_t *state, jd_packet_t *pkt) {
     switch (pkt->service_command) {
     case JDTCP_CMD_OPEN:
         open_stream(pkt);
         break;
     }
+}
+
+SRV_DEF(jdtcp, JD_SERVICE_CLASS_TCP);
+void jdtcp_init(void) {
+    SRV_ALLOC(jdtcp);
+    jdtcp_state = state;
+    // this handles SSL tasks which need lots of stack
+    worker = worker_alloc("tcp", 10 * 1024);
+    worker_set_idle(worker, flush_ssl, NULL);
 }

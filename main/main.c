@@ -118,6 +118,11 @@ static void jdloop(void *_dummy) {
     }
 }
 
+void app_init_services(void) {
+    wifi_init();
+    jdtcp_init();
+}
+
 void app_main() {
     ESP_LOGI("JD", "starting...");
 
@@ -127,17 +132,16 @@ void app_main() {
 
     frame_queue = xQueueCreate(10, sizeof(jd_frame_t *));
 
+    uart_init();
+    tim_init();
     jd_init();
-
-    wifi_init();
-    jdtcp_init();
 
     log_pin_pulse(0, 1);
 
     xTaskCreatePinnedToCore(jdloop, "jdloop", 2 * 1024, NULL, 3, NULL, APP_CPU_NUM);
 }
 
-uint64_t device_id(void) {
+uint64_t jd_device_id(void) {
     static uint64_t addr;
     if (!addr) {
         uint8_t mac[6];
@@ -161,15 +165,6 @@ int jd_rx_frame_received(jd_frame_t *frame) {
     return 0;
 }
 
-jd_frame_t *jd_rx_get_frame(void) {
-    jd_frame_t *fr = NULL;
-
-    if (xQueueReceive(frame_queue, &fr, 0))
-        return fr;
-    else
-        return NULL;
-}
-
 void jd_alloc_stack_check(void) {}
 
 void jd_alloc_init(void) {}
@@ -180,4 +175,8 @@ void *jd_alloc(uint32_t size) {
 
 void *jd_alloc_emergency_area(uint32_t size) {
     return calloc(size, 1);
+}
+
+void target_reset() {
+    esp_restart();
 }
