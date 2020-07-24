@@ -3,6 +3,7 @@ all: check-export
 
 check-export:
 	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
+	@test -f jacdac-c/README.md || git submodule update --init
 
 f: flash
 r: flash
