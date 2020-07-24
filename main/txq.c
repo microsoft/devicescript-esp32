@@ -45,11 +45,12 @@ void jd_send(unsigned service_num, unsigned service_cmd, const void *data, unsig
     }
 }
 
-void jd_send_event_ex(int serv_num, uint32_t eventid, uint32_t arg) {
+void jd_send_event_ext(srv_t *srv, uint32_t eventid, uint32_t arg) {
+    srv_common_t *state = (srv_common_t *)srv;
     if (eventid >> 16)
         jd_panic();
     uint32_t data[] = {eventid, arg};
-    jd_send(serv_num, JD_CMD_EVENT, data, 8);
+    jd_send(state->service_number, JD_CMD_EVENT, data, 8);
 }
 
 jd_frame_t *jd_tx_get_frame(void) {

@@ -7,7 +7,7 @@ static portMUX_TYPE streamMux = portMUX_INITIALIZER_UNLOCKED;
 
 static ostream_desc_t *streams;
 
-int _jd_send_frame(jd_frame_t *f, int wait);
+int _jd_tx_push_frame(jd_frame_t *f, int wait);
 
 static void ostream_free(ostream_desc_t *str) {
     if (!str->sem)
@@ -76,7 +76,7 @@ static int do_flush(ostream_desc_t *str) {
         while (delay < 1500 / portTICK_PERIOD_MS) {
             jd_frame_t *fcp = malloc(sizeof(*f));
             memcpy(fcp, f, sizeof(*f));
-            _jd_send_frame(fcp, 5); // this will get free()d when sent
+            _jd_tx_push_frame(fcp, 5); // this will get free()d when sent
             gotAck = ulTaskNotifyTake(pdTRUE, delay);
             if (gotAck)
                 break;

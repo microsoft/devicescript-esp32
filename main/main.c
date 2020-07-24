@@ -79,84 +79,16 @@ static void flush_dmesg(void) {
     free(dmesgCopy);
 }
 
-static const uint32_t services[] = {0, JD_SERVICE_CLASS_WIFI, JD_SERVICE_CLASS_TCP};
-static const int num_services = sizeof(services) / sizeof(services[0]);
-
-void app_queue_annouce() {
-    jd_send(JD_SERVICE_NUMBER_CTRL, JD_CMD_ADVERTISEMENT_DATA, services, sizeof(services));
-    jd_tx_flush();
-}
-
 uint32_t now;
-static uint64_t maxId;
-static uint32_t lastMax, lastDisconnectBlink;
 
-static void handle_ctrl_tick(jd_packet_t *pkt) {
-    if (pkt->service_command == JD_CMD_ADVERTISEMENT_DATA) {
-        // if we have not seen maxId for 1.1s, find a new maxId
-        if (pkt->device_identifier < maxId && in_past(lastMax + 1100000)) {
-            maxId = pkt->device_identifier;
-        }
-
-        // maxId? blink!
-        if (pkt->device_identifier >= maxId) {
-            maxId = pkt->device_identifier;
-            lastMax = now;
-            led_blink(1000); // was 50
-        }
-    }
-}
-
-void app_handle_packet(jd_packet_t *pkt) {
+void jd_app_handle_packet(jd_packet_t *pkt) {
     now = tim_get_micros();
-
     ostream_process_ack(pkt);
-
-    if (!(pkt->flags & JD_FRAME_FLAG_COMMAND)) {
-        if (pkt->service_number == 0)
-            handle_ctrl_tick(pkt);
-        return;
-    }
-
-    bool matched_devid = pkt->device_identifier == device_id();
-
-    if (pkt->flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS) {
-        for (int i = 0; i < num_services; ++i) {
-            if (pkt->device_identifier == services[i]) {
-                pkt->service_number = i;
-                matched_devid = true;
-                break;
-            }
-        }
-    }
-
-    if (!matched_devid)
-        return;
-
-    switch (pkt->service_number) {
-    case 0:
-        ctrl_handle_packet(pkt);
-        break;
-    case 1:
-        wifi_handle_pkt(pkt);
-        break;
-    case 2:
-        jdtcp_handle_pkt(pkt);
-        break;
-    case JD_SERVICE_NUMBER_STREAM:
-        istream_handle_pkt(pkt);
-        break;
-    }
 }
 
-int app_handle_frame(jd_frame_t *frame) {
-    jd_frame_t *copy = malloc(JD_FRAME_SIZE(frame));
-    memcpy(copy, frame, JD_FRAME_SIZE(frame));
-    if (!xQueueSendToBack(frame_queue, &copy, 0)) {
-        free(copy);
-        return -1;
-    }
-    return 0;
+void jd_app_handle_command(jd_packet_t *pkt) {
+    if (pkt->service_number == JD_SERVICE_NUMBER_STREAM)
+        istream_handle_pkt(pkt);
 }
 
 static void jdloop(void *_dummy) {
@@ -175,33 +107,12 @@ static void jdloop(void *_dummy) {
         }
 
         if (xQueueReceive(frame_queue, &fr, qdelay)) {
-            if (fr->flags & JD_FRAME_FLAG_ACK_REQUESTED && fr->flags & JD_FRAME_FLAG_COMMAND &&
-                fr->device_identifier == device_id()) {
-                jd_send(JD_SERVICE_NUMBER_CRC_ACK, fr->crc, NULL, 0);
-                jd_tx_flush(); // the app handling can take a long while
-            }
-
-            for (;;) {
-                app_handle_packet((jd_packet_t *)fr);
-                if (!jd_shift_frame(fr))
-                    break;
-            }
-
+            jd_services_process_frame(fr);
             free(fr);
         }
 
         now = tim_get_micros();
-        ctrl_process();
-        wifi_process();
-        jdtcp_process();
-
-        if (jd_should_sample(&lastDisconnectBlink, 250000)) {
-            if (in_past(lastMax + 2000000)) {
-                led_blink(15000);
-            }
-        }
-
-        jd_tx_flush();
+        jd_services_tick();
 
         flush_dmesg();
     }
@@ -216,7 +127,6 @@ void app_main() {
 
     frame_queue = xQueueCreate(10, sizeof(jd_frame_t *));
 
-    txq_init();
     jd_init();
 
     wifi_init();
@@ -237,4 +147,37 @@ uint64_t device_id(void) {
                ((uint64_t)mac[0] << 8) | ((uint64_t)0xfe << 0);
     }
     return addr;
+}
+
+void jd_rx_init(void) {}
+
+int jd_rx_frame_received(jd_frame_t *frame) {
+    jd_frame_t *copy = malloc(JD_FRAME_SIZE(frame));
+    memcpy(copy, frame, JD_FRAME_SIZE(frame));
+    if (!xQueueSendToBack(frame_queue, &copy, 0)) {
+        free(copy);
+        return -1;
+    }
+    return 0;
+}
+
+jd_frame_t *jd_rx_get_frame(void) {
+    jd_frame_t *fr = NULL;
+
+    if (xQueueReceive(frame_queue, &fr, 0))
+        return fr;
+    else
+        return NULL;
+}
+
+void jd_alloc_stack_check(void) {}
+
+void jd_alloc_init(void) {}
+
+void *jd_alloc(uint32_t size) {
+    return calloc(size, 1);
+}
+
+void *jd_alloc_emergency_area(uint32_t size) {
+    return calloc(size, 1);
 }
