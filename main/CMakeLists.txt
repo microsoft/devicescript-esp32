@@ -1,9 +1,8 @@
-idf_component_register(SRCS 
+idf_component_register(
+  SRCS 
     "main.c"
     "tim.c"
     "uart.c"
-    "jdlow.c"
-    "jdutil.c"
     "dmesg.c"
     "txq.c"
     "ostream.c"
@@ -14,4 +13,14 @@ idf_component_register(SRCS
     "ssl.c"
     "certs.c"
     "worker.c"
-  INCLUDE_DIRS ".")
+    "../jacdac-c/source/jd_control.c"
+    "../jacdac-c/source/jd_io.c"
+    "../jacdac-c/source/jd_physical.c"
+    "../jacdac-c/source/jd_protocol.c"
+    "../jacdac-c/source/jd_services.c"
+    "../jacdac-c/source/jd_util.c"
+  INCLUDE_DIRS 
+    "."
+    "../jacdac-c/inc"
+    "../jacdac-c"
+)

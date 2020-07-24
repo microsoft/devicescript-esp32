@@ -4,16 +4,6 @@
 
 void log_pin_pulse(int line, int times);
 
-// txq.c
-void txq_init(void);
-void txq_flush(void);
-int txq_is_idle(void);
-void txq_push(unsigned service_num, unsigned service_cmd, const void *data, unsigned service_size);
-void txq_push_event_ex(int srv_num, uint32_t eventid, uint32_t arg);
-static inline void txq_push_event(int srv_num, uint32_t eventid) {
-    txq_push_event_ex(srv_num, eventid, 0);
-}
-
 typedef struct ostream_desc {
     // don't access members directly
     uint64_t device_identifier;
@@ -55,21 +45,6 @@ void wifi_handle_pkt(jd_packet_t *pkt);
 void jdtcp_process(void);
 void jdtcp_init(void);
 void jdtcp_handle_pkt(jd_packet_t *pkt);
-
-
-extern uint32_t now;
-
-// check if given timestamp is already in the past, regardless of overflows on 'now'
-// the moment has to be no more than ~500 seconds in the past
-static inline bool in_past(uint32_t moment) {
-    return ((now - moment) >> 29) == 0;
-}
-static inline bool in_future(uint32_t moment) {
-    return ((moment - now) >> 29) == 0;
-}
-
-// keep sampling at period, using state at *sample
-bool should_sample(uint32_t *sample, uint32_t period);
 
 #define CHECK(cond)                                                                                \
     if (!(cond))                                                                                   \

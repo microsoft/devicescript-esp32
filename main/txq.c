@@ -9,20 +9,20 @@ static portMUX_TYPE sendMux = portMUX_INITIALIZER_UNLOCKED;
 #define LOCK() portENTER_CRITICAL(&sendMux)
 #define UNLOCK() portEXIT_CRITICAL(&sendMux)
 
-int txq_is_idle() {
+int jd_tx_is_idle() {
     LOCK();
     int r = sendFrame == NULL && xQueueIsQueueEmptyFromISR(send_queue);
     UNLOCK();
     return r;
 }
 
-void txq_init(void) {
+void jd_tx_init(void) {
     if (send_queue)
         return;
     send_queue = xQueueCreate(NUM_ENTRIES, sizeof(jd_frame_t *));
 }
 
-void txq_push(unsigned service_num, unsigned service_cmd, const void *data, unsigned service_size) {
+void jd_send(unsigned service_num, unsigned service_cmd, const void *data, unsigned service_size) {
     if (service_size > JD_SERIAL_PAYLOAD_SIZE)
         jd_panic();
 
@@ -41,18 +41,18 @@ void txq_push(unsigned service_num, unsigned service_cmd, const void *data, unsi
         UNLOCK();
         if (trg)
             return;
-        txq_flush(); // and try again
+        jd_tx_flush(); // and try again
     }
 }
 
-void txq_push_event_ex(int serv_num, uint32_t eventid, uint32_t arg) {
+void jd_send_event_ex(int serv_num, uint32_t eventid, uint32_t arg) {
     if (eventid >> 16)
         jd_panic();
     uint32_t data[] = {eventid, arg};
-    txq_push(serv_num, JD_CMD_EVENT, data, 8);
+    jd_send(serv_num, JD_CMD_EVENT, data, 8);
 }
 
-jd_frame_t *app_pull_frame(void) {
+jd_frame_t *jd_tx_get_frame(void) {
     LOCK();
     jd_frame_t *fr = NULL;
     if (!xQueueReceiveFromISR(send_queue, &fr, NULL))
@@ -61,7 +61,7 @@ jd_frame_t *app_pull_frame(void) {
     return fr;
 }
 
-void app_frame_sent(jd_frame_t *pkt) {
+void jd_tx_frame_sent(jd_frame_t *pkt) {
     free(pkt);
     LOCK();
     int empty = xQueueIsQueueEmptyFromISR(send_queue);
@@ -70,7 +70,7 @@ void app_frame_sent(jd_frame_t *pkt) {
         jd_packet_ready();
 }
 
-int _txq_push_frame(jd_frame_t *f, int wait) {
+int _jd_tx_push_frame(jd_frame_t *f, int wait) {
     if (!f)
         return 0;
 
@@ -90,7 +90,7 @@ int _txq_push_frame(jd_frame_t *f, int wait) {
     return r;
 }
 
-void txq_flush() {
+void jd_tx_flush() {
     LOCK();
     jd_frame_t *f = sendFrame;
     sendFrame = NULL;
@@ -98,5 +98,5 @@ void txq_flush() {
     if (!f)
         return;
     jd_compute_crc(f);
-    _txq_push_frame(f, 5);
+    _jd_tx_push_frame(f, 5);
 }

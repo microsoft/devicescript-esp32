@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define DEVICE_DMESG_BUFFER_SIZE 4096
-
 #include "dmesg.h"
 
 #include "freertos/FreeRTOS.h"
@@ -16,4 +14,3 @@
 
 #include "driver/gpio.h"
 
-#define JD_WR_OVERHEAD 28

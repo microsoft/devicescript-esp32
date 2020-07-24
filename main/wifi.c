@@ -83,7 +83,7 @@ static void got_ip_handler(void *arg, esp_event_base_t event_base, int32_t event
                            void *event_data) {
     xEventGroupClearBits(wifi_event_group, DISCONNECTED_BIT);
     xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-    txq_push_event(SERV_NUM, JDWIFI_EV_GOT_IP);
+    jd_send_event(SERV_NUM, JDWIFI_EV_GOT_IP);
 }
 
 static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
@@ -96,7 +96,7 @@ static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t e
     }
     xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(wifi_event_group, DISCONNECTED_BIT);
-    txq_push_event(SERV_NUM, JDWIFI_EV_LOST_IP);
+    jd_send_event(SERV_NUM, JDWIFI_EV_LOST_IP);
 }
 
 static void disconnect(void) {
@@ -128,12 +128,12 @@ static void do_connect(void *cfg_) {
 
     // do we need this?
     if (bits & CONNECTED_BIT)
-        txq_push(SERV_NUM, JDWIFI_CMD_CONNECT, NULL, 0);
+        jd_send(SERV_NUM, JDWIFI_CMD_CONNECT, NULL, 0);
 }
 
 static void wifi_cmd_disconnect(void *arg) {
     disconnect();
-    txq_push(SERV_NUM, JDWIFI_CMD_DISCONNECT, NULL, 0);
+    jd_send(SERV_NUM, JDWIFI_CMD_DISCONNECT, NULL, 0);
 }
 
 static int wifi_cmd_sta_join(jd_packet_t *pkt) {

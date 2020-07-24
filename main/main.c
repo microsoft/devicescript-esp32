@@ -83,8 +83,8 @@ static const uint32_t services[] = {0, JD_SERVICE_CLASS_WIFI, JD_SERVICE_CLASS_T
 static const int num_services = sizeof(services) / sizeof(services[0]);
 
 void app_queue_annouce() {
-    txq_push(JD_SERVICE_NUMBER_CTRL, JD_CMD_ADVERTISEMENT_DATA, services, sizeof(services));
-    txq_flush();
+    jd_send(JD_SERVICE_NUMBER_CTRL, JD_CMD_ADVERTISEMENT_DATA, services, sizeof(services));
+    jd_tx_flush();
 }
 
 uint32_t now;
@@ -177,8 +177,8 @@ static void jdloop(void *_dummy) {
         if (xQueueReceive(frame_queue, &fr, qdelay)) {
             if (fr->flags & JD_FRAME_FLAG_ACK_REQUESTED && fr->flags & JD_FRAME_FLAG_COMMAND &&
                 fr->device_identifier == device_id()) {
-                txq_push(JD_SERVICE_NUMBER_CRC_ACK, fr->crc, NULL, 0);
-                txq_flush(); // the app handling can take a long while
+                jd_send(JD_SERVICE_NUMBER_CRC_ACK, fr->crc, NULL, 0);
+                jd_tx_flush(); // the app handling can take a long while
             }
 
             for (;;) {
@@ -195,13 +195,13 @@ static void jdloop(void *_dummy) {
         wifi_process();
         jdtcp_process();
 
-        if (should_sample(&lastDisconnectBlink, 250000)) {
+        if (jd_should_sample(&lastDisconnectBlink, 250000)) {
             if (in_past(lastMax + 2000000)) {
                 led_blink(15000);
             }
         }
 
-        txq_flush();
+        jd_tx_flush();
 
         flush_dmesg();
     }
@@ -237,17 +237,4 @@ uint64_t device_id(void) {
                ((uint64_t)mac[0] << 8) | ((uint64_t)0xfe << 0);
     }
     return addr;
-}
-
-bool should_sample(uint32_t *sample, uint32_t period) {
-    if (in_future(*sample))
-        return false;
-
-    *sample += period;
-
-    if (!in_future(*sample))
-        // we lost some samples
-        *sample = now + period;
-
-    return true;
 }

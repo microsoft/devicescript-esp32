@@ -134,7 +134,7 @@ static void open_stream(jd_packet_t *pkt) {
         return;
     }
     int port = istream_open(&conn->inp, data_handler, meta_handler);
-    txq_push(SERV_NUM, pkt->service_command, &port, 2); // return input port
+    jd_send(SERV_NUM, pkt->service_command, &port, 2); // return input port
     conn->next = connlist;
     connlist = conn;
 }

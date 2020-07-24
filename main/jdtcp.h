@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jdprotocol.h"
+#include "jd_protocol.h"
 
 #define JD_SERVICE_CLASS_WIFI 0x18aae1fa
 #define JDWIFI_CMD_SCAN 0x80
