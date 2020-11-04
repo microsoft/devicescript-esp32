@@ -1,5 +1,6 @@
 #include "jdesp.h"
 #include "driver/uart.h"
+#include "hal/uart_ll.h"
 
 //#define LOG(msg, ...) DMESG("U:" msg, ##__VA_ARGS__)
 #define LOG(...) ((void)0)
