@@ -14,5 +14,7 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
+      with:
+          submodules: true
     - name: esp-idf build
       uses: sebastianPsm/esp-idf-ci-action@1
