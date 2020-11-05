@@ -10,8 +10,6 @@ static srv_t *jdtcp_state;
 
 #define SERV_NUM jdtcp_state->service_number
 
-#define SSL_OPEN 0x0001
-
 typedef struct {
     void *userdata;
     jd_packet_t pkt;
@@ -36,11 +34,6 @@ typedef struct connection {
 } conn_t;
 
 static conn_t *connlist;
-
-struct tcp_info {
-    uint32_t tag;
-    int32_t error;
-};
 
 struct ssl_open_cmd {
     uint32_t tag;
@@ -67,7 +60,7 @@ static void conn_free(conn_t *conn) {
 
 static void signal_error(conn_t *conn, int err) {
     LOG("signal error %p - %d", conn, err);
-    struct tcp_info info = {.tag = 0, err = err};
+    jd_tcp_error_t info = {.identifier = JD_TCP_PIPE_ERROR, .error = err};
     opipe_write_meta(&conn->outp, &info, sizeof(info));
     conn_free(conn);
 }
@@ -88,12 +81,12 @@ static void data_handler(ipipe_desc_t *istr, jd_packet_t *pkt) {
     worker_run(worker, (TaskFunction_t)data_handler_inner, mk_packet_ext(pkt, istr));
 }
 
-static void cmd_ssl_open(conn_t *conn, struct ssl_open_cmd *cmd) {
+static void cmd_ssl_open(conn_t *conn, jd_tcp_open_ssl_t *cmd) {
     if (conn->ssl)
         ssl_close(conn->ssl);
 
     conn->ssl = ssl_alloc();
-    int r = ssl_connect(conn->ssl, cmd->hostname, cmd->port);
+    int r = ssl_connect(conn->ssl, cmd->hostname, cmd->tcp_port);
     LOG("ssl conn r=%d", r);
     if (r)
         signal_error(conn, r);
@@ -114,7 +107,7 @@ static void meta_handler_inner(jd_packet_ext_t *ext) {
     } else {
         uint16_t cmd = *(uint16_t *)pkt->data;
         switch (cmd) {
-        case SSL_OPEN:
+        case JD_TCP_PIPE_OPEN_SSL:
             if (pkt->service_size >= sizeof(struct ssl_open_cmd) &&
                 pkt->data[pkt->service_size - 1] == 0) {
                 cmd_ssl_open(conn, (void *)pkt->data);
@@ -167,13 +160,13 @@ void jdtcp_process(srv_t *state) {}
 
 void jdtcp_handle_packet(srv_t *state, jd_packet_t *pkt) {
     switch (pkt->service_command) {
-    case JDTCP_CMD_OPEN:
+    case JD_TCP_CMD_OPEN:
         open_stream(pkt);
         break;
     }
 }
 
-SRV_DEF(jdtcp, JD_SERVICE_CLASS_TCP);
+SRV_DEF(jdtcp, JD_TCP_SERVICE_CLASS);
 void jdtcp_init(void) {
     SRV_ALLOC(jdtcp);
     jdtcp_state = state;

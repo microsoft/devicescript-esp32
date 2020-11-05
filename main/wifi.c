@@ -29,6 +29,8 @@ static void wifi_cmd_scan(jd_packet_t *pkt) {
     ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, false));
 }
 
+#define JD_WIFI_SCAN_ENTRY_HEADER_SIZE (uint32_t)(&((jd_wifi_results_t *)0)->ssid)
+
 static void scan_resp(void *arg) {
     uint16_t sta_number = 0;
     uint8_t i;
@@ -40,7 +42,7 @@ static void scan_resp(void *arg) {
     if (esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer) == ESP_OK) {
         for (i = 0; i < sta_number; i++) {
             wifi_ap_record_t *src = &ap_list_buffer[i];
-            jdwifi_scan_entry_t ent;
+            jd_wifi_results_t ent;
             ent.reserved = 0;
 
             ESP_LOGI(TAG, "[%s][rssi=%d]", src->ssid, src->rssi);
@@ -48,28 +50,28 @@ static void scan_resp(void *arg) {
             ent.flags = 0;
 
             if (src->phy_11b)
-                ent.flags |= JDWIFI_SCAN_FLAG_802_11B;
+                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11B;
             if (src->phy_11g)
-                ent.flags |= JDWIFI_SCAN_FLAG_802_11G;
+                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11G;
             if (src->phy_11n)
-                ent.flags |= JDWIFI_SCAN_FLAG_802_11N;
+                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11N;
             if (src->phy_lr)
-                ent.flags |= JDWIFI_SCAN_FLAG_802_LONG_RANGE;
+                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_LONG_RANGE;
             if (src->wps)
-                ent.flags |= JDWIFI_SCAN_FLAG_WPS;
+                ent.flags |= JD_WIFI_APFLAGS_WPS;
             if (src->second == WIFI_SECOND_CHAN_ABOVE)
-                ent.flags |= JDWIFI_SCAN_FLAG_SECONDARY_CHANNEL_ABOVE;
+                ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_ABOVE;
             if (src->second == WIFI_SECOND_CHAN_BELOW)
-                ent.flags |= JDWIFI_SCAN_FLAG_SECONDARY_CHANNEL_BELOW;
+                ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_BELOW;
             if (src->authmode != WIFI_AUTH_OPEN)
-                ent.flags |= JDWIFI_SCAN_FLAG_PASSWORD;
+                ent.flags |= JD_WIFI_APFLAGS_HAS_PASSWORD;
             ent.channel = src->primary;
             ent.rssi = src->rssi;
             memcpy(ent.bssid, src->bssid, 6);
             memcpy(ent.ssid, src->ssid, sizeof(ent.ssid));
             ent.ssid[32] = 0;
 
-            int sz = JDWIFI_SCAN_ENTRY_HEADER_SIZE + strlen((char *)ent.ssid);
+            int sz = JD_WIFI_SCAN_ENTRY_HEADER_SIZE + strlen((char *)ent.ssid);
             opipe_write(&scan_stream, &ent, sz);
         }
     }
@@ -88,7 +90,7 @@ static void got_ip_handler(void *arg, esp_event_base_t event_base, int32_t event
                            void *event_data) {
     xEventGroupClearBits(wifi_event_group, DISCONNECTED_BIT);
     xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-    jd_send_event(wifi_state, JDWIFI_EV_GOT_IP);
+    jd_send_event(wifi_state, JD_WIFI_EV_GOT_IP);
 }
 
 static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
@@ -101,7 +103,7 @@ static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t e
     }
     xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
     xEventGroupSetBits(wifi_event_group, DISCONNECTED_BIT);
-    jd_send_event(wifi_state, JDWIFI_EV_LOST_IP);
+    jd_send_event(wifi_state, JD_WIFI_EV_LOST_IP);
 }
 
 static void disconnect(void) {
@@ -133,12 +135,12 @@ static void do_connect(void *cfg_) {
 
     // do we need this?
     if (bits & CONNECTED_BIT)
-        jd_send(wifi_state->service_number, JDWIFI_CMD_CONNECT, NULL, 0);
+        jd_send(wifi_state->service_number, JD_WIFI_CMD_CONNECT, NULL, 0);
 }
 
 static void wifi_cmd_disconnect(void *arg) {
     disconnect();
-    jd_send(wifi_state->service_number, JDWIFI_CMD_DISCONNECT, NULL, 0);
+    jd_send(wifi_state->service_number, JD_WIFI_CMD_DISCONNECT, NULL, 0);
 }
 
 static int wifi_cmd_sta_join(jd_packet_t *pkt) {
@@ -240,13 +242,13 @@ void wifi_start() {
 void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
     ESP_LOGI(TAG, "wifi cmd: 0x%x", pkt->service_command);
     switch (pkt->service_command) {
-    case JDWIFI_CMD_SCAN:
+    case JD_WIFI_CMD_SCAN:
         wifi_cmd_scan(pkt);
         break;
-    case JDWIFI_CMD_CONNECT:
+    case JD_WIFI_CMD_CONNECT:
         wifi_cmd_sta_join(pkt);
         break;
-    case JDWIFI_CMD_DISCONNECT:
+    case JD_WIFI_CMD_DISCONNECT:
         worker_run(worker, wifi_cmd_disconnect, NULL);
         break;
     }
@@ -254,7 +256,7 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
 
 void wifi_process(srv_t *state) {}
 
-SRV_DEF(wifi, JD_SERVICE_CLASS_WIFI);
+SRV_DEF(wifi, JD_WIFI_SERVICE_CLASS);
 void wifi_init(void) {
     SRV_ALLOC(wifi);
     wifi_state = state;
