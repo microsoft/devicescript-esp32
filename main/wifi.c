@@ -240,6 +240,8 @@ void wifi_start() {
 }
 
 void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
+    uint8_t tmp;
+
     ESP_LOGI(TAG, "wifi cmd: 0x%x", pkt->service_command);
     switch (pkt->service_command) {
     case JD_WIFI_CMD_SCAN:
@@ -250,6 +252,10 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
         break;
     case JD_WIFI_CMD_DISCONNECT:
         worker_run(worker, wifi_cmd_disconnect, NULL);
+        break;
+    case JD_WIFI_REG_CONNECTED | JD_CMD_GET_REG:
+        tmp = (xEventGroupGetBits(wifi_event_group) & CONNECTED_BIT) != 0;
+        jd_send(state->service_number, pkt->service_command, &tmp, 1);
         break;
     }
 }

@@ -8,8 +8,6 @@ static srv_t *jdtcp_state;
 
 #define LOG(...) ESP_LOGI("TCP", __VA_ARGS__)
 
-#define SERV_NUM jdtcp_state->service_number
-
 typedef struct {
     void *userdata;
     jd_packet_t pkt;
@@ -133,7 +131,7 @@ static void open_stream(jd_packet_t *pkt) {
         return;
     }
     int port = ipipe_open(&conn->inp, data_handler, meta_handler);
-    jd_send(SERV_NUM, pkt->service_command, &port, 2); // return input port
+    jd_send(jdtcp_state->service_number, pkt->service_command, &port, 2); // return input port
     conn->next = connlist;
     connlist = conn;
 }
