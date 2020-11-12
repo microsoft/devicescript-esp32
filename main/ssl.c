@@ -20,6 +20,7 @@
 extern const char root_certs[];
 
 struct _ssl_conn_t {
+    uint32_t flags;
     mbedtls_ssl_context ssl;
     mbedtls_net_context netctx;
 };
@@ -32,6 +33,8 @@ static mbedtls_ctr_drbg_context ctr_drbg;
 static void init_ca(void) {
     if (cacert.version)
         return;
+
+    esp_log_level_set(TAG, ESP_LOG_INFO);
 
     mbedtls_x509_crt_init(&cacert);
     mbedtls_ssl_config_init(&conf);
@@ -72,6 +75,7 @@ static void init_ca(void) {
 
 ssl_conn_t *ssl_alloc(void) {
     ssl_conn_t *conn = calloc(1, sizeof(ssl_conn_t));
+    conn->flags = 1;
     mbedtls_ssl_init(&conn->ssl);
     mbedtls_net_init(&conn->netctx);
     return conn;
@@ -82,9 +86,12 @@ bool ssl_is_connected(ssl_conn_t *conn) {
 }
 
 static void ssl_clear(ssl_conn_t *conn) {
-    mbedtls_ssl_session_reset(&conn->ssl);
-    mbedtls_net_free(&conn->netctx);
-    mbedtls_ssl_free(&conn->ssl);
+    if (conn->flags) {
+        conn->flags = 0;
+        mbedtls_ssl_session_reset(&conn->ssl);
+        mbedtls_net_free(&conn->netctx);
+        mbedtls_ssl_free(&conn->ssl);
+    }
 }
 
 int ssl_connect(ssl_conn_t *conn, const char *hostname, int port) {
@@ -191,6 +198,7 @@ int ssl_read(ssl_conn_t *conn, void *data, uint32_t len) {
 void ssl_close(ssl_conn_t *conn) {
     mbedtls_ssl_close_notify(&conn->ssl);
     ssl_clear(conn);
+    free(conn);
 }
 
 int ssl_get_bytes_avail(ssl_conn_t *conn) {

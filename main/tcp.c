@@ -42,8 +42,11 @@ struct ssl_open_cmd {
 static void conn_free(conn_t *conn) {
     LOG("free conn %p", conn);
     opipe_close(&conn->outp);
-    if (conn->ssl)
+    ipipe_close(&conn->inp);
+    if (conn->ssl) {
         ssl_close(conn->ssl);
+        conn->ssl = NULL;
+    }
     if (connlist == conn) {
         connlist = conn->next;
     } else {
@@ -101,7 +104,7 @@ static void meta_handler_inner(jd_packet_ext_t *ext) {
     if (pkt->service_number == 0) {
         conn_free(conn);
     } else if (pkt->service_size < 4) {
-        signal_error(conn, 2); // cmd validation error
+        signal_error(conn, JD_TCP_TCP_ERROR_INVALID_COMMAND_PAYLOAD); // cmd validation error
     } else {
         uint16_t cmd = *(uint16_t *)pkt->data;
         switch (cmd) {
@@ -109,10 +112,12 @@ static void meta_handler_inner(jd_packet_ext_t *ext) {
             if (pkt->service_size >= sizeof(struct ssl_open_cmd) &&
                 pkt->data[pkt->service_size - 1] == 0) {
                 cmd_ssl_open(conn, (void *)pkt->data);
+            } else {
+                signal_error(conn, JD_TCP_TCP_ERROR_INVALID_COMMAND_PAYLOAD);
             }
             break;
         default:
-            signal_error(conn, 1); // cmd not understood
+            signal_error(conn, JD_TCP_TCP_ERROR_INVALID_COMMAND); // cmd not understood
             break;
         }
     }
@@ -141,6 +146,7 @@ static void flush_ssl(void *arg) {
         if (conn->ssl && ssl_get_bytes_avail(conn->ssl)) {
             uint8_t buf[JD_SERIAL_PAYLOAD_SIZE];
             int sz = ssl_read(conn->ssl, buf, sizeof(buf));
+            LOG("flush %p %d", conn, sz);
             if (sz < 0) {
                 signal_error(conn, sz);
             } else if (sz == 0) {
