@@ -170,7 +170,7 @@ void jdtcp_handle_packet(srv_t *state, jd_packet_t *pkt) {
     }
 }
 
-SRV_DEF(jdtcp, JD_TCP_SERVICE_CLASS);
+SRV_DEF(jdtcp, JD_SERVICE_CLASS_TCP);
 void jdtcp_init(void) {
     SRV_ALLOC(jdtcp);
     jdtcp_state = state;

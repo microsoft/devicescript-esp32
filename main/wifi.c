@@ -262,7 +262,7 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
 
 void wifi_process(srv_t *state) {}
 
-SRV_DEF(wifi, JD_WIFI_SERVICE_CLASS);
+SRV_DEF(wifi, JD_SERVICE_CLASS_WIFI);
 void wifi_init(void) {
     SRV_ALLOC(wifi);
     wifi_state = state;
