@@ -2,5 +2,5 @@
 
 #include "jd_protocol.h"
 
-#include "services/spec/wifi.h"
-#include "services/spec/tcp.h"
+#include "jacdac/dist/c/wifi.h"
+#include "jacdac/dist/c/tcp.h"
