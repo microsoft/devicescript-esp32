@@ -1,6 +1,9 @@
 all: check-export
 	idf  --ccache build
 
+vscode:
+	. $$IDF_PATH/export.sh ; idf  --ccache build
+
 check-export:
 	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
 	@test -f jacdac-c/README.md || git submodule update --init
