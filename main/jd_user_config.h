@@ -8,4 +8,6 @@
 #define JD_LOG DMESG
 #define JD_WR_OVERHEAD 28
 
+#define JD_CLIENT 1
+
 #endif
