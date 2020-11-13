@@ -12,19 +12,11 @@
 				"cwd": "${workspaceFolder}"
 			},
 			"problemMatcher": {
-				"owner": "cpp",
+				"base": "$gcc",
 				"fileLocation": [
 					"relative",
 					"${workspaceFolder}/build"
-				],
-				"pattern": {
-					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-					"file": 1,
-					"line": 2,
-					"column": 3,
-					"severity": 4,
-					"message": 5
-				}
+				]
 			},
 			"group": "build",
 			"detail": "compiler: make"
