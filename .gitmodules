@@ -1,3 +1,6 @@
 [submodule "jacdac-c"]
 	path = jacdac-c
 	url = https://github.com/microsoft/jacdac-c
+[submodule "esp-azure"]
+	path = esp-azure
+	url = https://github.com/espressif/esp-azure
