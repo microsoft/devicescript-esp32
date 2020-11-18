@@ -13,6 +13,7 @@ idf_component_register(
     "ssl.c"
     "certs.c"
     "worker.c"
+    "azureiot.c"
     "../jacdac-c/source/jd_control.c"
     "../jacdac-c/source/jd_io.c"
     "../jacdac-c/source/jd_physical.c"

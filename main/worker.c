@@ -35,7 +35,9 @@ void worker_set_idle(worker_t w, TaskFunction_t fn, void *arg) {
     w->arg = arg;
 }
 
-void worker_run(worker_t w, TaskFunction_t fn, void *arg) {
+int worker_run(worker_t w, TaskFunction_t fn, void *arg) {
     qitem_t evt = {fn, arg};
-    xQueueSendFromISR(w->queue, &evt, NULL);
+    if (xQueueSendFromISR(w->queue, &evt, NULL) == pdPASS)
+        return 0;
+    return -1;
 }

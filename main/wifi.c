@@ -260,6 +260,12 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
     }
 }
 
+// 5000 / portTICK_RATE_MS
+// portMAX_DELAY
+void wifi_wait_connected(uint32_t delay) {
+    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, delay);
+}
+
 void wifi_process(srv_t *state) {}
 
 SRV_DEF(wifi, JD_SERVICE_CLASS_WIFI);
