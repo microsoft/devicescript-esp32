@@ -16,7 +16,6 @@
 
 #include "jacdac/dist/c/iothub.h"
 
-
 #define MAX_CONN_STRING 128
 
 struct srv_state {
@@ -91,6 +90,17 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT message_callback(IOTHUB_MESSAGE_HANDLE m
     return IOTHUBMESSAGE_ACCEPTED;
 }
 
+static void error(srv_t *state, const char *msg) {
+    ESP_LOGE(TAG, "error: %s", msg);
+    state->status = msg;
+    int len = strlen(msg);
+    uint8_t buf[4 + len];
+    uint32_t id = JD_IOT_HUB_EV_CONNECTION_ERROR;
+    memcpy(buf, &id, 4);
+    memcpy(buf + 4, msg, len);
+    jd_send(state->service_number, JD_CMD_EVENT, buf, 4 + len);
+}
+
 static void connection_status_callback(IOTHUB_CLIENT_CONNECTION_STATUS result,
                                        IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason,
                                        void *userdata) {
@@ -98,12 +108,11 @@ static void connection_status_callback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 
     if (result == IOTHUB_CLIENT_CONNECTION_AUTHENTICATED) {
         state->status = "ok";
+        ESP_LOGI(TAG, "connected");
+        jd_send_event(state, JD_IOT_HUB_EV_CONNECTED);
     } else {
-        state->status = MU_ENUM_TO_STRING(IOTHUB_CLIENT_CONNECTION_STATUS_REASON, reason);
+        error(state, MU_ENUM_TO_STRING(IOTHUB_CLIENT_CONNECTION_STATUS_REASON, reason));
     }
-
-    (void)printf("\n\nConnection Status result:%s, Connection Status reason: %s\n\n",
-                 MU_ENUM_TO_STRING(IOTHUB_CLIENT_CONNECTION_STATUS, result), state->status);
 }
 
 static void init(srv_t *state) {
@@ -112,19 +121,25 @@ static void init(srv_t *state) {
     platform_init(); // IOT-sdk - this talks to time server
 }
 
-static void connect(srv_t *state) {
-    char conn_string[MAX_CONN_STRING];
+static int get_conn_str(srv_t *state, char *conn_string) {
     conn_string[0] = 0;
     size_t len = MAX_CONN_STRING;
     int res = nvs_get_str(state->config_nvs, CONN_STRING_ID, conn_string, &len);
     if (res != ESP_OK || strlen(conn_string) < 5) {
-        state->status = "no connection string";
-        return;
+        error(state, "no connection string");
+        return -1;
     }
+    return 0;
+}
+
+static void connect(srv_t *state) {
+    char conn_string[MAX_CONN_STRING];
+    if (get_conn_str(state, conn_string) != 0)
+        return;
 
     state->client_handle = IoTHubClient_LL_CreateFromConnectionString(conn_string, MQTT_Protocol);
     if (!state->client_handle) {
-        state->status = "can't create iothub client";
+        error(state, "can't create iothub client");
         return;
     }
 
@@ -142,7 +157,83 @@ static void iot_do_work(srv_t *state) {
     }
 }
 
-void iothub_handle_packet(srv_t *state, jd_packet_t *pkt) {}
+static char *find_key(const char *key, char *data) {
+    int klen = strlen(key);
+    for (;;) {
+        if (memcmp(key, data, klen) == 0 && data[klen] == '=') {
+            data += klen + 1;
+            if (*data)
+                return data;
+            else
+                return NULL;
+        }
+        data = strchr(data, ';');
+        if (!data)
+            return NULL;
+        data++;
+    }
+}
+
+static void conn_str_property(srv_t *state, jd_packet_t *pkt, const char *key) {
+    char conn_string[MAX_CONN_STRING];
+    const char *resp = NULL;
+
+    if (get_conn_str(state, conn_string) == 0)
+        resp = find_key(key, conn_string);
+
+    if (!resp)
+        resp = "";
+
+    const char *end = resp;
+    while (*end && *end != ';')
+        end++;
+
+    jd_send(state->service_number, pkt->service_command, resp, end - resp);
+}
+
+static void set_conn_string(srv_t *state, jd_packet_t *pkt) {
+    if (pkt->service_size >= MAX_CONN_STRING || pkt->service_size < 20 ||
+        memchr(pkt->data, 0, pkt->service_size)) {
+        error(state, "invalid connection string");
+        return;
+    }
+
+    char conn_str[MAX_CONN_STRING];
+    memcpy(conn_str, pkt->data, pkt->service_size);
+    conn_str[pkt->service_size] = 0;
+
+    if (!find_key(conn_str, "HostName"))
+        error(state, "missing HostName in connection string");
+    else if (!find_key(conn_str, "DeviceId"))
+        error(state, "missing DeviceId in connection string");
+    else if (!find_key(conn_str, "SharedAccessKey"))
+        error(state, "missing SharedAccessKey in connection string");
+    else {
+        int res = nvs_set_str(state->config_nvs, CONN_STRING_ID, conn_str);
+        if (res != 0) {
+            error(state, "can't set connection string");
+        } else {
+            // reconnect ?
+        }
+    }
+}
+
+void iothub_handle_packet(srv_t *state, jd_packet_t *pkt) {
+    switch (pkt->service_command) {
+    case JD_GET(JD_IOT_HUB_REG_CONNECTION_STATUS):
+        jd_send(state->service_number, pkt->service_command, state->status, strlen(state->status));
+        break;
+    case JD_SET(JD_IOT_HUB_REG_CONNECTION_STRING):
+        set_conn_string(state, pkt);
+        break;
+    case JD_GET(JD_IOT_HUB_REG_DEVICE_ID):
+        conn_str_property(state, pkt, "DeviceId");
+        break;
+    case JD_GET(JD_IOT_HUB_REG_HUB_NAME):
+        conn_str_property(state, pkt, "HostName");
+        break;
+    }
+}
 
 void iothub_process(srv_t *state) {}
 

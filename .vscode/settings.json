@@ -3,7 +3,10 @@
         "*.ipp": "c",
         "functional": "c",
         "*.tcc": "c",
-        "complex": "c"
+        "complex": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c"
     },
     "git.detectSubmodules": false
 }
