@@ -7,7 +7,7 @@ with the [Microsoft Trusted Root Program](https://docs.microsoft.com/en-us/secur
 To re-generate the list do the following:
 
 ```bash
-curl https://raw.githubusercontent.com/curl/curl/master/lib/mk-ca-bundle.pl > mk-ca-bundle.pl
+curl https://raw.githubusercontent.com/curl/curl/master/scripts/mk-ca-bundle.pl > mk-ca-bundle.pl
 perl mk-ca-bundle.pl -f
 node filter-bundle.js ca-bundle.crt ca-bundle.pem
 ```
