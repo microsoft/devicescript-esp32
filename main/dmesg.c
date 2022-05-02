@@ -4,72 +4,6 @@
 
 struct CodalLogStore codalLogStore;
 
-/**
- * Performs an in buffer reverse of a given char array.
- *
- * @param s the string to reverse.
- *
- * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
- */
-int string_reverse(char *s) {
-    // sanity check...
-    if (s == NULL)
-        return -1;
-
-    char *j;
-    int c;
-
-    j = s + strlen(s) - 1;
-
-    while (s < j) {
-        c = *s;
-        *s++ = *j;
-        *j-- = c;
-    }
-
-    return 0;
-}
-
-/**
- * Converts a given integer into a string representation.
- *
- * @param n The number to convert.
- *
- * @param s A pointer to the buffer where the resulting string will be stored.
- *
- * @return DEVICE_OK, or DEVICE_INVALID_PARAMETER.
- */
-int myitoa(int n, char *s) {
-    int i = 0;
-    int positive = (n >= 0);
-
-    if (s == NULL)
-        return -1;
-
-    // Record the sign of the number,
-    // Ensure our working value is positive.
-    unsigned k = positive ? n : -n;
-
-    // Calculate each character, starting with the LSB.
-    do {
-        s[i++] = (k % 10) + '0';
-    } while ((k /= 10) > 0);
-
-    // Add a negative sign as needed
-    if (!positive)
-        s[i++] = '-';
-
-    // Terminate the string.
-    s[i] = '\0';
-
-    // Flip the order.
-    string_reverse(s);
-
-    return 0;
-}
-
-
-
 static void logwriten(const char *msg, int l) {
     target_disable_irq();
     if (codalLogStore.ptr + l >= sizeof(codalLogStore.buffer)) {
@@ -96,19 +30,6 @@ static void logwriten(const char *msg, int l) {
     target_enable_irq();
 }
 
-static void writeNum(char *buf, uint32_t n, bool full) {
-    int i = 0;
-    int sh = 28;
-    while (sh >= 0) {
-        int d = (n >> sh) & 0xf;
-        if (full || d || sh == 0 || i) {
-            buf[i++] = d > 9 ? 'A' + d - 10 : '0' + d;
-        }
-        sh -= 4;
-    }
-    buf[i] = 0;
-}
-
 void codal_dmesg(const char *format, ...) {
     va_list arg;
     va_start(arg, format);
@@ -126,70 +47,36 @@ void codal_dmesgf(const char *format, ...) {
 
 void codal_vdmesg(const char *format, va_list ap) {
     char tmp[80];
-    codal_vsprintf(tmp, sizeof(tmp) - 1, format, ap);
+    jd_vsprintf(tmp, sizeof(tmp) - 1, format, ap);
     int len = strlen(tmp);
     tmp[len] = '\n';
     tmp[len + 1] = 0;
     logwriten(tmp, len + 1);
 }
 
-#define WRITEN(p, sz_)                                                                             \
-    do {                                                                                           \
-        sz = sz_;                                                                                  \
-        ptr += sz;                                                                                 \
-        if (ptr < dstsize) {                                                                       \
-            memcpy(dst + ptr - sz, p, sz);                                                         \
-            dst[ptr] = 0;                                                                          \
-        }                                                                                          \
-    } while (0)
+#endif
 
-int codal_vsprintf(char *dst, unsigned dstsize, const char *format, va_list ap) {
-    const char *end = format;
-    unsigned ptr = 0, sz;
-    char buf[16];
+#if 0
 
+extern int int_level;
+extern "C" void panic_print_char(const char c);
+extern "C" void panic_print_str(const char *str);
+extern "C" void panic_print_dec(int d);
+
+extern "C" void user_panic_handler() {
+    panic_print_str("\r\nDMESG:\r\n");
     for (;;) {
-        char c = *end++;
-        if (c == 0 || c == '%') {
-            if (format != end)
-                WRITEN(format, end - format - 1);
-            if (c == 0)
-                break;
-
-            uint32_t val = va_arg(ap, uint32_t);
-            c = *end++;
-            buf[1] = 0;
-            switch (c) {
-            case 'c':
-                buf[0] = val;
-                break;
-            case 'd':
-                myitoa(val, buf);
-                break;
-            case 'x':
-            case 'p':
-            case 'X':
-                buf[0] = '0';
-                buf[1] = 'x';
-                writeNum(buf + 2, val, c != 'x');
-                break;
-            case 's':
-                WRITEN((char *)(void *)val, strlen((char *)(void *)val));
-                buf[0] = 0;
-                break;
-            case '%':
-                buf[0] = c;
-                break;
-            default:
-                buf[0] = '?';
-                break;
-            }
-            format = end;
-            WRITEN(buf, strlen(buf));
-        }
+        char c;
+        int r = codalLogStore.read(&c, 1);
+        if (r == 0)
+            break;
+        if (c == '\n')
+            panic_print_char('\r');
+        panic_print_char(c);
     }
-
-    return ptr;
+    panic_print_str("END DMESG\r\nInt: ");
+    panic_print_dec(int_level);
+    panic_print_str("\r\n");
 }
 
 #endif

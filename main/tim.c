@@ -52,7 +52,8 @@ void tim_init(void) {
     config.auto_reload = 0;
     timer_init(TIMER_GROUP_0, timer_idx, &config);
 
-    timer_set_counter_value(TIMER_GROUP_0, timer_idx, 0);
+    // try to synchronize with log timestamp
+    timer_set_counter_value(TIMER_GROUP_0, timer_idx, esp_log_timestamp() * 1000);
 
     timer_enable_intr(TIMER_GROUP_0, timer_idx);
     timer_isr_register(TIMER_GROUP_0, timer_idx, timer_group0_isr, (void *)timer_idx,
