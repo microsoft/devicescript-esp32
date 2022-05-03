@@ -8,7 +8,7 @@
 #define JD_LOG DMESG
 #define JD_WR_OVERHEAD 28
 
-#define JD_CLIENT 0
+#define JD_CLIENT 1
 
 #define LED_R_MULT 250
 #define LED_G_MULT 76
@@ -25,5 +25,7 @@
 #define PIN_PWR_FAULT 13
 
 #define JD_RAW_FRAME 1
+
+#define JD_FLASH_PAGE_SIZE 1024
 
 #endif

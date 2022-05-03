@@ -2,6 +2,8 @@
 #include "jdlow.h"
 #include "jdtcp.h"
 
+#include "jacscript/jacscript.h"
+
 typedef struct opipe_desc {
     // don't access members directly
     uint64_t device_identifier;
@@ -59,3 +61,4 @@ void worker_set_idle(worker_t w, TaskFunction_t fn, void *arg);
 int worker_run_wait(worker_t w, TaskFunction_t fn, void *arg);
 
 bool jd_rx_has_frame(void);
+void init_jacscript_manager(void);
