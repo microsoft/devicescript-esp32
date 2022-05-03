@@ -20,6 +20,7 @@ idf_component_register(
     "../jacdac-c/source/interfaces/simple_rx.c"
     "../jacdac-c/source/interfaces/tx_queue.c"
     "../jacdac-c/services/jd_status_light.c"
+    "../jacdac-c/services/power.c"
   INCLUDE_DIRS 
     "."
     "../jacdac-c/inc"

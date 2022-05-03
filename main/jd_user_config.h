@@ -18,5 +18,12 @@
 #define PIN_LED_G 7
 #define PIN_LED_R 8
 
+#define PIN_JACDAC 17
+
+#define PIN_PWR_OVERLOAD NO_PIN
+#define PIN_PWR_EN 2 // active lo
+#define PIN_PWR_FAULT 13
+
+#define JD_RAW_FRAME 1
 
 #endif

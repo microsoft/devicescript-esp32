@@ -49,6 +49,44 @@ void pin_set(int pin, int v) {
         gpio_set_level(pin, v);
 }
 
+void pin_setup_output(int pin) {
+    if ((uint8_t)pin != NO_PIN)
+        gpio_set_direction(pin, GPIO_MODE_OUTPUT);
+}
+
+int pin_get(int pin) {
+    if ((uint8_t)pin == NO_PIN)
+        return -1;
+    return gpio_get_level(pin);
+}
+
+void pin_setup_input(int pin, int pull) {
+    if ((uint8_t)pin == NO_PIN)
+        return;
+    pin_set_pull(pin, pull);
+    gpio_set_direction(pin, GPIO_MODE_INPUT);
+}
+
+void pin_set_pull(int pin, int pull) {
+    if ((uint8_t)pin == NO_PIN)
+        return;
+
+    if (pull < 0) {
+        gpio_pulldown_en(pin);
+        gpio_pullup_dis(pin);
+    } else if (pull > 0) {
+        gpio_pullup_en(pin);
+        gpio_pulldown_dis(pin);
+    } else {
+        gpio_pullup_dis(pin);
+        gpio_pulldown_dis(pin);
+    }
+}
+
+void pin_setup_analog_input(int pin) {
+    gpio_set_direction(pin, GPIO_MODE_DISABLE);
+}
+
 void pwr_enter_no_sleep(void) {}
 void pwr_enter_tim(void) {}
 void pwr_leave_tim(void) {}

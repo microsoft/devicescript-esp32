@@ -1,10 +1,6 @@
 #include "jdesp.h"
-
-/*
-    export const PIN_JDPWR_OVERLOAD_LED = PIN_LED_R | DAL.CFG_PIN_CONFIG_ACTIVE_LO
-    export const PIN_JDPWR_ENABLE = PIN_P2 | DAL.CFG_PIN_CONFIG_ACTIVE_LO // ILIM_ENABLE
-    export const PIN_JDPWR_FAULT = PIN_P13 // ILIM_FAULT
-*/
+#include "services/jd_services.h"
+#include "services/interfaces/jd_pins.h"
 
 static uint64_t led_off_time;
 
@@ -82,7 +78,15 @@ static void jdloop(void *_dummy) {
     }
 }
 
+static const power_config_t pwr_cfg = {
+    .pin_fault = PIN_PWR_FAULT, // active low
+    .pin_en = PIN_PWR_EN,
+    .pin_pulse = NO_PIN,
+    .en_active_high = 0,
+};
+
 void app_init_services(void) {
+    power_init(&pwr_cfg);
     // wifi_init();
     // jdtcp_init();
 }

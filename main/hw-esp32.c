@@ -109,6 +109,8 @@ uint64_t tim_get_micros(void) {
     return esp_timer_get_time();
 }
 
+uint16_t tim_max_sleep; // unused in this port
+
 void tim_set_timer(int delta, cb_t callback) {
     // compensate for overheads
     delta -= JD_TIM_OVERHEAD;
