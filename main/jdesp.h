@@ -35,8 +35,8 @@ void ipipe_handle_pkt(jd_packet_t *pkt);
 void wifi_init(void);
 void jdtcp_init(void);
 
-#define CHK(cond)                                                                                \
-    if (!(cond))                                                                                   \
+#define CHK(call)                                                                                  \
+    if ((call) != 0)                                                                               \
     jd_panic()
 
 void led_blink(int us);
@@ -51,7 +51,6 @@ int ssl_write(ssl_conn_t *conn, const void *data, uint32_t len);
 int ssl_get_bytes_avail(ssl_conn_t *conn);
 int ssl_read(ssl_conn_t *conn, void *data, uint32_t len);
 void ssl_close(ssl_conn_t *conn);
-
 
 typedef struct worker *worker_t;
 worker_t worker_alloc(const char *id, uint32_t stack_size);

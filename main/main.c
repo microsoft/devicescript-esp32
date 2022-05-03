@@ -74,8 +74,9 @@ static void jdloop(void *_dummy) {
 
         jd_process_everything();
 
-        if (qdelay && !jd_rx_has_frame())
-            target_wait_us(10000);
+        if (qdelay && !jd_rx_has_frame()) {
+            vTaskDelay(1);
+        }
 
         flush_dmesg();
     }
@@ -158,7 +159,6 @@ int target_in_irq(void) {
 }
 
 void hw_panic(void) {
-    target_disable_irq();
     ESP_LOGI("JD", "HW PANIC!\n");
     flush_dmesg();
     abort();

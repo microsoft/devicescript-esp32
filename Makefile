@@ -1,5 +1,6 @@
 all: check-export
 	idf  --ccache build
+	python3 scripts/uf2conv.py -b 0x0 build/espjd.bin -o build/espjd.uf2 -f ESP32S2
 
 vscode:
 	. $$IDF_PATH/export.sh ; idf  --ccache build
@@ -15,6 +16,9 @@ flash:
 	idf  --ccache flash
 
 mon:
+	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port /dev/cu.usbserial-14*1 --baud 115200 build/espjd.elf
+
+mon-2:
 	idf monitor
 
 prep-gdb:
