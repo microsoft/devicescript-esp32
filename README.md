@@ -1,18 +1,26 @@
-# JacDac for ESP32
+# Jacdac for ESP32
 
-This repo contains implementation of JacDac protocol for ESP32.
-
-It also contains implementation of WiFi and TCP JacDac services.
+This repo contains implementation of Jacdac protocol for ESP32.
+It's currently set up for ESP32-S2, in particular for
+[Jacdac ESP32 Brain](https://microsoft.github.io/jacdac-docs/devices/microsoft-research/jmbrainesp3248v03/).
 
 ## Building
 
 Install ESP-IDF. Make sure `IDF_PATH` is set.
-You can also install ccache to speed up builds.
+You can also install `ccache` to speed up builds.
 You will need to run `export.sh` from the IDF folder - the Makefile will remind you.
 
 To build run `make`.
 
 To deploy run `make r`.
+
+## TODO
+
+* [ ] add HF2 over USB Serial (CDC)
+* [ ] re-enable wifi service - think about auto-connect?
+* [ ] implement Azure IoT Hub connection and IoT Hub health service
+* [ ] implement Jacscript Cloud service using IoT Hub
+* [ ] add auto-upload function in Jacscript and precompile for common modules
 
 
 ## Contributing
