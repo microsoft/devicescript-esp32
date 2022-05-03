@@ -1,4 +1,4 @@
-#include "jdlow.h"
+#include "jdesp.h"
 
 #include "driver/uart.h"
 #include "driver/gpio.h"
@@ -83,17 +83,6 @@ static void jd_timer0(void *dummy) {
         context.cb_fall = 0;
         jd_line_falling();
     }
-}
-
-#ifndef CHK
-#define CHK(e)                                                                                     \
-    if ((e) != ESP_OK)                                                                             \
-    jd_panic()
-#endif
-
-void target_panic(int code);
-void jd_panic(void) {
-    target_panic(925);
 }
 
 void tim_init() {
@@ -224,7 +213,7 @@ static IRAM_ATTR void read_fifo(int force) {
 
 int jd_pin_num();
 
-void uart_init_() {
+void uart_init() {
     int pinnum = jd_pin_num();
     if (pinnum < 0) {
         DMESG("PIN_JACK_TX not defined");

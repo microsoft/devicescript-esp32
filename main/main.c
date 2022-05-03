@@ -1,16 +1,11 @@
 #include "jdesp.h"
 
-#define PIN_LOG0 GPIO_NUM_23
-#define PIN_LOG1 GPIO_NUM_18
-#define PIN_LOG2 GPIO_NUM_26
-#define PIN_LOG3 GPIO_NUM_27
+/*
+    export const PIN_JDPWR_OVERLOAD_LED = PIN_LED_R | DAL.CFG_PIN_CONFIG_ACTIVE_LO
+    export const PIN_JDPWR_ENABLE = PIN_P2 | DAL.CFG_PIN_CONFIG_ACTIVE_LO // ILIM_ENABLE
+    export const PIN_JDPWR_FAULT = PIN_P13 // ILIM_FAULT
+*/
 
-#define PIN_LED_B GPIO_NUM_4
-#define PIN_LED_G GPIO_NUM_2
-#define PIN_LED_R GPIO_NUM_0
-
-static uint8_t lines[] = {PIN_LOG0, PIN_LOG1, PIN_LOG2, PIN_LOG3}; // not const, so it goes in RAM
-static xQueueHandle frame_queue;
 static uint64_t led_off_time;
 
 void setup_output(int pin) {
@@ -19,40 +14,22 @@ void setup_output(int pin) {
 }
 
 static void setup_pins(void) {
-    for (int i = 0; i < sizeof(lines); i++)
-        setup_output(lines[i]);
-
     setup_output(PIN_LED_R);
     setup_output(PIN_LED_G);
     setup_output(PIN_LED_B);
 }
 
-IRAM_ATTR void log_pin_set(int line, int v) {
-    if ((unsigned)line < sizeof(lines)) {
-        if (v) {
-            GPIO.out_w1ts = (1 << lines[line]);
-        } else {
-            GPIO.out_w1tc = (1 << lines[line]);
-        }
-    }
-}
-
-IRAM_ATTR void log_pin_pulse(int line, int times) {
-    if ((unsigned)line < sizeof(lines)) {
-        while (times--) {
-            GPIO.out_w1ts = (1 << lines[line]);
-            GPIO.out_w1tc = (1 << lines[line]);
-        }
-    }
-}
-
 void led_set(int state) {
-    gpio_set_level(PIN_LED_B, state);
+    gpio_set_level(PIN_LED_B, !state);
 }
 
 void led_blink(int us) {
     led_off_time = tim_get_micros() + us;
     led_set(1);
+}
+
+int jd_pin_num(void) {
+    return 17;
 }
 
 static void flush_dmesg(void) {
@@ -81,19 +58,8 @@ static void flush_dmesg(void) {
 
 uint32_t now;
 
-void jd_app_handle_packet(jd_packet_t *pkt) {
-    now = tim_get_micros();
-    opipe_process_ack(pkt);
-}
-
-void jd_app_handle_command(jd_packet_t *pkt) {
-    if (pkt->service_number == JD_SERVICE_NUMBER_STREAM)
-        ipipe_handle_pkt(pkt);
-}
-
 static void jdloop(void *_dummy) {
     while (1) {
-        jd_frame_t *fr = NULL;
         int qdelay = 1;
 
         if (led_off_time) {
@@ -106,21 +72,18 @@ static void jdloop(void *_dummy) {
             }
         }
 
-        if (xQueueReceive(frame_queue, &fr, qdelay)) {
-            jd_services_process_frame(fr);
-            free(fr);
-        }
+        jd_process_everything();
 
-        now = tim_get_micros();
-        jd_services_tick();
+        if (qdelay && !jd_rx_has_frame())
+            target_wait_us(10000);
 
         flush_dmesg();
     }
 }
 
 void app_init_services(void) {
-    wifi_init();
-    jdtcp_init();
+    // wifi_init();
+    // jdtcp_init();
 }
 
 void app_main() {
@@ -130,15 +93,11 @@ void app_main() {
 
     setup_pins();
 
-    frame_queue = xQueueCreate(10, sizeof(jd_frame_t *));
-
     uart_init();
     tim_init();
     jd_init();
 
-    log_pin_pulse(0, 1);
-
-    xTaskCreatePinnedToCore(jdloop, "jdloop", 2 * 1024, NULL, 3, NULL, APP_CPU_NUM);
+    xTaskCreatePinnedToCore(jdloop, "jdloop", 2 * 1024, NULL, 3, NULL, WORKER_CPU);
 }
 
 uint64_t jd_device_id(void) {
@@ -153,18 +112,6 @@ uint64_t jd_device_id(void) {
     return addr;
 }
 
-void jd_rx_init(void) {}
-
-int jd_rx_frame_received(jd_frame_t *frame) {
-    jd_frame_t *copy = malloc(JD_FRAME_SIZE(frame));
-    memcpy(copy, frame, JD_FRAME_SIZE(frame));
-    if (!xQueueSendToBack(frame_queue, &copy, 0)) {
-        free(copy);
-        return -1;
-    }
-    return 0;
-}
-
 void jd_alloc_stack_check(void) {}
 
 void jd_alloc_init(void) {}
@@ -173,10 +120,46 @@ void *jd_alloc(uint32_t size) {
     return calloc(size, 1);
 }
 
+void jd_free(void *ptr) {
+    free(ptr);
+}
+
 void *jd_alloc_emergency_area(uint32_t size) {
     return calloc(size, 1);
 }
 
 void target_reset() {
     esp_restart();
+}
+
+IRAM_ATTR void target_wait_us(uint32_t us) {
+    int64_t later = esp_timer_get_time() + us;
+    while (esp_timer_get_time() < later) {
+        ;
+    }
+}
+
+static portMUX_TYPE global_int_mux = portMUX_INITIALIZER_UNLOCKED;
+int int_level;
+
+IRAM_ATTR void target_disable_irq() {
+    vPortEnterCritical(&global_int_mux);
+    int_level++;
+}
+
+IRAM_ATTR void target_enable_irq() {
+    int_level--;
+    vPortExitCritical(&global_int_mux);
+}
+
+int target_in_irq(void) {
+    // TODO?
+    return 0;
+}
+
+void hw_panic(void) {
+    target_disable_irq();
+    ESP_LOGI("JD", "HW PANIC!\n");
+    flush_dmesg();
+    abort();
 }

@@ -8,6 +8,15 @@
 #define JD_LOG DMESG
 #define JD_WR_OVERHEAD 28
 
-#define JD_CLIENT 1
+#define JD_CLIENT 0
+
+#define LED_R_MULT 250
+#define LED_G_MULT 76
+#define LED_B_MULT 221
+
+#define PIN_LED_B 6
+#define PIN_LED_G 7
+#define PIN_LED_R 8
+
 
 #endif

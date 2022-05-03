@@ -2,8 +2,6 @@
 #include "jdlow.h"
 #include "jdtcp.h"
 
-void log_pin_pulse(int line, int times);
-
 typedef struct opipe_desc {
     // don't access members directly
     uint64_t device_identifier;
@@ -37,7 +35,7 @@ void ipipe_handle_pkt(jd_packet_t *pkt);
 void wifi_init(void);
 void jdtcp_init(void);
 
-#define CHECK(cond)                                                                                \
+#define CHK(cond)                                                                                \
     if (!(cond))                                                                                   \
     jd_panic()
 
@@ -57,5 +55,8 @@ void ssl_close(ssl_conn_t *conn);
 
 typedef struct worker *worker_t;
 worker_t worker_alloc(const char *id, uint32_t stack_size);
-void worker_run(worker_t w, TaskFunction_t fn, void *arg);
+int worker_run(worker_t w, TaskFunction_t fn, void *arg);
 void worker_set_idle(worker_t w, TaskFunction_t fn, void *arg);
+int worker_run_wait(worker_t w, TaskFunction_t fn, void *arg);
+
+bool jd_rx_has_frame(void);
