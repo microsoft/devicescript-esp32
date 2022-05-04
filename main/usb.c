@@ -89,9 +89,16 @@ static void send_buffer_core(void *ent_) {
         data = data + s;
         size -= s;
 
-        if (tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (uint8_t *)buf, sizeof(buf)) <
-            sizeof(buf))
+        int i;
+        for (i = 0; i < 20; ++i) {
+            int r = tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (uint8_t *)buf, sizeof(buf));
+            if (r == sizeof(buf))
+                break;
+            vTaskDelay(1);
+        }
+        if (i == 20)
             DMESG("CDC write fail");
+
         // tinyusb_cdcacm_write_flush(TINYUSB_CDC_ACM_0, 0); - prints warnings
     }
 
