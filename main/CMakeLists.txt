@@ -8,6 +8,7 @@ idf_component_register(
     "led.c"
     "worker.c"
     "flash.c"
+    "usb.c"
     "../jacdac-c/source/jd_control.c"
     "../jacdac-c/source/jd_ipipe.c"
     "../jacdac-c/source/jd_opipe.c"

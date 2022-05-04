@@ -56,20 +56,16 @@ void codal_vdmesg(const char *format, va_list ap) {
 
 #endif
 
-#if 0
+#if 1
 
 extern int int_level;
-extern "C" void panic_print_char(const char c);
-extern "C" void panic_print_str(const char *str);
-extern "C" void panic_print_dec(int d);
-
-extern "C" void user_panic_handler() {
+void panic_print_char(const char c);
+void panic_print_str(const char *str);
+void panic_print_dec(int d);
+void user_panic_handler() {
     panic_print_str("\r\nDMESG:\r\n");
-    for (;;) {
-        char c;
-        int r = codalLogStore.read(&c, 1);
-        if (r == 0)
-            break;
+    for (unsigned i = 0; i < codalLogStore.ptr; ++i) {
+        char c = codalLogStore.buffer[i];
         if (c == '\n')
             panic_print_char('\r');
         panic_print_char(c);

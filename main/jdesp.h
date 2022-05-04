@@ -1,7 +1,7 @@
 #pragma once
 #include "jdlow.h"
 #include "jdtcp.h"
-
+#include "jd_client.h"
 #include "jacscript/jacscript.h"
 
 typedef struct opipe_desc {
@@ -62,3 +62,6 @@ int worker_run_wait(worker_t w, TaskFunction_t fn, void *arg);
 
 bool jd_rx_has_frame(void);
 void init_jacscript_manager(void);
+void hf2_init(void);
+
+extern worker_t fg_worker;

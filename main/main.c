@@ -99,21 +99,28 @@ static const power_config_t pwr_cfg = {
 
 void app_init_services(void) {
     power_init(&pwr_cfg);
+    jd_role_manager_init();
     init_jacscript_manager();
     // wifi_init();
     // jdtcp_init();
 }
+
+worker_t fg_worker;
 
 void app_main() {
     ESP_LOGI("JD", "starting...");
 
     DMESG("app main");
 
+    fg_worker = worker_alloc("jd_fg", 2048);
+
     setup_pins();
 
     uart_init();
     tim_init();
     jd_init();
+
+    hf2_init();
 
     xTaskCreatePinnedToCore(jdloop, "jdloop", 2 * 1024, NULL, 3, NULL, WORKER_CPU);
 }
