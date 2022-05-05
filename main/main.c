@@ -45,9 +45,9 @@ static void flush_dmesg(void) {
             len--;
         dmesgCopy[len] = 0;
         if (strchr(dmesgCopy, '\n'))
-            ESP_LOGI("JD", "DMESG:\n%s", dmesgCopy);
+            ESP_LOGW("JD", "DMESG:\n%s", dmesgCopy);
         else
-            ESP_LOGI("JD", "DMESG: %s", dmesgCopy);
+            ESP_LOGW("JD", "DMESG: %s", dmesgCopy);
     }
     free(dmesgCopy);
 }

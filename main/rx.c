@@ -40,7 +40,8 @@ bool jd_rx_has_frame(void) {
 
 jd_frame_t *jd_rx_get_frame(void) {
     jd_frame_t *fr;
-    if (xQueueReceive(frame_queue, &fr, 0)) {
+    if (xQueueReceiveFromISR(frame_queue, &fr, 0)) {
+        // DMESG("OUT %p sz=%d",fr,((jd_packet_t*)fr)->service_size);
         return fr;
     } else {
         return NULL;
@@ -48,5 +49,6 @@ jd_frame_t *jd_rx_get_frame(void) {
 }
 
 void jd_rx_release_frame(jd_frame_t *frame) {
+    // DMESG("FREE %p sz=%d",frame,((jd_packet_t*)frame)->service_size);
     free(frame);
 }
