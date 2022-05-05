@@ -10,28 +10,28 @@
 typedef struct jacdac_ctx {
     uint8_t pin_num;
     uint8_t uart_num;
-    bool seen_low;
+    volatile bool seen_low;
     bool rx_ended;
-    uint16_t tx_len;
-    uint16_t rx_len;
+    volatile uint16_t tx_len;
+    volatile uint16_t rx_len;
     uint16_t data_left;
-    uint8_t *fifo_buf;
+    uint8_t *volatile fifo_buf;
     cb_t timer_cb;
     uart_dev_t *uart_hw;
 
     esp_timer_handle_t timer;
     intr_handle_t intr_handle;
 
-    bool cb_rx;
-    bool cb_tx;
-    bool cb_fall;
+    volatile bool cb_rx;
+    volatile bool cb_tx;
+    volatile bool cb_fall;
     esp_timer_handle_t timer0;
 } jacdac_ctx_t;
 
 static jacdac_ctx_t context;
 
 // #define LOG(msg, ...) DMESG("JD: " msg, ##__VA_ARGS__)
-#define LOG(...) ((void)0)
+#define LOG JD_NOLOG
 
 // #define PIN_LOG_0 GPIO_NUM_3
 // #define PIN_LOG_1 GPIO_NUM_4
@@ -71,6 +71,7 @@ static void jd_timer(void *dummy) {
 }
 
 static void jd_timer0(void *dummy) {
+    LOG("t0 rx=%d tx=%d fall=%d", context.cb_rx, context.cb_tx, context.cb_fall);
     if (context.cb_rx) {
         context.cb_rx = 0;
         jd_rx_completed(0);
@@ -286,7 +287,7 @@ static IRAM_ATTR void uart_isr(void *dummy) {
     uint32_t uart_intr_status = uart_reg->int_st.val;
     uart_reg->int_clr.val = uart_intr_status; // clear all
 
-    LOG("ISR %x", uart_intr_status);
+    LOG("ISR %x %d", uart_intr_status, context.seen_low);
 
     read_fifo(0);
 
@@ -339,7 +340,7 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
     }
 
     if (!context.intr_handle || context.seen_low || context.uart_hw->int_raw.brk_det) {
-        LOG("seen low %p %d %d", context, context.seen_low, context.uart_hw->int_raw.brk_det);
+        LOG("seen low %p %d %p", &context, context.seen_low, context.uart_hw->int_raw.brk_det);
         return -1;
     }
 
@@ -415,7 +416,7 @@ void uart_start_rx(void *data, uint32_t maxbytes) {
 
 void uart_disable() {
     target_disable_irq();
-    context.uart_hw->int_clr.val = 0xffffffff;
+    context.uart_hw->int_clr.val = context.uart_hw->int_st.val;
     context.uart_hw->int_ena.val = UART_BRK_DET_INT_ENA;
     context.seen_low = 0;
     context.cb_fall = 0;

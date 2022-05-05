@@ -116,8 +116,8 @@ void app_main() {
 
     setup_pins();
 
-    uart_init();
     tim_init();
+    uart_init();
     jd_init();
 
     hf2_init();
