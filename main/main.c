@@ -154,6 +154,7 @@ void *jd_alloc_emergency_area(uint32_t size) {
 }
 
 void target_reset() {
+    ESP_LOGE("JD", "target_reset()\n");
     esp_restart();
 }
 

@@ -16,12 +16,13 @@ To deploy run `make r`.
 
 ## TODO
 
-* [ ] add HF2 over USB Serial (CDC)
+* [x] add HF2 over USB Serial (CDC)
+* [x] set "CLIENT" flag in announce
 * [ ] re-enable wifi service - think about auto-connect?
 * [ ] implement Azure IoT Hub connection and IoT Hub health service
 * [ ] implement Jacscript Cloud service using IoT Hub
 * [ ] add auto-upload function in Jacscript and precompile for common modules
-
+* [ ] implement reset_in as hw-watchdog
 
 ## Contributing
 
