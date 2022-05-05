@@ -28,11 +28,11 @@ prep-gdb:
 
 gdb: prep-gdb
 	echo "mon halt"  >> build/gdbinit
-	xtensa-esp32-elf-gdb -x build/gdbinit build/espjd.elf
+	xtensa-esp32s2-elf-gdb -x build/gdbinit build/espjd.elf
 
 rst:
 	echo "mon reset halt"  >> build/gdbinit
 	echo "flushregs"  >> build/gdbinit
 	echo "thb app_main"  >> build/gdbinit
 	echo "c"  >> build/gdbinit
-	xtensa-esp32-elf-gdb -x build/gdbinit build/espjd.elf
+	xtensa-esp32s2-elf-gdb -x build/gdbinit build/espjd.elf
