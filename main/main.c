@@ -95,6 +95,7 @@ static const power_config_t pwr_cfg = {
     .pin_en = PIN_PWR_EN,
     .pin_pulse = NO_PIN,
     .en_active_high = 0,
+    .fault_ignore_ms = 100, // there 4.7uF cap that takes time to charge
 };
 
 void app_init_services(void) {
