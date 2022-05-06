@@ -16,8 +16,17 @@ jobs:
       uses: actions/checkout@v2
       with:
           submodules: recursive
+    
+    - run: make refresh-version
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@main
       with:
         esp_idf_version: v4.3.1
         target: esp32s2
+    - run: make dist
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+          files: build/dist/*

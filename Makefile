@@ -39,6 +39,10 @@ rst:
 
 FW_VERSION = $(shell git describe --dirty --tags --match 'v[0-9]*' --always | sed -e 's/^v//; s/-dirty/-'"`date +%Y%m%d-%H%M`/")
 
+dist:
+	mkdir -p build/dist
+	cp build/espjd.uf2 build/dist/jacscript-esp32s2-$(FW_VERSION).uf2
+
 bump:
 	sh ./scripts/bump.sh
 
@@ -47,4 +51,3 @@ refresh-version:
 	echo 'const char app_fw_version[] = "v$(FW_VERSION)";' > build/version-tmp.c
 	@diff build/version.c build/version-tmp.c >/dev/null 2>/dev/null || \
 		(echo "refresh version"; cp build/version-tmp.c build/version.c)
-
