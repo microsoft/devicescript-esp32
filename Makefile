@@ -1,4 +1,4 @@
-all: check-export
+all: check-export refresh-version
 	idf  --ccache build
 	python3 scripts/uf2conv.py -b 0x0 build/espjd.bin -o build/espjd.uf2 -f ESP32S2
 
@@ -36,3 +36,15 @@ rst:
 	echo "thb app_main"  >> build/gdbinit
 	echo "c"  >> build/gdbinit
 	xtensa-esp32s2-elf-gdb -x build/gdbinit build/espjd.elf
+
+FW_VERSION = $(shell git describe --dirty --tags --match 'v[0-9]*' --always | sed -e 's/^v//; s/-dirty/-'"`date +%Y%m%d-%H%M`/")
+
+bump:
+	sh ./scripts/bump.sh
+
+refresh-version:
+	@mkdir -p build
+	echo 'const char app_fw_version[] = "v$(FW_VERSION)";' > build/version-tmp.c
+	@diff build/version.c build/version-tmp.c >/dev/null 2>/dev/null || \
+		(echo "refresh version"; cp build/version-tmp.c build/version.c)
+
