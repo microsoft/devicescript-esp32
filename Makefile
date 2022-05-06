@@ -1,5 +1,8 @@
 all: check-export refresh-version
 	idf  --ccache build
+	$(MAKE) uf2
+
+uf2:
 	python3 scripts/uf2conv.py -b 0x0 build/espjd.bin -o build/espjd.uf2 -f ESP32S2
 
 vscode:
@@ -39,7 +42,7 @@ rst:
 
 FW_VERSION = $(shell git describe --dirty --tags --match 'v[0-9]*' --always | sed -e 's/^v//; s/-dirty/-'"`date +%Y%m%d-%H%M`/")
 
-dist:
+dist: uf2
 	mkdir -p build/dist
 	cp build/espjd.uf2 build/dist/jacscript-esp32s2-$(FW_VERSION).uf2
 
