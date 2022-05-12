@@ -9,6 +9,7 @@ idf_component_register(
     "worker.c"
     "flash.c"
     "usb.c"
+    "wifi.c"
     "../build/version.c"
     "../jacdac-c/source/jd_control.c"
     "../jacdac-c/source/jd_ipipe.c"

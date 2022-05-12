@@ -1,6 +1,7 @@
 #include "jdesp.h"
 #include "services/jd_services.h"
 #include "services/interfaces/jd_pins.h"
+#include "nvs_flash.h"
 
 static uint64_t led_off_time;
 
@@ -102,8 +103,17 @@ void app_init_services(void) {
     power_init(&pwr_cfg);
     jd_role_manager_init();
     init_jacscript_manager();
-    // wifi_init();
+    wifi_init();
     // jdtcp_init();
+}
+
+static void flash_init() {
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
 }
 
 worker_t fg_worker;
@@ -116,6 +126,8 @@ void app_main() {
     fg_worker = worker_alloc("jd_fg", 2048);
 
     setup_pins();
+
+    flash_init();
 
     tim_init();
     uart_init();

@@ -4,146 +4,207 @@
 #include "nvs_flash.h"
 #include "esp_wifi.h"
 
-const int CONNECTED_BIT = BIT0;
-const int DISCONNECTED_BIT = BIT1;
+// #define LOG(...) ESP_LOGI(TAG, __VA_ARGS__);
+#define LOG(msg, ...) DMESG("wifi: " msg, ##__VA_ARGS__)
 
 struct srv_state {
     SRV_COMMON;
+
+    uint8_t enabled;
+    uint8_t mac[6];
+
+    nvs_handle_t nvs_handle;
+
+    jd_opipe_desc_t scan_pipe;
+    jd_wifi_results_t *scan_results;
+    uint16_t scan_pipe_ptr;
+    uint16_t scan_num;
+
+    jd_opipe_desc_t networks_pipe;
+    uint16_t networks_pipe_ptr;
+
+    uint32_t next_scan;
+
+    // currently only one network supported
+    char *ssid;
+    char *password;
+
+    bool in_scan;
+    bool is_connected;
+    bool login_server;
+    bool is_connecting;
+    bool rescan_requested;
+    esp_netif_ip_info_t ip_info;
 };
 
-static srv_t *wifi_state;
+REG_DEFINITION(                       //
+    wifi_regs,                        //
+    REG_SRV_COMMON,                   //
+    REG_U8(JD_WIFI_REG_ENABLED),      //
+    REG_BYTES(JD_WIFI_REG_EUI_48, 6), //
+)
 
-static bool reconnect = true;
 static const char *TAG = "wifi";
 
-static EventGroupHandle_t wifi_event_group;
-static opipe_desc_t scan_stream;
-static worker_t worker;
+static void stop_scan_pipe(srv_t *state) {
+    jd_opipe_close(&state->scan_pipe);
+    state->scan_pipe_ptr = 0;
+}
 
-static void wifi_cmd_scan(jd_packet_t *pkt) {
-    wifi_scan_config_t scan_config = {0};
+static void stop_networks_pipe(srv_t *state) {
+    jd_opipe_close(&state->networks_pipe);
+    state->networks_pipe_ptr = 0;
+}
 
-    if (opipe_open(&scan_stream, pkt) < 0)
+static void wifi_scan(srv_t *state) {
+    if (state->in_scan)
         return;
-
+    LOG("start scan");
+    state->in_scan = true;
+    wifi_scan_config_t scan_config = {0};
     ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, false));
 }
 
-#define JD_WIFI_SCAN_ENTRY_HEADER_SIZE (uint32_t)(&((jd_wifi_results_t *)0)->ssid)
+static void wifi_connect(srv_t *state) {
+    if (state->is_connecting || !state->ssid)
+        return;
 
-static void scan_resp(void *arg) {
-    uint16_t sta_number = 0;
-    uint8_t i;
-    wifi_ap_record_t *ap_list_buffer;
+    state->is_connecting = true;
+    wifi_config_t cfg;
+    memset(&cfg, 0, sizeof(cfg));
 
-    esp_wifi_scan_get_ap_num(&sta_number);
-    ap_list_buffer = malloc(sta_number * sizeof(wifi_ap_record_t));
+    strlcpy((char *)cfg.sta.ssid, state->ssid, sizeof(cfg.sta.ssid));
+    strlcpy((char *)cfg.sta.password, state->password, sizeof(cfg.sta.password));
 
-    if (esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer) == ESP_OK) {
-        for (i = 0; i < sta_number; i++) {
-            wifi_ap_record_t *src = &ap_list_buffer[i];
-            jd_wifi_results_t ent;
-            ent.reserved = 0;
+    LOG("connecting to '%s'", state->ssid);
 
-            ESP_LOGI(TAG, "[%s][rssi=%d]", src->ssid, src->rssi);
-
-            ent.flags = 0;
-
-            if (src->phy_11b)
-                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11B;
-            if (src->phy_11g)
-                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11G;
-            if (src->phy_11n)
-                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11N;
-            if (src->phy_lr)
-                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_LONG_RANGE;
-            if (src->wps)
-                ent.flags |= JD_WIFI_APFLAGS_WPS;
-            if (src->second == WIFI_SECOND_CHAN_ABOVE)
-                ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_ABOVE;
-            if (src->second == WIFI_SECOND_CHAN_BELOW)
-                ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_BELOW;
-            if (src->authmode != WIFI_AUTH_OPEN)
-                ent.flags |= JD_WIFI_APFLAGS_HAS_PASSWORD;
-            ent.channel = src->primary;
-            ent.rssi = src->rssi;
-            memcpy(ent.bssid, src->bssid, 6);
-            memcpy(ent.ssid, src->ssid, sizeof(ent.ssid));
-            ent.ssid[32] = 0;
-
-            int sz = JD_WIFI_SCAN_ENTRY_HEADER_SIZE + strlen((char *)ent.ssid);
-            opipe_write(&scan_stream, &ent, sz);
-        }
-    }
-
-    free(ap_list_buffer);
-    opipe_close(&scan_stream);
-    ESP_LOGI(TAG, "sta scan done");
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &cfg));
+    ESP_ERROR_CHECK(esp_wifi_connect());
 }
 
 static void scan_done_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                               void *event_data) {
-    worker_run(worker, scan_resp, NULL);
+    srv_t *state = arg;
+    state->in_scan = false;
+
+    uint16_t sta_number = 0;
+    esp_wifi_scan_get_ap_num(&sta_number);
+
+    LOG("scan done: %d results", sta_number);
+
+    jd_wifi_results_t *res = NULL;
+    int num_known_networks = 0;
+
+    if (sta_number != 0) {
+        wifi_ap_record_t *ap_list_buffer =
+            (wifi_ap_record_t *)malloc(sta_number * sizeof(wifi_ap_record_t));
+
+        esp_err_t err = esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer);
+
+        if (err == ESP_OK) {
+            res = malloc(sizeof(jd_wifi_results_t) * sta_number);
+
+            for (int i = 0; i < sta_number; i++) {
+                jd_wifi_results_t ent;
+                wifi_ap_record_t *src = &ap_list_buffer[i];
+
+                ent.reserved = 0;
+                ent.flags = 0;
+
+                if (src->phy_11b)
+                    ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11B;
+                if (src->phy_11g)
+                    ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11G;
+                if (src->phy_11n)
+                    ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11N;
+                if (src->phy_lr)
+                    ent.flags |= JD_WIFI_APFLAGS_IEEE_802_LONG_RANGE;
+                if (src->wps)
+                    ent.flags |= JD_WIFI_APFLAGS_WPS;
+                if (src->second == WIFI_SECOND_CHAN_ABOVE)
+                    ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_ABOVE;
+                if (src->second == WIFI_SECOND_CHAN_BELOW)
+                    ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_BELOW;
+                if (src->authmode != WIFI_AUTH_OPEN && src->authmode != WIFI_AUTH_WPA2_ENTERPRISE)
+                    ent.flags |= JD_WIFI_APFLAGS_HAS_PASSWORD;
+                ent.channel = src->primary;
+                ent.rssi = src->rssi;
+                memcpy(ent.bssid, src->bssid, 6);
+                memset(ent.ssid, 0, sizeof(ent.ssid));
+                int len = strlen((char *)src->ssid);
+                if (len > 32)
+                    len = 32;
+                memcpy(ent.ssid, src->ssid, len);
+
+                if (state->ssid && strcmp(ent.ssid, state->ssid) == 0)
+                    num_known_networks++;
+
+                LOG("%s [rssi:%d]", ent.ssid, ent.rssi);
+
+                res[i] = ent;
+            }
+        } else {
+            LOG("failed to read scan results: %d", err);
+        }
+
+        free(ap_list_buffer);
+    }
+
+    stop_scan_pipe(state);
+
+    if (state->scan_results)
+        free(state->scan_results);
+    state->scan_results = res;
+    state->scan_num = sta_number;
+
+    jd_wifi_scan_complete_t evarg = {
+        .num_networks = sta_number,
+        .num_known_networks = num_known_networks,
+    };
+    jd_send_event_ext(state, JD_WIFI_EV_SCAN_COMPLETE, &evarg, sizeof(evarg));
+
+    if (!state->enabled)
+        return;
+
+    if (state->is_connecting)
+        return;
+
+    if (num_known_networks > 0) {
+        wifi_connect(state);
+    }
 }
 
 static void got_ip_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                            void *event_data) {
-    xEventGroupClearBits(wifi_event_group, DISCONNECTED_BIT);
-    xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-    jd_send_event(wifi_state, JD_WIFI_EV_GOT_IP);
+    srv_t *state = arg;
+    state->is_connected = true;
+    ip_event_got_ip_t *ev = event_data;
+    state->ip_info = ev->ip_info;
+    DMESG("got ip");
+    jd_send_event(state, JD_WIFI_EV_GOT_IP);
 }
 
 static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                                void *event_data) {
-    if (reconnect) {
-        ESP_LOGI(TAG, "sta disconnect, reconnect...");
-        esp_wifi_connect();
+    srv_t *state = arg;
+    state->is_connected = false;
+    state->is_connecting = false;
+    if (state->rescan_requested) {
+        state->rescan_requested = false;
+        LOG("sta disconnect, rescan...");
+        wifi_scan(state);
+    } else if (state->enabled) {
+        LOG("sta disconnect, reconnect...");
+        state->is_connecting = true;
+        ESP_ERROR_CHECK(esp_wifi_connect());
     } else {
-        ESP_LOGI(TAG, "sta disconnect");
+        LOG("sta disconnect");
     }
-    xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
-    xEventGroupSetBits(wifi_event_group, DISCONNECTED_BIT);
-    jd_send_event(wifi_state, JD_WIFI_EV_LOST_IP);
+    jd_send_event(state, JD_WIFI_EV_LOST_IP);
 }
 
-static void disconnect(void) {
-    reconnect = false;
-    xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
-    ESP_ERROR_CHECK(esp_wifi_disconnect());
-    xEventGroupWaitBits(wifi_event_group, DISCONNECTED_BIT, 0, 1, 5000 / portTICK_RATE_MS);
-}
-
-static void do_connect(void *cfg_) {
-    wifi_config_t *cfg = cfg_;
-
-    int bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 0);
-    if (bits & CONNECTED_BIT)
-        disconnect();
-
-    reconnect = true;
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, cfg));
-    ESP_ERROR_CHECK(esp_wifi_connect());
-
-    ESP_LOGI(TAG, "waiting for connection");
-
-    free(cfg);
-
-    bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 15000 / portTICK_RATE_MS);
-
-    ESP_LOGI(TAG, "waited conn=%d", (bits & CONNECTED_BIT) != 0);
-
-    // do we need this?
-    if (bits & CONNECTED_BIT)
-        jd_send(wifi_state->service_number, JD_WIFI_CMD_CONNECT, NULL, 0);
-}
-
-static void wifi_cmd_disconnect(void *arg) {
-    disconnect();
-    jd_send(wifi_state->service_number, JD_WIFI_CMD_DISCONNECT, NULL, 0);
-}
-
-static int wifi_cmd_sta_join(jd_packet_t *pkt) {
+static int wifi_cmd_add_network(srv_t *state, jd_packet_t *pkt) {
     if (pkt->service_size < 2 || pkt->data[0] == 0 || pkt->data[pkt->service_size - 1] != 0)
         return -1;
 
@@ -159,123 +220,217 @@ static int wifi_cmd_sta_join(jd_packet_t *pkt) {
         }
     }
 
-    wifi_config_t *cfg = calloc(sizeof(wifi_config_t), 1);
+    if (!pass)
+        pass = "";
 
-    strlcpy((char *)cfg->sta.ssid, ssid, sizeof(cfg->sta.ssid));
-    if (pass)
-        strlcpy((char *)cfg->sta.password, pass, sizeof(cfg->sta.password));
+    state->ssid = strdup(ssid);
+    state->password = strdup(pass);
 
-    worker_run(worker, do_connect, cfg);
+    stop_networks_pipe(state);
+
+    nvs_set_str(state->nvs_handle, "ssid", ssid);
+    nvs_set_str(state->nvs_handle, "password", pass);
+    nvs_commit(state->nvs_handle);
+
+    jd_send_event(state, JD_WIFI_EV_NETWORKS_CHANGED);
+    wifi_connect(state);
 
     return true;
 }
 
-#if 0
-static int wifi_cmd_query(int argc, char **argv) {
-    wifi_config_t cfg;
-    wifi_mode_t mode;
-
-    esp_wifi_get_mode(&mode);
-    if (WIFI_MODE_STA == mode) {
-        int bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 0);
-        if (bits & CONNECTED_BIT) {
-            esp_wifi_get_config(WIFI_IF_STA, &cfg);
-            ESP_LOGI(TAG, "sta mode, connected %s", cfg.ap.ssid);
-        } else {
-            ESP_LOGI(TAG, "sta mode, disconnected");
-        }
-    } else {
-        ESP_LOGI(TAG, "NULL mode");
-        return 0;
-    }
-
-    return 0;
-}
-
-static uint32_t wifi_get_local_ip(void) {
-    int bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 0);
-    tcpip_adapter_if_t ifx = TCPIP_ADAPTER_IF_AP;
-    tcpip_adapter_ip_info_t ip_info;
-    wifi_mode_t mode;
-
-    esp_wifi_get_mode(&mode);
-    if (WIFI_MODE_STA == mode) {
-        bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 0);
-        if (bits & CONNECTED_BIT) {
-            ifx = TCPIP_ADAPTER_IF_STA;
-        } else {
-            ESP_LOGE(TAG, "sta has no IP");
-            return 0;
-        }
-    }
-
-    tcpip_adapter_get_ip_info(ifx, &ip_info);
-    return ip_info.ip.addr;
-}
-#endif
-
-void wifi_start() {
+static void wifi_start(srv_t *state) {
     static bool initialized = false;
 
-    if (initialized) {
+    if (initialized)
         return;
-    }
 
-    tcpip_adapter_init();
-    wifi_event_group = xEventGroupCreate();
+    LOG("starting...");
+
+    ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    esp_netif_config_t netif_config = ESP_NETIF_DEFAULT_WIFI_STA();
+    esp_netif_t *netif = esp_netif_new(&netif_config);
+    assert(netif);
+    ESP_ERROR_CHECK(esp_netif_attach_wifi_station(netif));
+    ESP_ERROR_CHECK(esp_wifi_set_default_wifi_sta_handlers());
+
     ESP_ERROR_CHECK(
-        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &scan_done_handler, NULL));
+        esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &scan_done_handler, state));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED,
-                                               &disconnect_handler, NULL));
+                                               &disconnect_handler, state));
     ESP_ERROR_CHECK(
-        esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &got_ip_handler, NULL));
+        esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &got_ip_handler, state));
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    // ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
     ESP_ERROR_CHECK(esp_wifi_start());
+
+    wifi_scan(state);
+
     initialized = true;
 }
 
-void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
-    uint8_t tmp;
+static void forget_all_networks(srv_t *state) {
+    if (state->ssid) {
+        free(state->ssid);
+        free(state->password);
+        state->ssid = NULL;
+        state->password = NULL;
+        jd_send_event(state, JD_WIFI_EV_NETWORKS_CHANGED);
+    }
+}
 
-    ESP_LOGI(TAG, "wifi cmd: 0x%x", pkt->service_command);
+static void wifi_disconnect(srv_t *state) {
+    if (state->is_connecting)
+        ESP_ERROR_CHECK(esp_wifi_disconnect());
+}
+
+void wifi_process(srv_t *state) {
+    if (jd_should_sample(&state->next_scan, 50000000)) {
+        if (!state->is_connected)
+            wifi_scan(state);
+    }
+
+    if (state->networks_pipe_ptr) {
+        if (state->ssid == NULL)
+            stop_networks_pipe(state);
+        else {
+            int len = strlen(state->ssid);
+            char *tmp = jd_alloc(4 + len);
+            memset(tmp, 0, 4);
+            memcpy(tmp + 4, state->ssid, len);
+            int err = jd_opipe_write(&state->networks_pipe, tmp, 4 + len);
+            jd_free(tmp);
+            if (err != JD_PIPE_TRY_AGAIN) {
+                stop_networks_pipe(state);
+            }
+        }
+    }
+
+    while (state->scan_pipe_ptr) {
+        unsigned idx = state->scan_pipe_ptr - 1;
+        if (idx >= state->scan_num) {
+            stop_scan_pipe(state);
+            break;
+        }
+        int err = jd_opipe_write(&state->scan_pipe, &state->scan_results[idx],
+                                 sizeof(state->scan_results[idx]));
+        if (err == JD_PIPE_TRY_AGAIN)
+            break;
+        if (err != 0) {
+            stop_scan_pipe(state);
+            break;
+        }
+        state->scan_pipe_ptr++;
+    }
+}
+
+void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
+    // LOG("wifi cmd: 0x%x", pkt->service_command);
     switch (pkt->service_command) {
+    case JD_WIFI_CMD_LAST_SCAN_RESULTS:
+        if (jd_opipe_open_cmd(&state->scan_pipe, pkt) == 0)
+            state->scan_pipe_ptr = 1;
+        return;
+
+    case JD_WIFI_CMD_LIST_KNOWN_NETWORKS:
+        if (jd_opipe_open_cmd(&state->networks_pipe, pkt) == 0)
+            state->networks_pipe_ptr = 1;
+        return;
+
+    case JD_WIFI_CMD_ADD_NETWORK:
+        wifi_cmd_add_network(state, pkt);
+        return;
+
+    case JD_WIFI_CMD_FORGET_ALL_NETWORKS:
+        forget_all_networks(state);
+        return;
+
     case JD_WIFI_CMD_SCAN:
-        wifi_cmd_scan(pkt);
-        break;
-    case JD_WIFI_CMD_CONNECT:
-        wifi_cmd_sta_join(pkt);
-        break;
-    case JD_WIFI_CMD_DISCONNECT:
-        worker_run(worker, wifi_cmd_disconnect, NULL);
-        break;
-    case JD_WIFI_REG_CONNECTED | JD_CMD_GET_REG:
-        tmp = (xEventGroupGetBits(wifi_event_group) & CONNECTED_BIT) != 0;
-        jd_send(state->service_number, pkt->service_command, &tmp, 1);
+        wifi_scan(state);
+        return;
+
+    case JD_WIFI_CMD_FORGET_NETWORK:
+        if (state->ssid && strlen(state->ssid) == pkt->service_size &&
+            memcmp(state->ssid, pkt->data, pkt->service_size) == 0)
+            forget_all_networks(state);
+        return;
+
+    case JD_WIFI_CMD_SET_NETWORK_PRIORITY:
+        // ignore
+        return;
+
+    case JD_WIFI_CMD_RECONNECT:
+        state->rescan_requested = true;
+        wifi_disconnect(state);
+
+        return;
+
+    case JD_GET(JD_WIFI_REG_RSSI): {
+        wifi_ap_record_t info;
+        if (!state->is_connected || esp_wifi_sta_get_ap_info(&info) != 0)
+            info.rssi = -128;
+        jd_respond_u8(pkt, info.rssi);
+    } return;
+
+    case JD_GET(JD_WIFI_REG_IP_ADDRESS): {
+        if (state->is_connected)
+            jd_respond_u32(pkt, state->ip_info.ip.addr);
+        else
+            jd_respond_empty(pkt);
+    } return;
+
+    case JD_GET(JD_WIFI_REG_SSID): {
+        if (state->is_connected)
+            jd_respond_string(pkt, state->ssid);
+        else
+            jd_respond_empty(pkt);
+        return;
+    }
+    }
+
+    int preven = state->enabled;
+
+    switch (service_handle_register_final(state, pkt, wifi_regs)) {
+    case JD_WIFI_REG_ENABLED:
+        if (preven != state->enabled) {
+            if (state->enabled)
+                wifi_scan(state);
+            else
+                wifi_disconnect(state);
+        }
         break;
     }
 }
 
-void wifi_process(srv_t *state) {}
+char *nvs_get_str_a(nvs_handle_t handle, const char *key) {
+    size_t sz = 0;
+    int err = nvs_get_str(handle, key, NULL, &sz);
+    if (err == ESP_ERR_NVS_NOT_FOUND)
+        return NULL;
+    JD_ASSERT(err == ESP_OK);
+    char *res = malloc(sz);
+    err = nvs_get_str(handle, key, res, &sz);
+    JD_ASSERT(err == ESP_OK);
+    return res;
+}
 
 SRV_DEF(wifi, JD_SERVICE_CLASS_WIFI);
 void wifi_init(void) {
     SRV_ALLOC(wifi);
-    wifi_state = state;
-
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
 
     esp_log_level_set(TAG, ESP_LOG_INFO);
 
-    worker = worker_alloc("wifi", 2048);
-    wifi_start();
+    esp_efuse_mac_get_default(state->mac);
+
+    ESP_ERROR_CHECK(nvs_open("jdwifi", NVS_READWRITE, &state->nvs_handle));
+    state->ssid = nvs_get_str_a(state->nvs_handle, "ssid");
+    state->password = nvs_get_str_a(state->nvs_handle, "password");
+
+    state->enabled = 1;
+
+    wifi_start(state);
 }
