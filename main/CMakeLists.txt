@@ -10,6 +10,8 @@ idf_component_register(
     "flash.c"
     "usb.c"
     "wifi.c"
+    "utils.c"
+    "azureiothub.c"
     "../build/version.c"
     "../jacdac-c/source/jd_control.c"
     "../jacdac-c/source/jd_ipipe.c"

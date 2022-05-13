@@ -247,7 +247,6 @@ static void wifi_start(srv_t *state) {
     LOG("starting...");
 
     ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -404,18 +403,6 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
         }
         break;
     }
-}
-
-char *nvs_get_str_a(nvs_handle_t handle, const char *key) {
-    size_t sz = 0;
-    int err = nvs_get_str(handle, key, NULL, &sz);
-    if (err == ESP_ERR_NVS_NOT_FOUND)
-        return NULL;
-    JD_ASSERT(err == ESP_OK);
-    char *res = malloc(sz);
-    err = nvs_get_str(handle, key, res, &sz);
-    JD_ASSERT(err == ESP_OK);
-    return res;
 }
 
 SRV_DEF(wifi, JD_SERVICE_CLASS_WIFI);

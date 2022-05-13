@@ -4,42 +4,13 @@
 #include "jd_client.h"
 #include "jacscript/jacscript.h"
 
-typedef struct opipe_desc {
-    // don't access members directly
-    uint64_t device_identifier;
-    uint16_t counter;
-    uint16_t crc_value;
-    struct opipe_desc *next;
-    TaskHandle_t *crc_task;
-    SemaphoreHandle_t sem;
-    jd_frame_t *frame;
-} opipe_desc_t;
-int opipe_open(opipe_desc_t *str, jd_packet_t *pkt);
-void opipe_write(opipe_desc_t *str, const void *data, unsigned len);
-void opipe_write_meta(opipe_desc_t *str, const void *data, unsigned len);
-void opipe_close(opipe_desc_t *str);
-int opipe_flush(opipe_desc_t *str);
-void opipe_process_ack(jd_packet_t *pkt);
-
-typedef struct ipipe_desc ipipe_desc_t;
-typedef void (*ipipe_handler_t)(ipipe_desc_t *istr, jd_packet_t *pkt);
-struct ipipe_desc {
-    ipipe_handler_t handler;
-    ipipe_handler_t meta_handler;
-    struct ipipe_desc *next;
-    SemaphoreHandle_t sem;
-    uint16_t counter;
-};
-int ipipe_open(ipipe_desc_t *str, ipipe_handler_t handler, ipipe_handler_t meta_handler);
-void ipipe_close(ipipe_desc_t *str);
-void ipipe_handle_pkt(jd_packet_t *pkt);
+#include "nvs_flash.h"
 
 void wifi_init(void);
 void jdtcp_init(void);
+void azureiothub_init(void);
 
-#define CHK(call)                                                                                  \
-    if ((call) != 0)                                                                               \
-    jd_panic()
+#define CHK ESP_ERROR_CHECK
 
 void led_blink(int us);
 void led_set(int state);
@@ -55,13 +26,27 @@ int ssl_read(ssl_conn_t *conn, void *data, uint32_t len);
 void ssl_close(ssl_conn_t *conn);
 
 typedef struct worker *worker_t;
-worker_t worker_alloc(const char *id, uint32_t stack_size);
+// needs worker_do_work() called from somewhere
+worker_t worker_alloc(void);
+// starts task that will call worker_do_work():
+worker_t worker_start(const char *id, uint32_t stack_size);
 int worker_run(worker_t w, TaskFunction_t fn, void *arg);
 void worker_set_idle(worker_t w, TaskFunction_t fn, void *arg);
 int worker_run_wait(worker_t w, TaskFunction_t fn, void *arg);
+void worker_do_work(worker_t w);
 
 bool jd_rx_has_frame(void);
 void init_jacscript_manager(void);
 void hf2_init(void);
 
-extern worker_t fg_worker;
+extern worker_t fg_worker, main_worker;
+
+char *extract_property(const char *property_bag, int plen, const char *key);
+char *nvs_get_str_a(nvs_handle_t handle, const char *key);
+void *nvs_get_blob_a(nvs_handle_t handle, const char *key, size_t *outsz);
+
+char *jd_concat_many(const char **parts);
+char *jd_concat2(const char *a, const char *b);
+char *jd_concat3(const char *a, const char *b, const char *c);
+char *jd_urlencode(const char *src);
+char *jd_hmac_b64(const char *key, const char **parts);

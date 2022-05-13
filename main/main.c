@@ -1,9 +1,18 @@
 #include "jdesp.h"
 #include "services/jd_services.h"
 #include "services/interfaces/jd_pins.h"
-#include "nvs_flash.h"
+
+#include "esp_timer.h"
+#include "esp_event.h"
+
+const char *JD_EVENT = "JD_EVENT";
 
 static uint64_t led_off_time;
+worker_t fg_worker, main_worker;
+uint32_t now;
+static TaskHandle_t main_task;
+static int loop_pending;
+static esp_timer_handle_t main_loop_tick_timer;
 
 void setup_output(int pin) {
     gpio_set_direction(pin, GPIO_MODE_OUTPUT);
@@ -65,30 +74,43 @@ void app_client_event_handler(int event_id, void *arg0, void *arg1) {
     jacs_client_event_handler(jacs_ctx, event_id, arg0, arg1);
 }
 
-uint32_t now;
-
-static void jdloop(void *_dummy) {
-    while (1) {
-        int qdelay = 1;
-
-        if (led_off_time) {
-            int timeLeft = led_off_time - tim_get_micros();
-            if (timeLeft <= 0) {
-                led_off_time = 0;
-                led_set(0);
-            } else if (timeLeft < 10000) {
-                qdelay = 0;
-            }
-        }
-
-        jd_process_everything();
-
-        if (qdelay && !jd_rx_has_frame()) {
-            vTaskDelay(1);
-        }
-
-        flush_dmesg();
+static void post_loop(void *dummy) {
+    if (!loop_pending) {
+        loop_pending = 1;
+        esp_event_post(JD_EVENT, 1, NULL, 0, 0);
     }
+}
+
+static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
+                         void *event_data) {
+    if (!main_task)
+        main_task = xTaskGetCurrentTaskHandle();
+
+    loop_pending = 0;
+
+    int qdelay = 1;
+
+    if (led_off_time) {
+        int timeLeft = led_off_time - tim_get_micros();
+        if (timeLeft <= 0) {
+            led_off_time = 0;
+            led_set(0);
+        } else if (timeLeft < 10000) {
+            qdelay = 0;
+        }
+    }
+
+    jd_process_everything();
+
+    worker_do_work(main_worker);
+
+    if (jd_rx_has_frame())
+        qdelay = 0;
+
+    flush_dmesg();
+
+    if (!qdelay)
+        post_loop(NULL); // if no delay, re-post ourselves
 }
 
 static const power_config_t pwr_cfg = {
@@ -104,7 +126,7 @@ void app_init_services(void) {
     jd_role_manager_init();
     init_jacscript_manager();
     wifi_init();
-    // jdtcp_init();
+    azureiothub_init();
 }
 
 static void flash_init() {
@@ -116,14 +138,15 @@ static void flash_init() {
     ESP_ERROR_CHECK(ret);
 }
 
-worker_t fg_worker;
-
 void app_main() {
     ESP_LOGI("JD", "starting...");
 
     DMESG("app main");
 
-    fg_worker = worker_alloc("jd_fg", 2048);
+    fg_worker = worker_start("jd_fg", 2048);
+    main_worker = worker_alloc();
+
+    esp_event_loop_create_default();
 
     setup_pins();
 
@@ -135,7 +158,17 @@ void app_main() {
 
     hf2_init();
 
-    xTaskCreatePinnedToCore(jdloop, "jdloop", 2 * 1024, NULL, 3, NULL, WORKER_CPU);
+    CHK(esp_event_handler_instance_register(JD_EVENT, 1, loop_handler, NULL, NULL));
+
+    esp_timer_create_args_t args;
+    args.callback = post_loop;
+    args.arg = NULL;
+    args.dispatch_method = ESP_TIMER_TASK;
+    args.name = "10ms";
+    CHK(esp_timer_create(&args, &main_loop_tick_timer));
+    CHK(esp_timer_start_periodic(main_loop_tick_timer, 10000));
+
+    post_loop(NULL); // just in case
 }
 
 uint64_t jd_device_id(void) {
@@ -192,8 +225,7 @@ IRAM_ATTR void target_enable_irq() {
 }
 
 int target_in_irq(void) {
-    // TODO?
-    return 0;
+    return xTaskGetCurrentTaskHandle() != main_task;
 }
 
 void hw_panic(void) {
