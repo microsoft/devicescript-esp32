@@ -63,10 +63,14 @@ void timer_log(int line, int v) {}
 void log_pin_set(int line, int v) {}
 
 static void jd_timer(void *dummy) {
+    target_disable_irq();
     cb_t f = context.timer_cb;
     if (f) {
         context.timer_cb = NULL;
+        target_enable_irq();
         f();
+    } else {
+        target_enable_irq();
     }
 }
 
@@ -138,22 +142,28 @@ static IRAM_ATTR esp_err_t xgpio_set_level(gpio_num_t gpio_num, uint32_t level) 
     return ESP_OK;
 }
 
+//#define RX_SIG uart_periph_signal[context.uart_num].rx_sig
+//#define TX_SIG uart_periph_signal[context.uart_num].tx_sig
+
+#define RX_SIG uart_periph_signal[context.uart_num].pins[SOC_UART_RX_PIN_IDX].signal
+#define TX_SIG uart_periph_signal[context.uart_num].pins[SOC_UART_TX_PIN_IDX].signal
+
 static IRAM_ATTR void pin_rx() {
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
     REG_SET_BIT(GPIO_PIN_MUX_REG[context.pin_num], FUN_PU);
     PIN_INPUT_ENABLE(GPIO_PIN_MUX_REG[context.pin_num]);
     GPIO.enable_w1tc = (0x1 << context.pin_num);
     REG_WRITE(GPIO_FUNC0_OUT_SEL_CFG_REG + (context.pin_num * 4), SIG_GPIO_OUT_IDX);
-    gpio_matrix_in(context.pin_num, uart_periph_signal[context.uart_num].rx_sig, 0);
+    gpio_matrix_in(context.pin_num, RX_SIG, 0);
 }
 
 static IRAM_ATTR void pin_tx() {
-    gpio_matrix_in(GPIO_FUNC_IN_HIGH, uart_periph_signal[context.uart_num].rx_sig,
+    gpio_matrix_in(GPIO_FUNC_IN_HIGH, RX_SIG,
                    0); // context.uart_hw
     GPIO.pin[context.pin_num].int_type = GPIO_PIN_INTR_DISABLE;
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
     gpio_set_level(context.pin_num, 1);
-    gpio_matrix_out(context.pin_num, uart_periph_signal[context.uart_num].tx_sig, 0, 0);
+    gpio_matrix_out(context.pin_num, TX_SIG, 0, 0);
 }
 
 static IRAM_ATTR void fill_fifo() {
@@ -243,8 +253,8 @@ void uart_init() {
                                        .stop_bits = UART_STOP_BITS_1,
                                        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
     CHK(uart_param_config(context.uart_num, &uart_config));
-    CHK(uart_isr_register(context.uart_num, (void (*)(void *))uart_isr, &context, 0,
-                          &context.intr_handle));
+    CHK(esp_intr_alloc(uart_periph_signal[context.uart_num].irq, 0, (void (*)(void *))uart_isr,
+                       &context, &context.intr_handle));
 
     uart_intr_config_t uart_intr = {.intr_enable_mask = 0,
                                     .rxfifo_full_thresh = UART_FULL_THRESH_DEFAULT,
@@ -346,8 +356,7 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
 
     target_disable_irq();
 
-    gpio_matrix_in(GPIO_FUNC_IN_HIGH, uart_periph_signal[context.uart_num].rx_sig,
-                   0); // context.uart_hw
+    gpio_matrix_in(GPIO_FUNC_IN_HIGH, RX_SIG, 0); // context.uart_hw
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
     GPIO.out_w1tc = (1 << context.pin_num);
 

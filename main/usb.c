@@ -164,6 +164,11 @@ static int hf2_send_response_with_data(const void *data, int size) {
     }
 }
 
+static void do_send_frame(void *f) {
+    jd_send_frame_raw(f);
+    jd_free(f);
+}
+
 static int hf2_handle_packet(int sz) {
     if (hf2_pkt.serial) {
         // TODO raise some event?
@@ -217,9 +222,14 @@ static int hf2_handle_packet(int sz) {
         }
         return hf2_send_response(0);
 
-    case HF2_CMD_JDS_SEND:
-        jd_send_frame((jd_frame_t *)cmd->data8);
+    case HF2_CMD_JDS_SEND: {
+        jd_frame_t *frame = jd_dup_frame((jd_frame_t *)cmd->data8);
+        if (worker_run(main_worker, do_send_frame, frame) != 0) {
+            ERROR("HF2 send ovf");
+            jd_free(frame);
+        }
         return hf2_send_response(0);
+    }
 
     default:
         // command not understood

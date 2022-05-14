@@ -23,7 +23,7 @@ jobs:
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@main
       with:
-        esp_idf_version: v4.3.1
+        esp_idf_version: v4.4.1
         target: esp32s2
     - run: make dist
 

@@ -18,6 +18,12 @@ To deploy run `make r`.
 
 * [x] add HF2 over USB Serial (CDC)
 * [x] set "CLIENT" flag in announce
+
+* [ ] disable self-reports coming from the wire
+* [ ] don't forward `restricted` packets to the wire from USB or loopback
+* [ ] only accept `restricted` packets from USB or loopback
+* [ ] add `restricted` flag in frame flags
+
 * [ ] re-enable wifi service - think about auto-connect?
 * [ ] implement Azure IoT Hub connection and IoT Hub health service
 * [ ] implement Jacscript Cloud service using IoT Hub

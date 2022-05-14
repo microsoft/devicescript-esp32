@@ -46,7 +46,7 @@ void codal_dmesgf(const char *format, ...) {
 }
 
 void codal_vdmesg(const char *format, va_list ap) {
-    char tmp[80];
+    char tmp[160];
     jd_vsprintf(tmp, sizeof(tmp) - 1, format, ap);
     int len = strlen(tmp);
     tmp[len] = '\n';

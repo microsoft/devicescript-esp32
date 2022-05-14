@@ -31,4 +31,8 @@
 void hf2_send_frame(const void *frame);
 #define JD_USB_SEND hf2_send_frame
 
+// probably not so useful on brains...
+#define JD_CONFIG_WATCHDOG 0
+
+
 #endif

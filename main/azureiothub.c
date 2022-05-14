@@ -3,8 +3,10 @@
 #include "jacdac/dist/c/azureiothubhealth.h"
 #include "nvs_flash.h"
 #include "mqtt_client.h"
+#include "esp_crt_bundle.h"
 
 #define EXPIRES "9000000000" // year 2255, TODO?
+static const char *MY_MQTT_EVENTS = "MY_MQTT_EVENTS";
 
 #define TAG "aziot"
 // #define LOG(...) ESP_LOGI(TAG, __VA_ARGS__);
@@ -31,7 +33,7 @@ REG_DEFINITION(                                             //
 static void set_status(srv_t *state, uint16_t status) {
     if (state->conn_status == status)
         return;
-    DMESG("status %d", status);
+    LOG("status %d", status);
     state->conn_status = status;
     jd_send_event_ext(state, JD_AZURE_IOT_HUB_HEALTH_EV_CONNECTION_STATUS_CHANGE,
                       &state->conn_status, sizeof(state->conn_status));
@@ -56,6 +58,7 @@ static esp_err_t mqtt_event_handler_cb(srv_t *state, esp_mqtt_event_handle_t eve
         set_status(state, JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED);
         break;
 
+    case MQTT_EVENT_BEFORE_CONNECT:
     case MQTT_EVENT_SUBSCRIBED:
     case MQTT_EVENT_UNSUBSCRIBED:
     case MQTT_EVENT_PUBLISHED:
@@ -63,6 +66,10 @@ static esp_err_t mqtt_event_handler_cb(srv_t *state, esp_mqtt_event_handle_t eve
 
     case MQTT_EVENT_DATA:
         LOG("data: %d / %d", event->topic_len, event->data_len);
+        break;
+
+    case MQTT_EVENT_DELETED:
+        LOG("mqtt msg dropped");
         break;
 
     case MQTT_EVENT_ERROR:
@@ -97,6 +104,10 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     mqtt_event_handler_cb(handler_args, event_data);
 }
 
+static esp_err_t mqtt_event_handler_outer(esp_mqtt_event_t *event) {
+    return esp_event_post(MY_MQTT_EVENTS, event->event_id, event, sizeof(*event), portMAX_DELAY);
+}
+
 static void azureiothub_disconnect(srv_t *state) {
     if (!state->client)
         return;
@@ -123,7 +134,9 @@ static void azureiothub_reconnect(srv_t *state) {
         .client_id = state->device_id,
         .username = username,
         .password = state->sas_token,
-        .use_global_ca_store = true,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        // forward to default event loop, which will run on main task:
+        .event_handle = mqtt_event_handler_outer,
         // .disable_auto_reconnect=true,
         // .path = "/$iothub/websocket?iothub-no-client-cert=true" // for wss:// proto
     };
@@ -131,8 +144,8 @@ static void azureiothub_reconnect(srv_t *state) {
     if (!state->client) {
         state->client = esp_mqtt_client_init(&mqtt_cfg);
         JD_ASSERT(state->client != NULL);
-        CHK(esp_mqtt_client_register_event(state->client, MQTT_EVENT_ANY, mqtt_event_handler,
-                                           state));
+        CHK(esp_event_handler_instance_register(MY_MQTT_EVENTS, MQTT_EVENT_ANY, mqtt_event_handler,
+                                                state, NULL));
         esp_mqtt_client_start(state->client);
     } else {
         CHK(esp_mqtt_set_config(state->client, &mqtt_cfg));
@@ -199,7 +212,6 @@ static int set_conn_string(srv_t *state, const char *conn_str, int conn_len, int
     state->sas_token = jd_concat_many(parts2);
 
     LOG("conn string: %s -> %s", hub_name, device_id);
-    LOG("conn token: '%s'", state->sas_token); // TODO remove me
 
     jd_free(sas_key);
     jd_free(hub_name_enc);

@@ -50,3 +50,4 @@ char *jd_concat2(const char *a, const char *b);
 char *jd_concat3(const char *a, const char *b, const char *c);
 char *jd_urlencode(const char *src);
 char *jd_hmac_b64(const char *key, const char **parts);
+jd_frame_t *jd_dup_frame(const jd_frame_t *frame);

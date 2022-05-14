@@ -60,6 +60,7 @@ static int urlencode_core(char *dst, const char *src) {
             if (dst) {
                 *dst++ = '%';
                 jd_to_hex(dst, &c, 1);
+                dst += 2;
             }
             len += 3;
         }
@@ -135,5 +136,12 @@ char *jd_hmac_b64(const char *key, const char **parts) {
     char *r = jd_alloc(klen + 1);
     CHK(mbedtls_base64_encode((unsigned char *)r, klen + 1, &klen, binkey, 32));
     r[klen] = 0;
+    return r;
+}
+
+jd_frame_t *jd_dup_frame(const jd_frame_t *frame) {
+    int sz = JD_FRAME_SIZE(frame);
+    jd_frame_t *r = jd_alloc(sz);
+    memcpy(r, frame, sz);
     return r;
 }

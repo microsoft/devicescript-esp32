@@ -83,8 +83,12 @@ static void post_loop(void *dummy) {
 
 static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
                          void *event_data) {
-    if (!main_task)
+    if (!main_task) {
         main_task = xTaskGetCurrentTaskHandle();
+        // this will call app_init_services(), which may try to send something, so we better run it
+        // from here
+        jd_init();
+    }
 
     loop_pending = 0;
 
@@ -154,8 +158,6 @@ void app_main() {
 
     tim_init();
     uart_init();
-    jd_init();
-
     hf2_init();
 
     CHK(esp_event_handler_instance_register(JD_EVENT, 1, loop_handler, NULL, NULL));
@@ -168,7 +170,7 @@ void app_main() {
     CHK(esp_timer_create(&args, &main_loop_tick_timer));
     CHK(esp_timer_start_periodic(main_loop_tick_timer, 10000));
 
-    post_loop(NULL); // just in case
+    post_loop(NULL); // run the loop for the first time
 }
 
 uint64_t jd_device_id(void) {
