@@ -34,5 +34,6 @@ void hf2_send_frame(const void *frame);
 // probably not so useful on brains...
 #define JD_CONFIG_WATCHDOG 0
 
+#define JD_SEND_FRAME_SIZE 1024
 
 #endif

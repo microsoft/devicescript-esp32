@@ -3,7 +3,7 @@
 static xQueueHandle frame_queue;
 
 void jd_rx_init(void) {
-    frame_queue = xQueueCreate(10, sizeof(jd_frame_t *));
+    frame_queue = xQueueCreate(32, sizeof(jd_frame_t *));
 }
 
 static int jd_rx_frame_received_core(jd_frame_t *frame, int is_loop) {
