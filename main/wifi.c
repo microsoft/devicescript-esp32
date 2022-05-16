@@ -62,7 +62,11 @@ static void wifi_scan(srv_t *state) {
     LOG("start scan");
     state->in_scan = true;
     wifi_scan_config_t scan_config = {0};
-    ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, false));
+    int err = esp_wifi_scan_start(&scan_config, false);
+    if (err == 0)
+        return;
+    LOG("can't scan, err=%d", err);
+    state->in_scan = false;
 }
 
 static void wifi_connect(srv_t *state) {
@@ -288,7 +292,7 @@ static void wifi_disconnect(srv_t *state) {
 }
 
 void wifi_process(srv_t *state) {
-    if (jd_should_sample(&state->next_scan, 50000000)) {
+    if (jd_should_sample(&state->next_scan, 5000000)) {
         if (!state->is_connected)
             wifi_scan(state);
     }
