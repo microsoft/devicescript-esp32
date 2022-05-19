@@ -15,6 +15,7 @@ void jdtcp_init(void);
 
 void azureiothub_init(void);
 int azureiothub_publish(const void *msg, unsigned len);
+int azureiothub_publish_values(const char *label, int numvals, double *vals);
 
 #define CHK ESP_ERROR_CHECK
 
@@ -55,6 +56,7 @@ char *jd_concat_many(const char **parts);
 char *jd_concat2(const char *a, const char *b);
 char *jd_concat3(const char *a, const char *b, const char *c);
 char *jd_urlencode(const char *src);
+char *jd_json_escape(const char *str);
 char *jd_hmac_b64(const char *key, const char **parts);
 jd_frame_t *jd_dup_frame(const jd_frame_t *frame);
 

@@ -73,7 +73,6 @@ static esp_err_t mqtt_event_handler_cb(srv_t *state, esp_mqtt_event_handle_t eve
     switch (event->event_id) {
     case MQTT_EVENT_CONNECTED:
         set_status(state, JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED);
-        azureiothub_publish("{\"foo\": 12}", 0);
         break;
 
     case MQTT_EVENT_DISCONNECTED:
@@ -331,5 +330,30 @@ int azureiothub_publish(const void *msg, unsigned len) {
     bool store = true;
     if (esp_mqtt_client_enqueue(state->client, state->pub_topic, msg, len, qos, retain, store) < 0)
         return -2;
+    DMESG("send: >>%s<<", msg);
     return 0;
+}
+
+int azureiothub_publish_values(const char *label, int numvals, double *vals) {
+    uint64_t self = jd_device_id();
+    char devid[sizeof(self) * 2 + 1];
+    jd_to_hex(devid, &self, sizeof(self));
+    char *label_esc = jd_json_escape(label);
+    const char *parts[] = {"{\"device\":\"",  devid, "\",\"label\":\"", label_esc,
+                           "\",\"values\":[", NULL};
+    char **parts2 = jd_alloc(sizeof(char *) * (numvals + 2));
+    parts2[0] = jd_concat_many(parts);
+    jd_free(label_esc);
+    for (int i = 0; i < numvals; ++i) {
+        char buf[64];
+        jd_print_double(buf, vals[i], 8);
+        parts2[i + 1] = jd_concat2(buf, i == numvals - 1 ? "]}" : ",");
+    }
+    parts2[numvals + 1] = NULL;
+    char *msg = jd_concat_many((const char **)parts2);
+    for (int i = 0; parts2[i]; ++i)
+        jd_free(parts2[i]);
+    int r = azureiothub_publish(msg, strlen(msg));
+    jd_free(msg);
+    return r;
 }
