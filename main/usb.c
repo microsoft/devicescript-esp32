@@ -3,8 +3,6 @@
 #include "tusb_cdc_acm.h"
 #include "uf2hid.h"
 
-#include "esp_private/system_internal.h"
-
 #define LOG(msg, ...) DMESG("USB: " msg, ##__VA_ARGS__)
 #define LOGV(msg, ...) ((void)0)
 #undef ERROR
@@ -56,16 +54,6 @@ static const char *descriptor_str[USB_STRING_DESCRIPTOR_ARRAY_SIZE] = {
 
 static const char *uf2_info() {
     return "ESP32-S2";
-}
-
-void reboot_to_uf2(void) {
-#if CONFIG_IDF_TARGET_ESP32S2
-    // call esp_reset_reason() is required for idf.py to properly links esp_reset_reason_set_hint()
-    (void)esp_reset_reason();
-    esp_reset_reason_set_hint((esp_reset_reason_t)0x11F2);
-#endif
-
-    esp_restart_noos_dig();
 }
 
 typedef struct {

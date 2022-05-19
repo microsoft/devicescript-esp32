@@ -11,6 +11,7 @@ idf_component_register(
     "usb.c"
     "wifi.c"
     "utils.c"
+    "platform.c"
     "azureiothub.c"
     "../build/version.c"
     "../jacdac-c/source/jd_control.c"
