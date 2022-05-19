@@ -1,37 +1,21 @@
 #include "jdesp.h"
-#include "services/jd_services.h"
-#include "services/interfaces/jd_pins.h"
 
 #include "esp_timer.h"
 #include "esp_event.h"
+#include "esp_private/system_internal.h"
+
+#define PIN_BOOT_BTN 0
 
 const char *JD_EVENT = "JD_EVENT";
 
-static uint64_t led_off_time;
 worker_t fg_worker, main_worker;
 uint32_t now;
 static TaskHandle_t main_task;
 static int loop_pending;
 static esp_timer_handle_t main_loop_tick_timer;
 
-void setup_output(int pin) {
-    gpio_set_direction(pin, GPIO_MODE_OUTPUT);
-    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
-}
-
 static void setup_pins(void) {
-    setup_output(PIN_LED_R);
-    setup_output(PIN_LED_G);
-    setup_output(PIN_LED_B);
-}
-
-void led_set(int state) {
-    gpio_set_level(PIN_LED_B, !state);
-}
-
-void led_blink(int us) {
-    led_off_time = tim_get_micros() + us;
-    led_set(1);
+    pin_setup_input(PIN_BOOT_BTN, PIN_PULL_UP);
 }
 
 int jd_pin_num(void) {
@@ -92,29 +76,18 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 
     loop_pending = 0;
 
-    int qdelay = 1;
-
-    if (led_off_time) {
-        int timeLeft = led_off_time - tim_get_micros();
-        if (timeLeft <= 0) {
-            led_off_time = 0;
-            led_set(0);
-        } else if (timeLeft < 10000) {
-            qdelay = 0;
-        }
-    }
+    if (pin_get(PIN_BOOT_BTN) == 0)
+        reboot_to_uf2();
 
     jd_process_everything();
 
     worker_do_work(main_worker);
 
-    if (jd_rx_has_frame())
-        qdelay = 0;
-
     flush_dmesg();
 
-    if (!qdelay)
-        post_loop(NULL); // if no delay, re-post ourselves
+    // re-post ourselves immediately if more frames to process
+    if (jd_rx_has_frame())
+        post_loop(NULL);
 }
 
 static const power_config_t pwr_cfg = {
@@ -203,7 +176,7 @@ void *jd_alloc_emergency_area(uint32_t size) {
 
 void target_reset() {
     ESP_LOGE("JD", "target_reset()\n");
-    esp_restart();
+    esp_restart_noos_dig();
 }
 
 IRAM_ATTR void target_wait_us(uint32_t us) {

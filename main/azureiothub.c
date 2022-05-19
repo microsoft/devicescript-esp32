@@ -30,10 +30,25 @@ REG_DEFINITION(                                             //
     REG_U16(JD_AZURE_IOT_HUB_HEALTH_REG_CONNECTION_STATUS), //
 )
 
+static const char *status_name(int st) {
+    switch (st) {
+    case JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED:
+        return "CONNECTED";
+    case JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED:
+        return "DISCONNECTED";
+    case JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTING:
+        return "CONNECTING";
+    case JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTING:
+        return "DISCONNECTING";
+    default:
+        return "???";
+    }
+}
+
 static void set_status(srv_t *state, uint16_t status) {
     if (state->conn_status == status)
         return;
-    LOG("status %d", status);
+    LOG("status %d (%s)", status, status_name(status));
     state->conn_status = status;
     jd_send_event_ext(state, JD_AZURE_IOT_HUB_HEALTH_EV_CONNECTION_STATUS_CHANGE,
                       &state->conn_status, sizeof(state->conn_status));

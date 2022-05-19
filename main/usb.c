@@ -3,6 +3,8 @@
 #include "tusb_cdc_acm.h"
 #include "uf2hid.h"
 
+#include "esp_private/system_internal.h"
+
 #define LOG(msg, ...) DMESG("USB: " msg, ##__VA_ARGS__)
 #define LOGV(msg, ...) ((void)0)
 #undef ERROR
@@ -57,7 +59,13 @@ static const char *uf2_info() {
 }
 
 void reboot_to_uf2(void) {
-    esp_restart(); // TODO
+#if CONFIG_IDF_TARGET_ESP32S2
+    // call esp_reset_reason() is required for idf.py to properly links esp_reset_reason_set_hint()
+    (void)esp_reset_reason();
+    esp_reset_reason_set_hint((esp_reset_reason_t)0x11F2);
+#endif
+
+    esp_restart_noos_dig();
 }
 
 typedef struct {
@@ -305,7 +313,7 @@ void hf2_init() {
     }
     DMESG("USB serial: %s", macHex);
     descriptor_str[3] = macHex;
-    tusb_cfg.string_descriptor = (char **)descriptor_str;
+    tusb_cfg.string_descriptor = (const char **)descriptor_str;
 
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 

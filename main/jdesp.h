@@ -3,6 +3,8 @@
 #include "jdtcp.h"
 #include "jd_client.h"
 #include "jacscript/jacscript.h"
+#include "services/jd_services.h"
+#include "services/interfaces/jd_pins.h"
 
 #include "nvs_flash.h"
 
@@ -38,6 +40,7 @@ void worker_do_work(worker_t w);
 bool jd_rx_has_frame(void);
 void init_jacscript_manager(void);
 void hf2_init(void);
+void reboot_to_uf2(void);
 
 extern worker_t fg_worker, main_worker;
 
