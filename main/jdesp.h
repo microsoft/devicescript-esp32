@@ -10,8 +10,11 @@
 
 void wifi_init(void);
 bool wifi_is_connected(void);
+
 void jdtcp_init(void);
+
 void azureiothub_init(void);
+int azureiothub_publish(const void *msg, unsigned len);
 
 #define CHK ESP_ERROR_CHECK
 

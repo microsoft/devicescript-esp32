@@ -22,6 +22,7 @@ struct srv_state {
     char *hub_name;
     char *device_id;
     char *sas_token;
+    char *pub_topic;
 
     nvs_handle_t nvs_handle;
     esp_mqtt_client_handle_t client;
@@ -61,15 +62,18 @@ static void clear_conn_string(srv_t *state) {
     jd_free(state->hub_name);
     jd_free(state->device_id);
     jd_free(state->sas_token);
+    jd_free(state->pub_topic);
     state->hub_name = NULL;
     state->device_id = NULL;
     state->sas_token = NULL;
+    state->pub_topic = NULL;
 }
 
 static esp_err_t mqtt_event_handler_cb(srv_t *state, esp_mqtt_event_handle_t event) {
     switch (event->event_id) {
     case MQTT_EVENT_CONNECTED:
         set_status(state, JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED);
+        azureiothub_publish("{\"foo\": 12}", 0);
         break;
 
     case MQTT_EVENT_DISCONNECTED:
@@ -228,6 +232,7 @@ static int set_conn_string(srv_t *state, const char *conn_str, int conn_len, int
     state->hub_name = hub_name;
     state->device_id = device_id;
     state->sas_token = jd_concat_many(parts2);
+    state->pub_topic = jd_concat3("devices/", device_id_enc, "/messages/events/");
 
     LOG("conn string: %s -> %s", hub_name, device_id);
 
@@ -289,6 +294,8 @@ void azureiothub_handle_packet(srv_t *state, jd_packet_t *pkt) {
     service_handle_register_final(state, pkt, azureiothub_regs);
 }
 
+static srv_t *_aziot_state;
+
 SRV_DEF(azureiothub, JD_SERVICE_CLASS_AZURE_IOT_HUB_HEALTH);
 void azureiothub_init(void) {
     SRV_ALLOC(azureiothub);
@@ -303,6 +310,8 @@ void azureiothub_init(void) {
     if (conn)
         set_conn_string(state, conn, connlen, 0);
 
+    _aziot_state = state;
+
     esp_log_level_set("*", ESP_LOG_INFO);
     esp_log_level_set("esp-tls", ESP_LOG_VERBOSE);
     esp_log_level_set("MQTT_CLIENT", ESP_LOG_VERBOSE);
@@ -311,4 +320,16 @@ void azureiothub_init(void) {
     esp_log_level_set("TRANSPORT_SSL", ESP_LOG_VERBOSE);
     esp_log_level_set("TRANSPORT", ESP_LOG_VERBOSE);
     esp_log_level_set("OUTBOX", ESP_LOG_VERBOSE);
+}
+
+int azureiothub_publish(const void *msg, unsigned len) {
+    srv_t *state = _aziot_state;
+    if (state->conn_status != JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED)
+        return -1;
+    int qos = 0;
+    int retain = 0;
+    bool store = true;
+    if (esp_mqtt_client_enqueue(state->client, state->pub_topic, msg, len, qos, retain, store) < 0)
+        return -2;
+    return 0;
 }
