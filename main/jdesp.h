@@ -9,6 +9,7 @@
 #include "nvs_flash.h"
 
 void wifi_init(void);
+bool wifi_is_connected(void);
 void jdtcp_init(void);
 void azureiothub_init(void);
 

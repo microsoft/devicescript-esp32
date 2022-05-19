@@ -7,6 +7,8 @@
 // #define LOG(...) ESP_LOGI(TAG, __VA_ARGS__);
 #define LOG(msg, ...) DMESG("wifi: " msg, ##__VA_ARGS__)
 
+static srv_t *_wifi_state;
+
 struct srv_state {
     SRV_COMMON;
 
@@ -59,14 +61,14 @@ static void stop_networks_pipe(srv_t *state) {
 static void wifi_scan(srv_t *state) {
     if (state->in_scan)
         return;
-    LOG("start scan");
     state->in_scan = true;
     wifi_scan_config_t scan_config = {0};
-    int err = esp_wifi_scan_start(&scan_config, false);
-    if (err == 0)
-        return;
-    LOG("can't scan, err=%d", err);
-    state->in_scan = false;
+    if (esp_wifi_scan_start(&scan_config, false) == 0) {
+        LOG("start scan");
+    } else {
+        LOG("can't scan");
+        state->in_scan = false;
+    }
 }
 
 static void wifi_connect(srv_t *state) {
@@ -377,14 +379,16 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
         if (!state->is_connected || esp_wifi_sta_get_ap_info(&info) != 0)
             info.rssi = -128;
         jd_respond_u8(pkt, info.rssi);
-    } return;
+    }
+        return;
 
     case JD_GET(JD_WIFI_REG_IP_ADDRESS): {
         if (state->is_connected)
             jd_respond_u32(pkt, state->ip_info.ip.addr);
         else
             jd_respond_empty(pkt);
-    } return;
+    }
+        return;
 
     case JD_GET(JD_WIFI_REG_SSID): {
         if (state->is_connected)
@@ -409,6 +413,10 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
     }
 }
 
+bool wifi_is_connected(void) {
+    return _wifi_state->is_connected;
+}
+
 SRV_DEF(wifi, JD_SERVICE_CLASS_WIFI);
 void wifi_init(void) {
     SRV_ALLOC(wifi);
@@ -422,6 +430,8 @@ void wifi_init(void) {
     state->password = nvs_get_str_a(state->nvs_handle, "password");
 
     state->enabled = 1;
+
+    _wifi_state = state;
 
     wifi_start(state);
 }

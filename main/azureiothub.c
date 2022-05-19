@@ -16,6 +16,9 @@ struct srv_state {
     SRV_COMMON;
 
     uint16_t conn_status;
+    bool waiting_for_net;
+    uint32_t reconnect_timer;
+
     char *hub_name;
     char *device_id;
     char *sas_token;
@@ -132,7 +135,7 @@ static void azureiothub_disconnect(srv_t *state) {
 }
 
 static void azureiothub_reconnect(srv_t *state) {
-    if (!state->hub_name) {
+    if (!state->hub_name || !wifi_is_connected()) {
         azureiothub_disconnect(state);
         return;
     }
@@ -249,7 +252,16 @@ fail:
     return -1;
 }
 
-void azureiothub_process(srv_t *state) {}
+void azureiothub_process(srv_t *state) {
+    if (jd_should_sample(&state->reconnect_timer, 500000)) {
+        if (wifi_is_connected() &&
+            state->conn_status == JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED &&
+            state->hub_name && state->waiting_for_net) {
+            state->waiting_for_net = false;
+            azureiothub_reconnect(state);
+        }
+    }
+}
 
 void azureiothub_handle_packet(srv_t *state, jd_packet_t *pkt) {
     switch (pkt->service_command) {
@@ -284,6 +296,7 @@ void azureiothub_init(void) {
     ESP_ERROR_CHECK(nvs_open("jdaziot", NVS_READWRITE, &state->nvs_handle));
 
     state->conn_status = JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED;
+    state->waiting_for_net = true;
 
     size_t connlen;
     char *conn = nvs_get_blob_a(state->nvs_handle, "conn_str", &connlen);
