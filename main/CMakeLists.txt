@@ -41,6 +41,7 @@ idf_component_register(
     "../jacdac-c/jacscript/strformat.c"
     "../jacdac-c/jacscript/value.c"
     "../jacdac-c/jacscript/verify.c"
+    "../jacdac-c/jacscript/jacscloud.c"
 
   INCLUDE_DIRS 
     "."

@@ -14,8 +14,7 @@ bool wifi_is_connected(void);
 void jdtcp_init(void);
 
 void azureiothub_init(void);
-int azureiothub_publish(const void *msg, unsigned len);
-int azureiothub_publish_values(const char *label, int numvals, double *vals);
+extern const jacscloud_api_t azureiothub_cloud;
 
 #define CHK ESP_ERROR_CHECK
 

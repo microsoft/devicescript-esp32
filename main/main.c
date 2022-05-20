@@ -103,6 +103,7 @@ void app_init_services(void) {
     init_jacscript_manager();
     wifi_init();
     azureiothub_init();
+    jacscloud_init(&azureiothub_cloud);
 }
 
 static void flash_init() {

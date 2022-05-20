@@ -357,3 +357,13 @@ int azureiothub_publish_values(const char *label, int numvals, double *vals) {
     jd_free(msg);
     return r;
 }
+
+int azureiothub_is_connected(void) {
+    srv_t *state = _aziot_state;
+    return state->conn_status == JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED;
+}
+
+const jacscloud_api_t azureiothub_cloud = {
+    .upload = azureiothub_publish_values,
+    .is_connected = azureiothub_is_connected,
+};
