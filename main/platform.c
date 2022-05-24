@@ -68,6 +68,8 @@ void hw_panic(void) {
 }
 
 void reboot_to_uf2(void) {
+    ESP_LOGE("JD", "reset to UF2\n");
+
 #if CONFIG_IDF_TARGET_ESP32S2
     // call esp_reset_reason() is required for idf.py to properly links esp_reset_reason_set_hint()
     (void)esp_reset_reason();

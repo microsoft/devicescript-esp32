@@ -45,18 +45,6 @@ void flush_dmesg(void) {
     free(dmesgCopy);
 }
 
-void app_client_event_handler(int event_id, void *arg0, void *arg1) {
-    // jd_device_t *dev = arg0;
-    // jd_register_query_t *reg = arg1;
-    // jd_role_t *role = arg1;
-    // jd_register_query_t *reg = arg1;
-    // jd_device_service_t *serv = arg0;
-    // jd_packet_t *pkt = arg1;
-
-    jacs_ctx_t *jacs_ctx = jacscriptmgr_get_ctx();
-    jacs_client_event_handler(jacs_ctx, event_id, arg0, arg1);
-}
-
 static void post_loop(void *dummy) {
     if (!loop_pending) {
         loop_pending = 1;
@@ -104,6 +92,7 @@ void app_init_services(void) {
     wifi_init();
     azureiothub_init();
     jacscloud_init(&azureiothub_cloud);
+    tsagg_init(&azureiothub_cloud);
 }
 
 static void flash_init() {

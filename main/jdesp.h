@@ -51,13 +51,7 @@ char *extract_property(const char *property_bag, int plen, const char *key);
 char *nvs_get_str_a(nvs_handle_t handle, const char *key);
 void *nvs_get_blob_a(nvs_handle_t handle, const char *key, size_t *outsz);
 
-char *jd_concat_many(const char **parts);
-char *jd_concat2(const char *a, const char *b);
-char *jd_concat3(const char *a, const char *b, const char *c);
-char *jd_urlencode(const char *src);
-char *jd_json_escape(const char *str);
 char *jd_hmac_b64(const char *key, const char **parts);
-jd_frame_t *jd_dup_frame(const jd_frame_t *frame);
 
 void reboot_to_uf2(void);
 void flush_dmesg(void);

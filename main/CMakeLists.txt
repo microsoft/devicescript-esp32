@@ -42,9 +42,12 @@ idf_component_register(
     "../jacdac-c/jacscript/value.c"
     "../jacdac-c/jacscript/verify.c"
     "../jacdac-c/jacscript/jacscloud.c"
+    "../jacdac-c/jacscript/tsagg.c"
+    "../jacdac-c/jacdac/dist/c/jd_spec_pack.c"
 
   INCLUDE_DIRS 
     "."
     "../jacdac-c/inc"
+    "../jacdac-c/jacscript"
     "../jacdac-c"
 )

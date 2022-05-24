@@ -143,10 +143,9 @@ static void azureiothub_reconnect(srv_t *state) {
         return;
     }
 
-    char *uri = jd_concat2("mqtts://", state->hub_name);
-    const char *userparts[] = {state->hub_name, "/", state->device_id, "/?api-version=2018-06-30",
-                               NULL};
-    char *username = jd_concat_many(userparts);
+    char *uri = jd_sprintf_a("mqtts://%s", state->hub_name);
+    char *username = jd_sprintf_a("%s/%-s/?api-version=2018-06-30", state->hub_name,
+                                  jd_urlencode(state->device_id));
 
     LOG("connecting to %s/%s", uri, state->device_id);
 
@@ -216,26 +215,18 @@ static int set_conn_string(srv_t *state, const char *conn_str, int conn_len, int
     sas_sig = jd_urlencode(sas_sig);
     jd_free(tmp);
 
-    const char *parts2[] = {"SharedAccessSignature "
-                            "sr=",
-                            hub_name_enc,
-                            "%2Fdevices%2F",
-                            device_id_enc,
-                            "&se=" EXPIRES,
-                            "&sig=",
-                            sas_sig,
-                            NULL};
-
     clear_conn_string(state);
 
     state->hub_name = hub_name;
     state->device_id = device_id;
-    state->sas_token = jd_concat_many(parts2);
-    state->pub_topic = jd_concat3("devices/", device_id_enc, "/messages/events/");
+    state->sas_token = jd_sprintf_a("SharedAccessSignature sr=%s%%2Fdevices%%2F%s&se=%s&sig=%s",
+                                    hub_name_enc, device_id_enc, EXPIRES, sas_sig);
+    state->pub_topic = jd_sprintf_a("devices/%s/messages/events/", device_id_enc);
 
     LOG("conn string: %s -> %s", hub_name, device_id);
 
     jd_free(sas_key);
+    jd_free(sas_sig);
     jd_free(hub_name_enc);
     jd_free(device_id_enc);
 
@@ -334,28 +325,24 @@ int azureiothub_publish(const void *msg, unsigned len) {
     return 0;
 }
 
+static int publish_and_free(char *msg) {
+    int r = azureiothub_publish(msg, strlen(msg));
+    jd_free(msg);
+    return r;
+}
+
 int azureiothub_publish_values(const char *label, int numvals, double *vals) {
-    uint64_t self = jd_device_id();
-    char devid[sizeof(self) * 2 + 1];
-    jd_to_hex(devid, &self, sizeof(self));
-    char *label_esc = jd_json_escape(label);
-    const char *parts[] = {"{\"device\":\"",  devid, "\",\"label\":\"", label_esc,
-                           "\",\"values\":[", NULL};
     char **parts2 = jd_alloc(sizeof(char *) * (numvals + 2));
-    parts2[0] = jd_concat_many(parts);
-    jd_free(label_esc);
-    for (int i = 0; i < numvals; ++i) {
-        char buf[64];
-        jd_print_double(buf, vals[i], 8);
-        parts2[i + 1] = jd_concat2(buf, i == numvals - 1 ? "]}" : ",");
-    }
+    uint64_t self = jd_device_id();
+    parts2[0] = jd_sprintf_a("{\"device\":\"%-s\", \"label\":%-s, \"values\":[",
+                             jd_to_hex_a(&self, sizeof(self)), jd_json_escape(label));
+    for (int i = 0; i < numvals; ++i)
+        parts2[i + 1] = jd_sprintf_a("%f%s", vals[i], i == numvals - 1 ? "]}" : ",");
     parts2[numvals + 1] = NULL;
     char *msg = jd_concat_many((const char **)parts2);
     for (int i = 0; parts2[i]; ++i)
         jd_free(parts2[i]);
-    int r = azureiothub_publish(msg, strlen(msg));
-    jd_free(msg);
-    return r;
+    return publish_and_free(msg);
 }
 
 int azureiothub_is_connected(void) {
@@ -363,7 +350,31 @@ int azureiothub_is_connected(void) {
     return state->conn_status == JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED;
 }
 
+int azureiothub_agg_upload(const char *label, jd_device_service_t *service, uint8_t mode,
+                           jd_timeseries_aggregator_stored_report_t *data) {
+    if (!label)
+        label = "";
+    char *json;
+    if (service) {
+        jd_device_t *dev = jd_service_parent(service);
+        int idx = 0;
+        for (int i = 1; i < service->service_index; ++i)
+            if (dev->services[i].service_class == service->service_class)
+                idx++;
+        json = jd_sprintf_a("{\"device\":\"%-s\", \"serviceClass\":%d, \"index\":%d, \"role\":%-s",
+                            jd_to_hex_a(&dev->device_identifier, 8), service->service_class, idx,
+                            jd_json_escape(label));
+    } else {
+        json = jd_sprintf_a("{\"timeseries\":%-s", jd_json_escape(label));
+    }
+    json = jd_sprintf_a(
+        "%-s, \"avg\":%f, \"min\":%f, \"max\":%f, \"numSamples\":%d, \"start\":%u, \"end\":%u }",
+        json, data->avg, data->min, data->max, data->num_samples, data->start_time, data->end_time);
+    return publish_and_free(json);
+}
+
 const jacscloud_api_t azureiothub_cloud = {
     .upload = azureiothub_publish_values,
+    .agg_upload = azureiothub_agg_upload,
     .is_connected = azureiothub_is_connected,
 };
