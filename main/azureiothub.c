@@ -5,6 +5,10 @@
 #include "mqtt_client.h"
 #include "esp_crt_bundle.h"
 
+#include "jacs_internal.h"
+
+#define FLUSH_SECONDS 5
+
 #define EXPIRES "9000000000" // year 2255, TODO?
 static const char *MY_MQTT_EVENTS = "MY_MQTT_EVENTS";
 
@@ -18,6 +22,7 @@ struct srv_state {
     uint16_t conn_status;
     bool waiting_for_net;
     uint32_t reconnect_timer;
+    uint32_t flush_timer;
 
     char *hub_name;
     char *device_id;
@@ -256,6 +261,10 @@ void azureiothub_process(srv_t *state) {
             azureiothub_reconnect(state);
         }
     }
+
+    if (jd_should_sample(&state->flush_timer, FLUSH_SECONDS << 20)) {
+        aggbuffer_flush();
+    }
 }
 
 void azureiothub_handle_packet(srv_t *state, jd_packet_t *pkt) {
@@ -290,6 +299,8 @@ SRV_DEF(azureiothub, JD_SERVICE_CLASS_AZURE_IOT_HUB_HEALTH);
 void azureiothub_init(void) {
     SRV_ALLOC(azureiothub);
 
+    aggbuffer_init(&azureiothub_cloud);
+
     ESP_ERROR_CHECK(nvs_open("jdaziot", NVS_READWRITE, &state->nvs_handle));
 
     state->conn_status = JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED;
@@ -321,7 +332,9 @@ int azureiothub_publish(const void *msg, unsigned len) {
     bool store = true;
     if (esp_mqtt_client_enqueue(state->client, state->pub_topic, msg, len, qos, retain, store) < 0)
         return -2;
-    DMESG("send: >>%s<<", msg);
+
+    ESP_LOGI(TAG, "send: >>%s<<", (const char *)msg);
+
     return 0;
 }
 
@@ -345,11 +358,17 @@ int azureiothub_publish_values(const char *label, int numvals, double *vals) {
     return publish_and_free(msg);
 }
 
+int azureiothub_publish_bin(const void *data, unsigned datasize) {
+    char *hex = jd_to_hex_a(data, datasize);
+    return publish_and_free(hex);
+}
+
 int azureiothub_is_connected(void) {
     srv_t *state = _aziot_state;
     return state->conn_status == JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED;
 }
 
+#if 0
 int azureiothub_agg_upload(const char *label, jd_device_service_t *service, uint8_t mode,
                            jd_timeseries_aggregator_stored_report_t *data) {
     if (!label)
@@ -372,9 +391,11 @@ int azureiothub_agg_upload(const char *label, jd_device_service_t *service, uint
         json, data->avg, data->min, data->max, data->num_samples, data->start_time, data->end_time);
     return publish_and_free(json);
 }
+#endif
 
 const jacscloud_api_t azureiothub_cloud = {
     .upload = azureiothub_publish_values,
-    .agg_upload = azureiothub_agg_upload,
+    .agg_upload = aggbuffer_upload,
+    .bin_upload = azureiothub_publish_bin,
     .is_connected = azureiothub_is_connected,
 };

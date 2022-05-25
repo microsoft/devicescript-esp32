@@ -30,6 +30,7 @@ idf_component_register(
     "../jacdac-c/services/power.c"
     "../jacdac-c/client/rolemgr.c"
     "../jacdac-c/client/routing.c"
+    "../jacdac-c/jacscript/aggbuffer.c"
     "../jacdac-c/jacscript/buffer.c"
     "../jacdac-c/jacscript/fibers.c"
     "../jacdac-c/jacscript/jacscript.c"
