@@ -44,7 +44,7 @@ FW_VERSION = $(shell git describe --dirty --tags --match 'v[0-9]*' --always | se
 
 dist: uf2
 	mkdir -p build/dist
-	cp build/espjd.uf2 build/dist/jacscript-esp32s2-$(FW_VERSION).uf2
+	cp build/espjd.uf2 build/dist/jacscript-esp32s2.uf2
 
 bump:
 	sh ./scripts/bump.sh
