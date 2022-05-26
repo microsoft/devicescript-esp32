@@ -45,6 +45,8 @@ FW_VERSION = $(shell sh jacdac-c/scripts/git-version.sh)
 dist: uf2
 	mkdir -p build/dist
 	cp build/espjd.uf2 build/dist/jacscript-esp32s2.uf2
+	# also keep ELF file for addr2line
+	cp build/espjd.elf build/dist/jacscript-esp32s2.elf
 
 bump:
 	sh ./scripts/bump.sh
