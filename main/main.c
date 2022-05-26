@@ -105,9 +105,8 @@ static void flash_init() {
 }
 
 void app_main() {
-    ESP_LOGI("JD", "starting...");
-
-    DMESG("app main");
+    ESP_LOGI("JD", "starting jacscript-esp32 %s", app_fw_version);
+    DMESG("starting jacscript-esp32 %s", app_fw_version);
 
     fg_worker = worker_start("jd_fg", 2048);
     main_worker = worker_alloc();

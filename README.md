@@ -19,6 +19,7 @@ To deploy run `make r`.
 * [x] report Wi-Fi RSSI from tsagg
 * [ ] deal with Discrete from motion sensor
 * [ ] watchdog feature
+* [ ] blink on upload
 
 * [ ] save program in flash
 * [ ] multiple Wi-Fi networks saved
