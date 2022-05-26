@@ -40,7 +40,7 @@ rst:
 	echo "c"  >> build/gdbinit
 	xtensa-esp32s2-elf-gdb -x build/gdbinit build/espjd.elf
 
-FW_VERSION = $(shell git describe --dirty --tags --match 'v[0-9]*' --always | sed -e 's/^v//; s/-dirty/-'"`date +%Y%m%d-%H%M`/")
+FW_VERSION = $(shell sh jacdac-c/scripts/git-version.sh)
 
 dist: uf2
 	mkdir -p build/dist
