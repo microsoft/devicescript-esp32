@@ -16,6 +16,13 @@ To deploy run `make r`.
 
 ## TODO
 
+* [x] report Wi-Fi RSSI from tsagg
+* [ ] deal with Discrete from motion sensor
+* [ ] watchdog feature
+
+* [ ] save program in flash
+* [ ] multiple Wi-Fi networks saved
+
 * [x] add HF2 over USB Serial (CDC)
 * [x] set "CLIENT" flag in announce
 

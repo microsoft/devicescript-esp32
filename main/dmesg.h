@@ -45,15 +45,15 @@ extern struct CodalLogStore codalLogStore;
   * DMESG("USB: Error #%d at %X", k, ptr);
   * @endcode
   */
+__attribute__((format(printf, 1, 2)))
 void codal_dmesg(const char *format, ...);
+__attribute__((format(printf, 1, 2)))
 void codal_dmesgf(const char *format, ...);
 
 void codal_dmesg_set_flush_fn(void (*fn)(void));
 void codal_dmesg_flush(void);
 
 void codal_vdmesg(const char *format, va_list ap);
-
-int codal_vsprintf(char *dst, unsigned dstsize, const char *format, va_list ap);
 
 #define DMESG  codal_dmesg
 #define DMESGF  codal_dmesgf

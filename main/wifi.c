@@ -293,8 +293,17 @@ static void wifi_disconnect(srv_t *state) {
         ESP_ERROR_CHECK(esp_wifi_disconnect());
 }
 
+static int8_t wifi_rssi(srv_t *state) {
+    wifi_ap_record_t info;
+    if (!state->is_connected || esp_wifi_sta_get_ap_info(&info) != 0)
+        return -128;
+    return info.rssi;
+}
+
 void wifi_process(srv_t *state) {
     if (jd_should_sample(&state->next_scan, 5000000)) {
+        tsagg_update("wifi", wifi_rssi(state));
+        tsagg_update("uptime", (double)now_ms_long / 1000);
         if (!state->is_connected)
             wifi_scan(state);
     }
@@ -371,15 +380,10 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
     case JD_WIFI_CMD_RECONNECT:
         state->rescan_requested = true;
         wifi_disconnect(state);
-
         return;
 
-    case JD_GET(JD_WIFI_REG_RSSI): {
-        wifi_ap_record_t info;
-        if (!state->is_connected || esp_wifi_sta_get_ap_info(&info) != 0)
-            info.rssi = -128;
-        jd_respond_u8(pkt, info.rssi);
-    }
+    case JD_GET(JD_WIFI_REG_RSSI):
+        jd_respond_u8(pkt, wifi_rssi(state));
         return;
 
     case JD_GET(JD_WIFI_REG_IP_ADDRESS): {
