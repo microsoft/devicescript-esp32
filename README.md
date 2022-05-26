@@ -18,7 +18,9 @@ To deploy run `make r`.
 
 * [x] report Wi-Fi RSSI from tsagg
 * [ ] deal with Discrete from motion sensor
-* [ ] watchdog feature
+* [ ] user-accessible watchdog in Jacscript
+* [x] restart on infinite loop (hw-watchdog)
+* [ ] impl. watchdogs in tsagg + azureiot
 * [ ] blink on upload
 
 * [ ] save program in flash
