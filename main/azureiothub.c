@@ -7,8 +7,6 @@
 
 #include "jacs_internal.h"
 
-#define FLUSH_SECONDS 5
-
 #define EXPIRES "9000000000" // year 2255, TODO?
 static const char *MY_MQTT_EVENTS = "MY_MQTT_EVENTS";
 
@@ -19,10 +17,16 @@ static const char *MY_MQTT_EVENTS = "MY_MQTT_EVENTS";
 struct srv_state {
     SRV_COMMON;
 
+    // regs
     uint16_t conn_status;
+    uint32_t push_period_ms;
+    uint32_t push_watchdog_period_ms;
+
+    // non-regs
     bool waiting_for_net;
     uint32_t reconnect_timer;
     uint32_t flush_timer;
+    uint32_t watchdog_timer_ms;
 
     char *hub_name;
     char *device_id;
@@ -33,10 +37,12 @@ struct srv_state {
     esp_mqtt_client_handle_t client;
 };
 
-REG_DEFINITION(                                             //
-    azureiothub_regs,                                       //
-    REG_SRV_COMMON,                                         //
-    REG_U16(JD_AZURE_IOT_HUB_HEALTH_REG_CONNECTION_STATUS), //
+REG_DEFINITION(                                                //
+    azureiothub_regs,                                          //
+    REG_SRV_COMMON,                                            //
+    REG_U16(JD_AZURE_IOT_HUB_HEALTH_REG_CONNECTION_STATUS),    //
+    REG_U32(JD_AZURE_IOT_HUB_HEALTH_REG_PUSH_PERIOD),          //
+    REG_U32(JD_AZURE_IOT_HUB_HEALTH_REG_PUSH_WATCHDOG_PERIOD), //
 )
 
 static const char *status_name(int st) {
@@ -52,6 +58,11 @@ static const char *status_name(int st) {
     default:
         return "???";
     }
+}
+
+static void feed_watchdog(srv_t *state) {
+    if (state->push_watchdog_period_ms)
+        state->watchdog_timer_ms = now_ms + state->push_watchdog_period_ms;
 }
 
 static void set_status(srv_t *state, uint16_t status) {
@@ -253,6 +264,11 @@ fail:
 }
 
 void azureiothub_process(srv_t *state) {
+    if (state->push_watchdog_period_ms && in_past_ms(state->watchdog_timer_ms)) {
+        ESP_LOGE("JD", "cloud watchdog reset\n");
+        target_reset();
+    }
+
     if (jd_should_sample(&state->reconnect_timer, 500000)) {
         if (wifi_is_connected() &&
             state->conn_status == JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED &&
@@ -262,7 +278,7 @@ void azureiothub_process(srv_t *state) {
         }
     }
 
-    if (jd_should_sample(&state->flush_timer, FLUSH_SECONDS << 20)) {
+    if (jd_should_sample_ms(&state->flush_timer, state->push_period_ms)) {
         aggbuffer_flush();
     }
 }
@@ -290,7 +306,21 @@ void azureiothub_handle_packet(srv_t *state, jd_packet_t *pkt) {
         return;
     }
 
-    service_handle_register_final(state, pkt, azureiothub_regs);
+    switch (service_handle_register_final(state, pkt, azureiothub_regs)) {
+    case JD_AZURE_IOT_HUB_HEALTH_REG_PUSH_PERIOD:
+    case JD_AZURE_IOT_HUB_HEALTH_REG_PUSH_WATCHDOG_PERIOD:
+        if (state->push_period_ms < 1000)
+            state->push_period_ms = 1000;
+        if (state->push_period_ms > 24 * 3600 * 1000)
+            state->push_period_ms = 24 * 3600 * 1000;
+
+        if (state->push_watchdog_period_ms) {
+            if (state->push_watchdog_period_ms < state->push_period_ms * 3)
+                state->push_watchdog_period_ms = state->push_period_ms * 3;
+            feed_watchdog(state);
+        }
+        break;
+    }
 }
 
 static srv_t *_aziot_state;
@@ -305,6 +335,7 @@ void azureiothub_init(void) {
 
     state->conn_status = JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED;
     state->waiting_for_net = true;
+    state->push_period_ms = 5000;
 
     size_t connlen;
     char *conn = nvs_get_blob_a(state->nvs_handle, "conn_str", &connlen);
@@ -333,6 +364,7 @@ int azureiothub_publish(const void *msg, unsigned len) {
     if (esp_mqtt_client_enqueue(state->client, state->pub_topic, msg, len, qos, retain, store) < 0)
         return -2;
 
+    feed_watchdog(state);
     ESP_LOGI(TAG, "send: >>%s<<", (const char *)msg);
 
     return 0;
