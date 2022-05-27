@@ -17,13 +17,13 @@ To deploy run `make r`.
 ## TODO
 
 * [x] report Wi-Fi RSSI from tsagg
-* [ ] deal with Discrete from motion sensor
+* [x] deal with Discrete from motion sensor
 * [ ] user-accessible watchdog in Jacscript
 * [x] restart on infinite loop (hw-watchdog)
-* [ ] impl. watchdogs in tsagg + azureiot
+* [x] impl. watchdogs in tsagg + azureiot
 * [ ] blink on upload
 
-* [ ] save program in flash
+* [x] save program in flash
 * [ ] multiple Wi-Fi networks saved
 
 * [x] add HF2 over USB Serial (CDC)

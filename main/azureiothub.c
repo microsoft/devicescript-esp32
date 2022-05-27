@@ -430,4 +430,5 @@ const jacscloud_api_t azureiothub_cloud = {
     .agg_upload = aggbuffer_upload,
     .bin_upload = azureiothub_publish_bin,
     .is_connected = azureiothub_is_connected,
+    .max_bin_upload_size = 1024, // just a guess
 };
