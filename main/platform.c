@@ -62,8 +62,7 @@ IRAM_ATTR void target_enable_irq() {
 }
 
 void hw_panic(void) {
-    ESP_LOGI("JD", "HW PANIC!\n");
-    flush_dmesg();
+    DMESG("HW PANIC!");
     abort();
 }
 

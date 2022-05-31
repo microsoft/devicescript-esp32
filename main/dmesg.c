@@ -62,8 +62,9 @@ extern int int_level;
 void panic_print_char(const char c);
 void panic_print_str(const char *str);
 void panic_print_dec(int d);
-void user_panic_handler() {
-    panic_print_str("\r\nDMESG:\r\n");
+void __real_esp_panic_handler(void *);
+void __wrap_esp_panic_handler(void *info) {
+    panic_print_str(LOG_COLOR(LOG_COLOR_RED) "\r\nDMESG:\r\n");
     for (unsigned i = 0; i < codalLogStore.ptr; ++i) {
         char c = codalLogStore.buffer[i];
         if (c == '\n')
@@ -72,7 +73,9 @@ void user_panic_handler() {
     }
     panic_print_str("END DMESG\r\nInt: ");
     panic_print_dec(int_level);
-    panic_print_str("\r\n");
+    panic_print_str("\r\n" LOG_RESET_COLOR);
+
+    __real_esp_panic_handler(info);
 }
 
 #endif
