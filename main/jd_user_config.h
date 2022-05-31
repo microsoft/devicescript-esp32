@@ -11,8 +11,8 @@
 #define JD_CLIENT 1
 
 #define LED_R_MULT 250
-#define LED_G_MULT 76
-#define LED_B_MULT 221
+#define LED_G_MULT 60
+#define LED_B_MULT 150
 
 #define PIN_LED_B 6
 #define PIN_LED_G 7

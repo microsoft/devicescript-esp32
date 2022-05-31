@@ -221,7 +221,7 @@ static int hf2_handle_packet(int sz) {
     case HF2_CMD_JDS_SEND: {
         jd_frame_t *frame = jd_dup_frame((jd_frame_t *)cmd->data8);
         if (worker_run(main_worker, do_send_frame, frame) != 0) {
-            ERROR("HF2 send ovf");
+            OVF_ERROR("HF2 send ovf");
             jd_free(frame);
         }
         return hf2_send_response(0);

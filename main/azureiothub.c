@@ -263,6 +263,16 @@ fail:
     return -1;
 }
 
+#if 1
+static const uint32_t glows[] = {
+    [JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED] = JD_GLOW_CLOUD_CONNECTED_TO_CLOUD,
+    [JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED] = JD_GLOW_CLOUD_NOT_CONNECTED_TO_CLOUD,
+    [JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTING] = JD_GLOW_CLOUD_CONNECTING_TO_CLOUD,
+    [JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTING] =
+        JD_GLOW_CLOUD_NOT_CONNECTED_TO_CLOUD,
+};
+#endif
+
 void azureiothub_process(srv_t *state) {
     if (state->push_watchdog_period_ms && in_past_ms(state->watchdog_timer_ms)) {
         ESP_LOGE("JD", "cloud watchdog reset\n");
@@ -270,6 +280,13 @@ void azureiothub_process(srv_t *state) {
     }
 
     if (jd_should_sample(&state->reconnect_timer, 500000)) {
+#if 1
+        if (!wifi_is_connected())
+            jd_glow(JD_GLOW_CLOUD_CONNECTING_TO_NETWORK);
+        else
+            jd_glow(glows[state->conn_status]);
+#endif
+
         if (wifi_is_connected() &&
             state->conn_status == JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_DISCONNECTED &&
             state->hub_name && state->waiting_for_net) {
@@ -366,6 +383,8 @@ int azureiothub_publish(const void *msg, unsigned len) {
 
     feed_watchdog(state);
     ESP_LOGI(TAG, "send: >>%s<<", (const char *)msg);
+
+    jd_blink(JD_BLINK_CLOUD_UPLOADED);
 
     return 0;
 }
