@@ -12,6 +12,7 @@ typedef struct jacdac_ctx {
     uint8_t uart_num;
     volatile bool seen_low;
     bool rx_ended;
+    bool in_tx;
     volatile uint16_t tx_len;
     volatile uint16_t rx_len;
     uint16_t data_left;
@@ -277,6 +278,7 @@ void uart_init() {
 #define END_RX_FLAGS (UART_RXFIFO_TOUT_INT_ST | UART_BRK_DET_INT_ST | UART_FRM_ERR_INT_ST)
 
 static IRAM_ATTR void start_bg_rx() {
+    JD_ASSERT(!context.in_tx);
     read_fifo(1); // flush any data
     context.seen_low = 1;
     context.uart_hw->int_ena.val |= END_RX_FLAGS | UART_RXFIFO_FULL_INT_ENA;
@@ -297,6 +299,9 @@ static IRAM_ATTR void uart_isr(void *dummy) {
     uint32_t uart_intr_status = uart_reg->int_st.val;
     uart_reg->int_clr.val = uart_intr_status; // clear all
 
+    // mask out disabled interrupts
+    uart_intr_status &= uart_reg->int_ena.val;
+
     LOG("ISR %x %d", uart_intr_status, context.seen_low);
 
     read_fifo(0);
@@ -306,6 +311,7 @@ static IRAM_ATTR void uart_isr(void *dummy) {
         start_bg_rx();
     } else if (uart_intr_status & UART_TX_BRK_DONE_INT_ST) {
         uart_reg->conf0.txd_brk = 0;
+        context.in_tx = 0;
         uart_disable();
         context.cb_tx = 1;
         schedule_timer0();
@@ -345,16 +351,16 @@ static void tx_race() {
 }
 
 int uart_start_tx(const void *data, uint32_t numbytes) {
-    if (context.tx_len) {
+    if (context.tx_len || context.in_tx) {
         jd_panic();
     }
 
+    target_disable_irq();
     if (!context.intr_handle || context.seen_low || context.uart_hw->int_raw.brk_det) {
         LOG("seen low %p %d %p", &context, context.seen_low, context.uart_hw->int_raw.brk_det);
+        target_enable_irq();
         return -1;
     }
-
-    target_disable_irq();
 
     gpio_matrix_in(GPIO_FUNC_IN_HIGH, RX_SIG, 0); // context.uart_hw
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
@@ -368,6 +374,9 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
         target_enable_irq();
         return -1;
     }
+
+    JD_ASSERT(!context.seen_low);
+    context.in_tx = 1;
 
     target_wait_us(12); // low pulse is 14us with wait of 12 here
     xgpio_set_level(context.pin_num, 1);
@@ -433,8 +442,8 @@ void uart_disable() {
     context.fifo_buf = NULL;
     context.rx_ended = 0;
     read_fifo(1);
-    target_enable_irq();
     pin_rx();
+    target_enable_irq();
     log_pin_pulse(1, 1);
 }
 

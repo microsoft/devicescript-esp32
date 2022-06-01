@@ -122,7 +122,7 @@ static void hf2_send_buffer(uint8_t flag, const void *data, unsigned size, uint3
     memcpy(dst, data, size);
 
     if (worker_run(fg_worker, send_buffer_core, ent) != 0)
-        DMESG("HF2 queue full");
+        OVF_ERROR("HF2 queue full");
 }
 
 int hf2_send_event(uint32_t evId, const void *data, int size) {

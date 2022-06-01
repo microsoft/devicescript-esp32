@@ -16,12 +16,21 @@ To deploy run `make r`.
 
 ## TODO
 
+* [ ] test flash jacs storage
+* [ ] test sensor watchdog
+* [ ] test cloud watchdog
+* [ ] add Jacs restart/crash blinks
+* [ ] add Jacs user blink
+* [ ] some blink for no Jacs program?
+* [ ] linker-override panic_restart() - do some blinking in there
+* [ ] synchronize timeseries ends to limit number of uploads
+
 * [x] report Wi-Fi RSSI from tsagg
 * [x] deal with Discrete from motion sensor
 * [ ] user-accessible watchdog in Jacscript
 * [x] restart on infinite loop (hw-watchdog)
 * [x] impl. watchdogs in tsagg + azureiot
-* [ ] blink on upload
+* [x] blink on upload
 
 * [x] save program in flash
 * [ ] multiple Wi-Fi networks saved
@@ -34,11 +43,11 @@ To deploy run `make r`.
 * [ ] only accept `restricted` packets from USB or loopback
 * [ ] add `restricted` flag in frame flags
 
-* [ ] re-enable wifi service - think about auto-connect?
-* [ ] implement Azure IoT Hub connection and IoT Hub health service
-* [ ] implement Jacscript Cloud service using IoT Hub
-* [ ] add auto-upload function in Jacscript and precompile for common modules
-* [ ] implement reset_in as hw-watchdog
+* [x] re-enable wifi service - think about auto-connect?
+* [x] implement Azure IoT Hub connection and IoT Hub health service
+* [x] implement Jacscript Cloud service using IoT Hub
+* [x] add auto-upload function in Jacscript and precompile for common modules
+* [x] implement reset_in as hw-watchdog
 
 ## Contributing
 
