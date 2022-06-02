@@ -104,12 +104,12 @@ static void scan_done_handler(void *arg, esp_event_base_t event_base, int32_t ev
 
     if (sta_number != 0) {
         wifi_ap_record_t *ap_list_buffer =
-            (wifi_ap_record_t *)malloc(sta_number * sizeof(wifi_ap_record_t));
+            (wifi_ap_record_t *)jd_alloc(sta_number * sizeof(wifi_ap_record_t));
 
         esp_err_t err = esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer);
 
         if (err == ESP_OK) {
-            res = malloc(sizeof(jd_wifi_results_t) * sta_number);
+            res = jd_alloc(sizeof(jd_wifi_results_t) * sta_number);
 
             for (int i = 0; i < sta_number; i++) {
                 jd_wifi_results_t ent;
@@ -154,13 +154,13 @@ static void scan_done_handler(void *arg, esp_event_base_t event_base, int32_t ev
             LOG("failed to read scan results: %d", err);
         }
 
-        free(ap_list_buffer);
+        jd_free(ap_list_buffer);
     }
 
     stop_scan_pipe(state);
 
     if (state->scan_results)
-        free(state->scan_results);
+        jd_free(state->scan_results);
     state->scan_results = res;
     state->scan_num = sta_number;
 
@@ -229,8 +229,8 @@ static int wifi_cmd_add_network(srv_t *state, jd_packet_t *pkt) {
     if (!pass)
         pass = "";
 
-    state->ssid = strdup(ssid);
-    state->password = strdup(pass);
+    state->ssid = jd_strdup(ssid);
+    state->password = jd_strdup(pass);
 
     stop_networks_pipe(state);
 
@@ -280,8 +280,8 @@ static void wifi_start(srv_t *state) {
 
 static void forget_all_networks(srv_t *state) {
     if (state->ssid) {
-        free(state->ssid);
-        free(state->password);
+        jd_free(state->ssid);
+        jd_free(state->password);
         state->ssid = NULL;
         state->password = NULL;
         jd_send_event(state, JD_WIFI_EV_NETWORKS_CHANGED);

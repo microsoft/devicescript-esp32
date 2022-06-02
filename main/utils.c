@@ -12,7 +12,7 @@ char *extract_property(const char *property_bag, int plen, const char *key) {
         if (property_bag[ptr + klen] == '=' && memcmp(property_bag + ptr, key, klen) == 0) {
             int sidx = ptr + klen + 1;
             int rlen = nextp - sidx;
-            char *r = malloc(rlen + 1);
+            char *r = jd_alloc(rlen + 1);
             memcpy(r, property_bag + sidx, rlen);
             r[rlen] = 0;
             return r;
@@ -30,7 +30,7 @@ char *nvs_get_str_a(nvs_handle_t handle, const char *key) {
     if (err == ESP_ERR_NVS_NOT_FOUND)
         return NULL;
     JD_ASSERT(err == ESP_OK);
-    char *res = malloc(sz);
+    char *res = jd_alloc(sz);
     err = nvs_get_str(handle, key, res, &sz);
     JD_ASSERT(err == ESP_OK);
     return res;
@@ -41,7 +41,7 @@ void *nvs_get_blob_a(nvs_handle_t handle, const char *key, size_t *outsz) {
     if (err == ESP_ERR_NVS_NOT_FOUND)
         return NULL;
     JD_ASSERT(err == ESP_OK);
-    void *res = malloc(*outsz);
+    void *res = jd_alloc(*outsz);
     err = nvs_get_blob(handle, key, res, outsz);
     JD_ASSERT(err == ESP_OK);
     return res;
