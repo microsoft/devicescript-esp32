@@ -24,6 +24,8 @@ int target_in_irq(void) {
 
 void flush_dmesg(void) {
     char *dmesgCopy = malloc(sizeof(codalLogStore));
+    if (!dmesgCopy)
+        return;
 
     uint32_t len;
 

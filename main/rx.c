@@ -14,6 +14,9 @@ static int jd_rx_frame_received_core(jd_frame_t *frame, int is_loop) {
         return 0;
 
     jd_frame_t *copy = malloc(JD_FRAME_SIZE(frame));
+    if (!copy)
+        return -1;
+
     memcpy(copy, frame, JD_FRAME_SIZE(frame));
 
     if (!is_loop)

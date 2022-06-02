@@ -109,6 +109,9 @@ static void hf2_send_buffer(uint8_t flag, const void *data, unsigned size, uint3
         size += 4;
 
     BufferEntry *ent = (BufferEntry *)malloc(sizeof(BufferEntry) + size);
+    if (!ent)
+        return;
+
     ent->size = size;
     ent->flag = flag;
     uint8_t *dst = ent->data;
@@ -121,8 +124,10 @@ static void hf2_send_buffer(uint8_t flag, const void *data, unsigned size, uint3
 
     memcpy(dst, data, size);
 
-    if (worker_run(fg_worker, send_buffer_core, ent) != 0)
+    if (worker_run(fg_worker, send_buffer_core, ent) != 0) {
         OVF_ERROR("HF2 queue full");
+        free(ent);
+    }
 }
 
 int hf2_send_event(uint32_t evId, const void *data, int size) {
