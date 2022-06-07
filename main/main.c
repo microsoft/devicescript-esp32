@@ -93,6 +93,8 @@ static const power_config_t pwr_cfg = {
 };
 
 void app_init_services(void) {
+    init_sdcard();
+
     power_init(&pwr_cfg);
     jd_role_manager_init();
     init_jacscript_manager();

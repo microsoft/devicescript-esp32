@@ -24,6 +24,8 @@ To deploy run `make r`.
 * [ ] some blink for no Jacs program?
 * [ ] linker-override panic_restart() - do some blinking in there
 * [ ] synchronize timeseries ends to limit number of uploads
+* [ ] save current time in some RTC register so it survives reset (for stored cloud uploads)
+* [ ] 'failed' response for HF2 send
 
 * [x] report Wi-Fi RSSI from tsagg
 * [x] deal with Discrete from motion sensor

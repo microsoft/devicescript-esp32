@@ -11,6 +11,7 @@ idf_component_register(
     "usb.c"
     "wifi.c"
     "utils.c"
+    "sdcard.c"
     "platform.c"
     "azureiothub.c"
     "../build/version.c"
@@ -45,6 +46,9 @@ idf_component_register(
     "../jacdac-c/jacscript/jacscloud.c"
     "../jacdac-c/jacscript/tsagg.c"
     "../jacdac-c/jacdac/dist/c/jd_spec_pack.c"
+
+    "../jacdac-c/storage/ff/ff.c"
+    "../jacdac-c/storage/logstore.c"
 
   INCLUDE_DIRS 
     "."

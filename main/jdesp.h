@@ -55,3 +55,5 @@ char *jd_hmac_b64(const char *key, const char **parts);
 
 void reboot_to_uf2(void);
 void flush_dmesg(void);
+
+void init_sdcard(void);
