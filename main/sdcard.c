@@ -22,8 +22,6 @@ static const char *TAG = "sd";
 #define SPI_DMA_CHAN 1
 #endif
 
-void jd_init_logstore(void);
-
 void init_sdcard(void) {
     esp_err_t ret;
 
@@ -73,7 +71,7 @@ void init_sdcard(void) {
 
     ff_diskio_register_sdmmc(pdrv, card);
 
-    jd_init_logstore();
+    jd_lstore_init();
 
     // sdmmc_card_print_info(stdout, card);
     // spi_bus_free(host.slot);

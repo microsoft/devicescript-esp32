@@ -22,6 +22,9 @@ int target_in_irq(void) {
     return xTaskGetCurrentTaskHandle() != main_task;
 }
 
+FILE *orig_stdout;
+FILE *lstore_stdout;
+
 void flush_dmesg(void) {
     char *dmesgCopy = malloc(sizeof(codalLogStore));
     if (!dmesgCopy)
@@ -40,10 +43,15 @@ void flush_dmesg(void) {
         if (dmesgCopy[len - 1] == '\n')
             len--;
         dmesgCopy[len] = 0;
+
+        jd_lstore_append_frag(0, JD_LSTORE_TYPE_DMESG, dmesgCopy, len);
+
         if (strchr(dmesgCopy, '\n'))
-            ESP_LOGW("JD", "DMESG:\n%s", dmesgCopy);
+            fprintf(orig_stdout, LOG_COLOR(LOG_COLOR_CYAN) "DM (%d):\n%s\n" LOG_RESET_COLOR,
+                    esp_log_timestamp(), dmesgCopy);
         else
-            ESP_LOGW("JD", "DMESG: %s", dmesgCopy);
+            fprintf(orig_stdout, LOG_COLOR(LOG_COLOR_CYAN) "DM (%d): %s\n" LOG_RESET_COLOR,
+                    esp_log_timestamp(), dmesgCopy);
     }
     free(dmesgCopy);
 }
@@ -58,6 +66,8 @@ static void post_loop(void *dummy) {
 static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
                          void *event_data) {
     if (!main_task) {
+        stdout = lstore_stdout;
+
         CHK(esp_task_wdt_add(NULL));
 
         main_task = xTaskGetCurrentTaskHandle();
@@ -79,6 +89,8 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 
     flush_dmesg();
 
+    jd_lstore_process();
+
     // re-post ourselves immediately if more frames to process
     if (jd_rx_has_frame())
         post_loop(NULL);
@@ -93,8 +105,6 @@ static const power_config_t pwr_cfg = {
 };
 
 void app_init_services(void) {
-    init_sdcard();
-
     power_init(&pwr_cfg);
     jd_role_manager_init();
     init_jacscript_manager();
@@ -113,6 +123,11 @@ static void flash_init() {
     ESP_ERROR_CHECK(ret);
 }
 
+static int log_writefn(void *cookie, const char *data, int size) {
+    jd_lstore_append_frag(0, JD_LSTORE_TYPE_LOG, data, size);
+    return fwrite(data, 1, size, orig_stdout);
+}
+
 void app_main() {
     // reboot after 5s without watchdog
     CHK(esp_task_wdt_init(5, true));
@@ -121,6 +136,15 @@ void app_main() {
 
     ESP_LOGI("JD", "starting jacscript-esp32 %s", app_fw_version);
     DMESG("starting jacscript-esp32 %s", app_fw_version);
+
+    jd_seed_random(esp_random());
+    init_sdcard();
+
+    orig_stdout = stdout;
+    lstore_stdout = stdout = fwopen(NULL, &log_writefn);
+    // enable line buffering for this stream (to be similar to the regular UART-based output)
+    static char stdout_buf[128];
+    setvbuf(stdout, stdout_buf, _IOLBF, sizeof(stdout_buf));
 
     fg_worker = worker_start("jd_fg", 2048);
     main_worker = worker_alloc();

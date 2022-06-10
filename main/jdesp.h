@@ -2,6 +2,7 @@
 #include "jdlow.h"
 #include "jdtcp.h"
 #include "jd_client.h"
+#include "storage/jd_storage.h"
 #include "jacscript/jacscript.h"
 #include "services/jd_services.h"
 #include "services/interfaces/jd_pins.h"

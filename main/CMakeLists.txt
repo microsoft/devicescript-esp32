@@ -48,7 +48,8 @@ idf_component_register(
     "../jacdac-c/jacdac/dist/c/jd_spec_pack.c"
 
     "../jacdac-c/storage/ff/ff.c"
-    "../jacdac-c/storage/logstore.c"
+    "../jacdac-c/storage/lstore.c"
+    "../jacdac-c/storage/crc32.c"
 
   INCLUDE_DIRS 
     "."
