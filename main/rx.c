@@ -22,7 +22,7 @@ static int jd_rx_frame_received_core(jd_frame_t *frame, int is_loop) {
     if (!is_loop)
         hf2_send_frame(copy);
 
-    if (!xQueueSendToBackFromISR(frame_queue, &copy, 0)) {
+    if (!frame_queue || !xQueueSendToBackFromISR(frame_queue, &copy, 0)) {
         free(copy);
         return -1;
     }

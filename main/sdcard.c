@@ -28,12 +28,6 @@ void init_sdcard(void) {
     sdmmc_card_t *card;
     ESP_LOGI(TAG, "Initializing SD card");
 
-    // Use settings defined above to initialize SD card and mount FAT filesystem.
-    // Note: esp_vfs_fat_sdmmc/sdspi_mount is all-in-one convenience functions.
-    // Please check its source code and implement error recovery when developing
-    // production applications.
-    ESP_LOGI(TAG, "Using SPI peripheral");
-
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_NUM_MOSI,
@@ -44,19 +38,11 @@ void init_sdcard(void) {
         .max_transfer_sz = 4000,
     };
 
-    // esp_vfs_fat_sdspi_mount
-
-    ret = spi_bus_initialize(host.slot, &bus_cfg, SPI_DMA_CHAN);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to initialize bus.");
-        return;
-    }
+    CHK(spi_bus_initialize(host.slot, &bus_cfg, SPI_DMA_CHAN));
 
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
     slot_config.gpio_cs = PIN_NUM_CS;
     slot_config.host_id = host.slot;
-
-    ESP_LOGI(TAG, "Mounting filesystem");
 
     BYTE pdrv = FF_DRV_NOT_USED;
     CHK(ff_diskio_get_drive(&pdrv));
@@ -67,12 +53,17 @@ void init_sdcard(void) {
     CHK(host.init());
 
     CHK(sdspi_host_init_device(&slot_config, &host.slot));
-    CHK(sdmmc_card_init(&host, card));
+
+    ret = sdmmc_card_init(&host, card);
+    if (ret != 0) {
+        jd_free(card);
+        ESP_LOGW(TAG, "Failed to initialize SD card");
+        return;
+    }
 
     ff_diskio_register_sdmmc(pdrv, card);
 
-    jd_lstore_init();
+    ESP_LOGI(TAG, "SD card initialized");
 
-    // sdmmc_card_print_info(stdout, card);
-    // spi_bus_free(host.slot);
+    jd_lstore_init();
 }
