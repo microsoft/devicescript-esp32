@@ -14,8 +14,44 @@ static TaskHandle_t main_task;
 static int loop_pending;
 static esp_timer_handle_t main_loop_tick_timer;
 
+// 33, 34
+#define DET_PINS(a, b) (((a) + 1) * 3 + ((b) + 1))
+
+#define BOARD_48 DET_PINS(PIN_PULL_NONE, PIN_PULL_NONE)
+#define BOARD_207_V4_2 DET_PINS(PIN_PULL_DOWN, PIN_PULL_UP)
+#define BOARD_207_V4_3 DET_PINS(PIN_PULL_DOWN, PIN_PULL_DOWN)
+
+#define BOARD_FLAG_PWR_ACTIVE_HI 0x00000001
+
+typedef struct {
+    const char *name;
+    uint32_t flags;
+} board_info_t;
+
+const board_info_t board_infos[9] = {
+    [BOARD_48] = {"JacdacIoT 48", 0},
+    [BOARD_207_V4_2] = {"JM Brain S2-mini 207 v4.2", 0},
+    [BOARD_207_V4_3] = {"JM Brain S2-mini 207 v4.3", BOARD_FLAG_PWR_ACTIVE_HI},
+};
+static int board_type;
+
+static int detect_pin(int pin) {
+    pin_setup_input(pin, PIN_PULL_DOWN);
+    target_wait_us(100);
+    int v1 = pin_get(pin);
+    pin_setup_input(pin, PIN_PULL_UP);
+    target_wait_us(100);
+    int v2 = pin_get(pin);
+    pin_setup_analog_input(pin);
+    if (v1 != v2)
+        return PIN_PULL_NONE;
+    return v1 ? PIN_PULL_UP : PIN_PULL_DOWN;
+}
+
 static void setup_pins(void) {
     pin_setup_input(PIN_BOOT_BTN, PIN_PULL_UP);
+    board_type = DET_PINS(detect_pin(33), detect_pin(34));
+    DMESG("board type: %s", board_infos[board_type].name);
 }
 
 int target_in_irq(void) {
@@ -96,7 +132,7 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
         post_loop(NULL);
 }
 
-static const power_config_t pwr_cfg = {
+static power_config_t pwr_cfg = {
     .pin_fault = PIN_PWR_FAULT, // active low
     .pin_en = PIN_PWR_EN,
     .pin_pulse = NO_PIN,
@@ -105,6 +141,8 @@ static const power_config_t pwr_cfg = {
 };
 
 void app_init_services(void) {
+    if (board_infos[board_type].flags & BOARD_FLAG_PWR_ACTIVE_HI)
+        pwr_cfg.en_active_high = 1;
     power_init(&pwr_cfg);
     jd_role_manager_init();
     init_jacscript_manager();
