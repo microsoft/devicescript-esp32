@@ -84,6 +84,7 @@ void pin_set_pull(int pin, int pull) {
 }
 
 void pin_setup_analog_input(int pin) {
+    pin_set_pull(pin, PIN_PULL_NONE);
     gpio_set_direction(pin, GPIO_MODE_DISABLE);
 }
 

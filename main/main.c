@@ -42,9 +42,10 @@ static int detect_pin(int pin) {
     pin_setup_input(pin, PIN_PULL_UP);
     target_wait_us(100);
     int v2 = pin_get(pin);
-    pin_setup_analog_input(pin);
     if (v1 != v2)
         return PIN_PULL_NONE;
+    // it's externally pulled, no need to leave the internal pull on
+    pin_setup_analog_input(pin);
     return v1 ? PIN_PULL_UP : PIN_PULL_DOWN;
 }
 
