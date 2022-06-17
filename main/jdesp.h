@@ -6,6 +6,7 @@
 #include "jacscript/jacscript.h"
 #include "services/jd_services.h"
 #include "services/interfaces/jd_pins.h"
+#include "services/interfaces/jd_pwm.h"
 
 #include "nvs_flash.h"
 

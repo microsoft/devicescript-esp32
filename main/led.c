@@ -1,6 +1,4 @@
 #include "jdesp.h"
-#include "services/interfaces/jd_pins.h"
-#include "services/interfaces/jd_pwm.h"
 
 #include "driver/ledc.h"
 

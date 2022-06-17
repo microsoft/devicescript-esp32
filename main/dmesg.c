@@ -54,16 +54,12 @@ void codal_vdmesg(const char *format, va_list ap) {
     logwriten(tmp, len + 1);
 }
 
-#endif
-
-#if 1
-
 extern int int_level;
 void panic_print_char(const char c);
 void panic_print_str(const char *str);
 void panic_print_dec(int d);
-void __real_esp_panic_handler(void *);
-void __wrap_esp_panic_handler(void *info) {
+
+void panic_dump_dmesg(void) {
     panic_print_str(LOG_COLOR(LOG_COLOR_RED) "\r\nDMESG:\r\n");
     for (unsigned i = 0; i < codalLogStore.ptr; ++i) {
         char c = codalLogStore.buffer[i];
@@ -74,8 +70,12 @@ void __wrap_esp_panic_handler(void *info) {
     panic_print_str("END DMESG\r\nInt: ");
     panic_print_dec(int_level);
     panic_print_str("\r\n" LOG_RESET_COLOR);
-
-    __real_esp_panic_handler(info);
 }
 
+void __real_esp_panic_handler(void *);
+void __wrap_esp_panic_handler(void *info) {
+    panic_dump_dmesg();
+    __real_esp_panic_handler(info);
+}
 #endif
+

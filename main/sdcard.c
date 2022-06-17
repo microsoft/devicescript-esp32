@@ -2,6 +2,7 @@
 
 #include "sdmmc_cmd.h"
 
+#include "hal/gpio_ll.h"
 #include "driver/sdspi_host.h"
 #include "driver/sdmmc_host.h"
 #include "diskio_impl.h"
@@ -9,10 +10,9 @@
 
 static const char *TAG = "sd";
 
-#define PIN_NUM_MISO 37
-#define PIN_NUM_MOSI 35
-#define PIN_NUM_CLK 36
-#define PIN_NUM_CS 38
+#define SET_SCK() gpio_ll_set_level(&GPIO, PIN_SD_SCK, 1)
+#define CLR_SCK() gpio_ll_set_level(&GPIO, PIN_SD_SCK, 0)
+#define GET_MISO() gpio_ll_get_level(&GPIO, PIN_SD_MISO)
 
 #if CONFIG_IDF_TARGET_ESP32S2
 #define SPI_DMA_CHAN host.slot
@@ -22,6 +22,64 @@ static const char *TAG = "sd";
 #define SPI_DMA_CHAN 1
 #endif
 
+#define SPI_TX_BIT(n)                                                                              \
+    gpio_ll_set_level(&GPIO, PIN_SD_MOSI, b &(1 << n));                                            \
+    SET_SCK();                                                                                     \
+    CLR_SCK()
+
+#define SPI_RX_BIT(n)                                                                              \
+    SET_SCK();                                                                                     \
+    if (GET_MISO())                                                                                \
+        b |= (1 << n);                                                                             \
+    CLR_SCK()
+
+void spi_bb_init(void) {
+    pin_setup_analog_input(PIN_SD_SCK);
+    pin_setup_output(PIN_SD_SCK);
+    pin_setup_analog_input(PIN_SD_MOSI);
+    pin_setup_output(PIN_SD_MOSI);
+    pin_setup_analog_input(PIN_SD_MISO);
+    pin_setup_input(PIN_SD_MISO, PIN_PULL_UP);
+
+    pin_setup_analog_input(PIN_SD_CS);
+    pin_setup_output(PIN_SD_CS);
+}
+
+void spi_bb_tx(const void *data, unsigned len) {
+    const uint8_t *p = data;
+    while (len--) {
+        uint32_t b = *p++;
+        SPI_TX_BIT(7);
+        SPI_TX_BIT(6);
+        SPI_TX_BIT(5);
+        SPI_TX_BIT(4);
+        SPI_TX_BIT(3);
+        SPI_TX_BIT(2);
+        SPI_TX_BIT(1);
+        SPI_TX_BIT(0);
+    }
+}
+
+void spi_bb_rx(void *data, unsigned len) {
+    uint8_t *p = data;
+    // keep MOSI high
+    gpio_ll_set_level(&GPIO, PIN_SD_MOSI, 1);
+    while (len--) {
+        uint32_t b = 0;
+        SPI_RX_BIT(7);
+        SPI_RX_BIT(6);
+        SPI_RX_BIT(5);
+        SPI_RX_BIT(4);
+        SPI_RX_BIT(3);
+        SPI_RX_BIT(2);
+        SPI_RX_BIT(1);
+        SPI_RX_BIT(0);
+        *p++ = b;
+    }
+}
+
+void panic_dump_dmesg(void);
+
 void init_sdcard(void) {
     esp_err_t ret;
 
@@ -30,9 +88,9 @@ void init_sdcard(void) {
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     spi_bus_config_t bus_cfg = {
-        .mosi_io_num = PIN_NUM_MOSI,
-        .miso_io_num = PIN_NUM_MISO,
-        .sclk_io_num = PIN_NUM_CLK,
+        .mosi_io_num = PIN_SD_MOSI,
+        .miso_io_num = PIN_SD_MISO,
+        .sclk_io_num = PIN_SD_SCK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
@@ -41,7 +99,7 @@ void init_sdcard(void) {
     CHK(spi_bus_initialize(host.slot, &bus_cfg, SPI_DMA_CHAN));
 
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_config.gpio_cs = PIN_NUM_CS;
+    slot_config.gpio_cs = PIN_SD_CS;
     slot_config.host_id = host.slot;
 
     BYTE pdrv = FF_DRV_NOT_USED;
@@ -66,4 +124,35 @@ void init_sdcard(void) {
     ESP_LOGI(TAG, "SD card initialized");
 
     jd_lstore_init();
+
+#if 0
+    for (int i = 99; i > 0; i--) {
+        char buf[200];
+        jd_sprintf(buf, sizeof(buf),
+                   "%d bottles of beer on the wall! %d bottles of beer, take one down, pass it "
+                   "around, %d bottles of beer.\n",
+                   i, i, i - 1);
+        jd_lstore_panic_print_str(buf);
+    }
+    jd_lstore_panic_print_str(
+        "This is a very long text "
+        "A_0123456789:B_0123456789:C_0123456789:D_0123456789:E_0123456789:F_0123456789:"
+        "xA_0123456789:xB_0123456789:xC_0123456789:xD_0123456789:xE_0123456789:xF_0123456789:"
+        "A_0123456789:B_0123456789:C_0123456789:D_0123456789:E_0123456789:F_0123456789:"
+        "xA_0123456789:xB_0123456789:xC_0123456789:xD_0123456789:xE_0123456789:xF_0123456789:"
+        "A_0123456789:B_0123456789:C_0123456789:D_0123456789:E_0123456789:F_0123456789:"
+        "xA_0123456789:xB_0123456789:xC_0123456789:xD_0123456789:xE_0123456789:xF_0123456789:"
+        "\n");
+    jd_lstore_panic_print_str("The end!\n");
+    jd_lstore_panic_flush();
+
+    panic_dump_dmesg();
+    reboot_to_uf2();
+#endif
 }
+
+/*
+TODO:
+* add emergency_flush in lstor (enables bit banging)
+* wrap print_char
+*/

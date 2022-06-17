@@ -24,6 +24,12 @@
 #define PIN_PWR_EN 2 // active lo
 #define PIN_PWR_FAULT 13
 
+// only pins 32+ are supported currently
+#define PIN_SD_MISO 37
+#define PIN_SD_MOSI 35
+#define PIN_SD_SCK 36
+#define PIN_SD_CS 38
+
 #define JD_RAW_FRAME 1
 
 #define JD_FLASH_PAGE_SIZE 1024
