@@ -423,6 +423,7 @@ void uart_start_rx(void *data, uint32_t maxbytes) {
 
     if (context.rx_ended) {
         target_disable_irq();
+        context.seen_low = 0;
         context.rx_ended = 0;
         context.rx_len = 0;
         context.fifo_buf = NULL;
