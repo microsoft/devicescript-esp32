@@ -40,6 +40,9 @@ jobs:
         command: make dist clean
 
     - run: ls -l dist
+    # ESP32C3 not ready yet
+    - run: rm -f dist/*esp32c3*
+    - run: ls -l dist
 
     - name: Release
       uses: softprops/action-gh-release@v1
