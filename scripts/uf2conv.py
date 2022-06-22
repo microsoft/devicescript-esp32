@@ -215,9 +215,13 @@ def get_drives():
         if sys.platform == "darwin":
             rootpath = "/Volumes"
         elif sys.platform == "linux":
-            tmp = rootpath + "/" + os.environ["USER"]
-            if os.path.isdir(tmp):
-                rootpath = tmp
+            try:
+                tmp = rootpath + "/" + os.environ["USER"]
+                if os.path.isdir(tmp):
+                    rootpath = tmp
+            except:
+                # can get keyerror in docker
+                pass
         for d in os.listdir(rootpath):
             drives.append(os.path.join(rootpath, d))
 
