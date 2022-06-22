@@ -1,6 +1,8 @@
 .SECONDARY: # this prevents object files from being removed
 .DEFAULT_GOAL := all
 
+IDF = idf.py
+
 _IGNORE0 := $(shell test -f Makefile.user || cp sample-Makefile.user Makefile.user)
 include Makefile.user
 
@@ -27,7 +29,7 @@ endif
 prep: sdkconfig.defaults refresh-version 
 
 all: check-export prep
-	idf --ccache build
+	$(IDF) --ccache build
 	$(MAKE) combine
 
 sdkconfig.defaults: Makefile.user
@@ -37,7 +39,7 @@ clean:
 	rm -rf sdkconfig sdkconfig.defaults build
 
 vscode:
-	. $$IDF_PATH/export.sh ; idf  --ccache build
+	. $$IDF_PATH/export.sh ; $(IDF)  --ccache build
 
 check-export:
 	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
@@ -47,13 +49,13 @@ f: flash
 r: flash
 
 flash: all
-	idf  --ccache flash --port $(SERIAL_PORT)
+	$(IDF)  --ccache flash --port $(SERIAL_PORT)
 
 mon:
 	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 115200 build/espjd.elf
 
 mon-2:
-	idf monitor
+	$(IDF) monitor
 
 prep-gdb:
 	echo > build/gdbinit
