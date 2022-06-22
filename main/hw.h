@@ -14,9 +14,8 @@
 
 #include "driver/gpio.h"
 
-#ifdef CONFIG_IDF_TARGET_ESP32S2
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3)
 #define WORKER_CPU PRO_CPU_NUM
 #else
 #define WORKER_CPU APP_CPU_NUM
 #endif
-

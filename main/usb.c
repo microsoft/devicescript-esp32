@@ -1,4 +1,7 @@
 #include "jdesp.h"
+
+#if defined(CONFIG_TARGET_ESP32S2)
+
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 #include "uf2hid.h"
@@ -321,3 +324,10 @@ void hf2_init() {
 
     LOG("init done");
 }
+
+#else
+
+void hf2_init() {}
+void hf2_send_frame(const void *ptr) {}
+
+#endif

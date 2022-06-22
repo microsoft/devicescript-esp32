@@ -6,6 +6,7 @@
 #include "esp_timer.h"
 #include "driver/uart.h"
 #include "hal/uart_ll.h"
+#include "hal/gpio_ll.h"
 
 typedef struct jacdac_ctx {
     uint8_t pin_num;
@@ -135,11 +136,7 @@ void tim_set_timer(int delta, cb_t callback) {
 }
 
 static IRAM_ATTR esp_err_t xgpio_set_level(gpio_num_t gpio_num, uint32_t level) {
-    if (level) {
-        GPIO.out_w1ts = (1 << gpio_num);
-    } else {
-        GPIO.out_w1tc = (1 << gpio_num);
-    }
+    gpio_ll_set_level(&GPIO, gpio_num, level);
     return ESP_OK;
 }
 
@@ -153,8 +150,7 @@ static IRAM_ATTR void pin_rx() {
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
     REG_SET_BIT(GPIO_PIN_MUX_REG[context.pin_num], FUN_PU);
     PIN_INPUT_ENABLE(GPIO_PIN_MUX_REG[context.pin_num]);
-    GPIO.enable_w1tc = (0x1 << context.pin_num);
-    REG_WRITE(GPIO_FUNC0_OUT_SEL_CFG_REG + (context.pin_num * 4), SIG_GPIO_OUT_IDX);
+    gpio_ll_output_disable(&GPIO, context.pin_num);
     gpio_matrix_in(context.pin_num, RX_SIG, 0);
 }
 
@@ -163,7 +159,7 @@ static IRAM_ATTR void pin_tx() {
                    0); // context.uart_hw
     GPIO.pin[context.pin_num].int_type = GPIO_PIN_INTR_DISABLE;
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
-    gpio_set_level(context.pin_num, 1);
+    xgpio_set_level(context.pin_num, 1);
     gpio_matrix_out(context.pin_num, TX_SIG, 0, 0);
 }
 
@@ -184,8 +180,7 @@ static IRAM_ATTR void fill_fifo() {
 
     if (context.tx_len == 0) {
         LOG("txbrk");
-        context.uart_hw->idle_conf.tx_brk_num = 14; // 14us
-        context.uart_hw->conf0.txd_brk = 1;
+        uart_ll_tx_break(context.uart_hw, 14);
         context.uart_hw->int_clr.tx_brk_done = 1;
         context.uart_hw->int_ena.tx_brk_done = 1;
     }
@@ -350,6 +345,12 @@ static void tx_race() {
         start_bg_rx(); // some rare race here
 }
 
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#define GPIO_VAL(x) (GPIO.x.val)
+#else
+#define GPIO_VAL(x) (GPIO.x)
+#endif
+
 int uart_start_tx(const void *data, uint32_t numbytes) {
     if (context.tx_len || context.in_tx) {
         jd_panic();
@@ -364,11 +365,11 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
 
     gpio_matrix_in(GPIO_FUNC_IN_HIGH, RX_SIG, 0); // context.uart_hw
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
-    GPIO.out_w1tc = (1 << context.pin_num);
+    xgpio_set_level(context.pin_num, 0);
 
-    probe_and_set(&GPIO.enable_w1ts, &GPIO.in, 1 << context.pin_num);
+    probe_and_set(&GPIO_VAL(enable_w1ts), GPIO_VAL(in), 1 << context.pin_num);
 
-    if (!(GPIO.enable & (1 << context.pin_num))) {
+    if (!(GPIO_VAL(enable) & (1 << context.pin_num))) {
         // the line went down in the meantime
         tx_race();
         target_enable_irq();

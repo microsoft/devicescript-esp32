@@ -52,13 +52,13 @@ static portMUX_TYPE global_int_mux = portMUX_INITIALIZER_UNLOCKED;
 int int_level;
 
 IRAM_ATTR void target_disable_irq() {
-    vPortEnterCritical(&global_int_mux);
+    portENTER_CRITICAL_ISR(&global_int_mux);
     int_level++;
 }
 
 IRAM_ATTR void target_enable_irq() {
     int_level--;
-    vPortExitCritical(&global_int_mux);
+    portEXIT_CRITICAL_ISR(&global_int_mux);
 }
 
 void hw_panic(void) {
