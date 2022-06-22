@@ -6,8 +6,16 @@ include Makefile.user
 
 ifeq ($(TARGET),esp32s2)
 UF2 = 1
-else
+GCC_PREF = xtensa-esp32s2-elf
+endif
+
+ifeq ($(TARGET),esp32c3)
 UF2 =
+GCC_PREF = riscv32-esp-elf
+endif
+
+ifeq ($(GCC_PREF),)
+$(error Define 'TARGET = esp32s2' or similar in Makefile.user)
 endif
 
 all: sdkconfig.defaults check-export refresh-version
@@ -17,7 +25,7 @@ ifeq ($(UF2),1)
 endif
 
 sdkconfig.defaults: Makefile.user
-	cat config/sdkconfig.common config/sdkconfig.$(TARGET) > sdkconfig.defaults
+	cat config/sdkconfig.$(TARGET) config/sdkconfig.common > sdkconfig.defaults
 
 clean:
 	rm -rf sdkconfig sdkconfig.defaults build
@@ -35,11 +43,11 @@ check-export:
 f: flash
 r: flash
 
-flash:
-	idf  --ccache flash
+flash: all
+	idf  --ccache flash --port $(SERIAL_PORT)
 
 mon:
-	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port /dev/cu.usbserial-14*1 --baud 115200 build/espjd.elf
+	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 115200 build/espjd.elf
 
 mon-2:
 	idf monitor
@@ -51,14 +59,14 @@ prep-gdb:
 
 gdb: prep-gdb
 	echo "mon halt"  >> build/gdbinit
-	xtensa-esp32s2-elf-gdb -x build/gdbinit build/espjd.elf
+	$(GCC_PREF)-gdb -x build/gdbinit build/espjd.elf
 
 rst:
 	echo "mon reset halt"  >> build/gdbinit
 	echo "flushregs"  >> build/gdbinit
 	echo "thb app_main"  >> build/gdbinit
 	echo "c"  >> build/gdbinit
-	xtensa-esp32s2-elf-gdb -x build/gdbinit build/espjd.elf
+	$(GCC_PREF)-gdb -x build/gdbinit build/espjd.elf
 
 FW_VERSION = $(shell sh jacdac-c/scripts/git-version.sh)
 

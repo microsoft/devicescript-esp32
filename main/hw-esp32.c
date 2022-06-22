@@ -367,7 +367,7 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
     xgpio_set_level(context.pin_num, 0);
 
-    probe_and_set(&GPIO_VAL(enable_w1ts), GPIO_VAL(in), 1 << context.pin_num);
+    probe_and_set(&GPIO_VAL(enable_w1ts), &GPIO_VAL(in), 1 << context.pin_num);
 
     if (!(GPIO_VAL(enable) & (1 << context.pin_num))) {
         // the line went down in the meantime
