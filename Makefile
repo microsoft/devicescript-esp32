@@ -49,7 +49,11 @@ f: flash
 r: flash
 
 flash: all
-	$(IDF)  --ccache flash --port $(SERIAL_PORT)
+ifeq ($(UF2),1)
+	$(IDF) --ccache flash --port $(SERIAL_PORT)
+else
+	esptool.py --chip $(TARGET) -p $(SERIAL_PORT) write_flash 0x0 build/combined.bin
+endif
 
 mon:
 	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 115200 build/espjd.elf

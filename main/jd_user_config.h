@@ -4,6 +4,7 @@
 #define DEVICE_DMESG_BUFFER_SIZE 4096
 
 #include "dmesg.h"
+#include "sdkconfig.h"
 
 #define JD_LOG DMESG
 #define JD_WR_OVERHEAD 28
@@ -14,13 +15,27 @@
 #define LED_G_MULT 60
 #define LED_B_MULT 150
 
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+
+#define PIN_LED_B 4
+#define PIN_LED_G 3
+#define PIN_LED_R 1
+
+#define PIN_JACDAC 21
+
+#define PIN_SD_MISO 8
+#define PIN_SD_MOSI 7
+#define PIN_SD_SCK 10
+#define PIN_SD_CS 20
+
+#else
+
 #define PIN_LED_B 6
 #define PIN_LED_G 7
 #define PIN_LED_R 8
 
 #define PIN_JACDAC 17
 
-#define PIN_PWR_OVERLOAD NO_PIN
 #define PIN_PWR_EN 2 // active lo
 #define PIN_PWR_FAULT 13
 
@@ -29,6 +44,7 @@
 #define PIN_SD_MOSI 35
 #define PIN_SD_SCK 36
 #define PIN_SD_CS 38
+#endif
 
 #define JD_RAW_FRAME 1
 

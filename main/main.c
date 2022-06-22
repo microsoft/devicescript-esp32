@@ -133,6 +133,7 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
         post_loop(NULL);
 }
 
+#ifdef PIN_PWR_EN
 static power_config_t pwr_cfg = {
     .pin_fault = PIN_PWR_FAULT, // active low
     .pin_en = PIN_PWR_EN,
@@ -140,11 +141,14 @@ static power_config_t pwr_cfg = {
     .en_active_high = 0,
     .fault_ignore_ms = 100, // there 4.7uF cap that takes time to charge
 };
+#endif
 
 void app_init_services(void) {
+#ifdef PIN_PWR_EN
     if (board_infos[board_type].flags & BOARD_FLAG_PWR_ACTIVE_HI)
         pwr_cfg.en_active_high = 1;
     power_init(&pwr_cfg);
+#endif
     jd_role_manager_init();
     init_jacscript_manager();
     wifi_init();
