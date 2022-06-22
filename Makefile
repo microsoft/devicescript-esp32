@@ -1,6 +1,26 @@
-all: check-export refresh-version
-	idf  --ccache build
+.SECONDARY: # this prevents object files from being removed
+.DEFAULT_GOAL := all
+
+_IGNORE0 := $(shell test -f Makefile.user || cp sample-Makefile.user Makefile.user)
+include Makefile.user
+
+ifeq ($(TARGET),esp32s2)
+UF2 = 1
+else
+UF2 =
+endif
+
+all: sdkconfig.defaults check-export refresh-version
+	idf --ccache build
+ifeq ($(UF2),1)
 	$(MAKE) uf2
+endif
+
+sdkconfig.defaults: Makefile.user
+	cat config/sdkconfig.common config/sdkconfig.$(TARGET) > sdkconfig.defaults
+
+clean:
+	rm -rf sdkconfig sdkconfig.defaults build
 
 uf2:
 	python3 scripts/uf2conv.py -b 0x0 build/espjd.bin -o build/espjd.uf2 -f ESP32S2

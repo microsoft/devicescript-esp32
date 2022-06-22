@@ -1,0 +1,3 @@
+# Choose your ESP target SOC
+TARGET = esp32s2
+# TARGET = esp32c3
