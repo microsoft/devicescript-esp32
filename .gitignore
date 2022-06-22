@@ -4,3 +4,4 @@ tmp
 sdkconfig
 sdkconfig.defaults
 Makefile.user
+dist/

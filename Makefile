@@ -5,33 +5,36 @@ _IGNORE0 := $(shell test -f Makefile.user || cp sample-Makefile.user Makefile.us
 include Makefile.user
 
 ifeq ($(TARGET),esp32s2)
-UF2 = 1
 GCC_PREF = xtensa-esp32s2-elf
+UF2 = 1
+combine:
+	python3 scripts/uf2conv.py -b 0x0 build/espjd.bin -o build/espjd.uf2 -f ESP32S2
 endif
 
 ifeq ($(TARGET),esp32c3)
 UF2 =
 GCC_PREF = riscv32-esp-elf
+combine:
+	esptool.py --chip $(TARGET) merge_bin \
+		-o build/combined.bin \
+		0x0 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0x10000 build/espjd.bin
 endif
 
 ifeq ($(GCC_PREF),)
 $(error Define 'TARGET = esp32s2' or similar in Makefile.user)
 endif
 
-all: sdkconfig.defaults check-export refresh-version
+prep: sdkconfig.defaults refresh-version 
+
+all: check-export prep
 	idf --ccache build
-ifeq ($(UF2),1)
-	$(MAKE) uf2
-endif
+	$(MAKE) combine
 
 sdkconfig.defaults: Makefile.user
 	cat config/sdkconfig.$(TARGET) config/sdkconfig.common > sdkconfig.defaults
 
 clean:
 	rm -rf sdkconfig sdkconfig.defaults build
-
-uf2:
-	python3 scripts/uf2conv.py -b 0x0 build/espjd.bin -o build/espjd.uf2 -f ESP32S2
 
 vscode:
 	. $$IDF_PATH/export.sh ; idf  --ccache build
@@ -70,11 +73,16 @@ rst:
 
 FW_VERSION = $(shell sh jacdac-c/scripts/git-version.sh)
 
-dist: uf2
-	mkdir -p build/dist
-	cp build/espjd.uf2 build/dist/jacscript-esp32s2.uf2
+.PHONY: dist
+dist: all
+	mkdir -p dist
+ifeq ($(UF2),1)
+	cp build/espjd.uf2 dist/jacscript-$(TARGET).uf2
+else
+	cp build/combined.bin dist/jacscript-$(TARGET)-0x0.bin
+endif
 	# also keep ELF file for addr2line
-	cp build/espjd.elf build/dist/jacscript-esp32s2.elf
+	cp build/espjd.elf dist/jacscript-$(TARGET).elf
 
 bump:
 	sh ./scripts/bump.sh

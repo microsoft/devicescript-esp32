@@ -1,3 +1,10 @@
 # Choose your ESP target SOC
 TARGET = esp32s2
-# TARGET = esp32c3
+#TARGET = esp32c3
+
+# Windows:
+#SERIAL_PORT = COM12
+# macOS - FTDI device
+#SERIAL_PORT = $(wildcard /dev/cu.usbserial-14*1)
+# macOS - builtin USB serial on C3
+#SERIAL_PORT = $(wildcard /dev/cu.usbmodem14*1)

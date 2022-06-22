@@ -19,16 +19,32 @@ jobs:
       with:
           submodules: recursive
     
-    - run: make refresh-version
+    - run: echo 'TARGET=esp32s2' > Makefile.user
+    - run: make prep
+
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@main
       with:
         esp_idf_version: v4.4.1
         target: esp32s2
-    - run: make dist
+        command: make dist
+    
+    - run: make clean
+
+    - run: echo 'TARGET=esp32c3' > Makefile.user
+    - run: make prep
+
+    - name: esp-idf build
+      uses: espressif/esp-idf-ci-action@main
+      with:
+        esp_idf_version: v4.4.1
+        target: esp32c3
+        command: make dist
+
+    - run: ls -l dist
 
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-          files: build/dist/*
+          files: dist/*
