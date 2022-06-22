@@ -27,10 +27,8 @@ jobs:
       with:
         esp_idf_version: v4.4.1
         target: esp32s2
-        command: make dist
+        command: make dist clean
     
-    - run: make clean
-
     - run: echo 'TARGET=esp32c3' > Makefile.user
     - run: make prep
 
@@ -39,7 +37,7 @@ jobs:
       with:
         esp_idf_version: v4.4.1
         target: esp32c3
-        command: make dist
+        command: make dist clean
 
     - run: ls -l dist
 
