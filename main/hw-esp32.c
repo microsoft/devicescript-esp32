@@ -222,7 +222,7 @@ static IRAM_ATTR void read_fifo(int force) {
 
 int jd_pin_num();
 
-void uart_init() {
+void uart_init_() {
     int pinnum = jd_pin_num();
     if (pinnum < 0) {
         DMESG("PIN_JACK_TX not defined");

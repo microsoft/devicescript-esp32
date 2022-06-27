@@ -5,7 +5,7 @@
 #include "esp_private/system_internal.h"
 
 int jd_pin_num(void) {
-    return 17;
+    return PIN_JACDAC;
 }
 
 uint64_t jd_device_id(void) {

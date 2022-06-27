@@ -5,7 +5,7 @@
 static bool led_inited;
 static uint8_t free_ch;
 
-uint8_t pwm_init(uint8_t pin, uint32_t period, uint32_t duty, uint8_t prescaler) {
+uint8_t jd_pwm_init(uint8_t pin, uint32_t period, uint32_t duty, uint8_t prescaler) {
     if (period != 512)
         hw_panic();
 
@@ -33,12 +33,12 @@ uint8_t pwm_init(uint8_t pin, uint32_t period, uint32_t duty, uint8_t prescaler)
     return cfg.channel;
 }
 
-void pwm_set_duty(uint8_t pwm_id, uint32_t duty) {
+void jd_pwm_set_duty(uint8_t pwm_id, uint32_t duty) {
     CHK(ledc_set_duty_with_hpoint(LEDC_LOW_SPEED_MODE, pwm_id, duty, 0));
     CHK(ledc_update_duty(LEDC_LOW_SPEED_MODE, pwm_id));
 }
 
-void pwm_enable(uint8_t pwm_id, bool enabled) {
+void jd_pwm_enable(uint8_t pwm_id, bool enabled) {
     // not implemented
 }
 
