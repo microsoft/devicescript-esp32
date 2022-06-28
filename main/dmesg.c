@@ -55,9 +55,25 @@ void codal_vdmesg(const char *format, va_list ap) {
 }
 
 extern int int_level;
+static uint8_t panic_mode_uart;
 void panic_print_char(const char c);
 void panic_print_str(const char *str);
 void panic_print_dec(int d);
+
+void __real_uart_hal_write_txfifo(void *hal, const uint8_t *buf, uint32_t data_size,
+                                  uint32_t *write_size);
+void __wrap_uart_hal_write_txfifo(void *hal, const uint8_t *buf, uint32_t data_size,
+                                  uint32_t *write_size) {
+    __real_uart_hal_write_txfifo(hal, buf, data_size, write_size);
+    if (data_size == 1 && panic_mode_uart)
+        jd_lstore_panic_print_char(*buf);
+}
+
+void __real_panic_restart(void);
+void __wrap_panic_restart(void) {
+    jd_lstore_panic_flush();
+    __real_panic_restart();
+}
 
 void panic_dump_dmesg(void) {
     panic_print_str(LOG_COLOR(LOG_COLOR_RED) "\r\nDMESG:\r\n");
@@ -74,8 +90,8 @@ void panic_dump_dmesg(void) {
 
 void __real_esp_panic_handler(void *);
 void __wrap_esp_panic_handler(void *info) {
+    panic_mode_uart = 1;
     panic_dump_dmesg();
     __real_esp_panic_handler(info);
 }
 #endif
-
