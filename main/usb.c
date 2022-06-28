@@ -1,6 +1,6 @@
 #include "jdesp.h"
 
-#if defined(CONFIG_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
 
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
