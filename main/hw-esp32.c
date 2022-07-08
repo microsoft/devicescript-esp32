@@ -382,7 +382,7 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
     target_wait_us(12); // low pulse is 14us with wait of 12 here
     xgpio_set_level(context.pin_num, 1);
 
-    target_wait_us(40); // ~55us from end of low pulse to start bit
+    target_wait_us(50);
 
     pin_tx();
 

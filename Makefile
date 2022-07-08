@@ -6,6 +6,8 @@ IDF = idf.py
 _IGNORE0 := $(shell test -f Makefile.user || cp sample-Makefile.user Makefile.user)
 include Makefile.user
 
+MON_PORT ?= $(SERIAL_PORT)
+
 ifeq ($(TARGET),esp32s2)
 GCC_PREF = xtensa-esp32s2-elf
 UF2 = 1
@@ -56,7 +58,7 @@ else
 endif
 
 mon:
-	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 115200 build/espjd.elf
+	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(MON_PORT) --baud 115200 build/espjd.elf
 
 mon-2:
 	$(IDF) monitor
