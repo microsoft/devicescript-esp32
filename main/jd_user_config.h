@@ -17,11 +17,11 @@
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
 
-#define PIN_LED_B 4
-#define PIN_LED_G 3
-#define PIN_LED_R 1
+#define PIN_LED_B 3
+#define PIN_LED_G 1
+#define PIN_LED_R 0
 
-#define PIN_JACDAC 21
+#define PIN_JACDAC 4
 
 #define PIN_SD_MISO 8
 #define PIN_SD_MOSI 7

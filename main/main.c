@@ -4,7 +4,11 @@
 #include "esp_event.h"
 #include "esp_task_wdt.h"
 
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define PIN_BOOT_BTN 9
+#else
 #define PIN_BOOT_BTN 0
+#endif
 
 const char *JD_EVENT = "JD_EVENT";
 
@@ -56,10 +60,10 @@ static int detect_pin(int pin) {
 #endif
 
 static void setup_pins(void) {
+    pin_setup_input(PIN_BOOT_BTN, PIN_PULL_UP);
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
     board_type = 0;
 #else
-    pin_setup_input(PIN_BOOT_BTN, PIN_PULL_UP);
     board_type = DET_PINS(detect_pin(33), detect_pin(34));
 #endif
     DMESG("board type: %s", board_infos[board_type].name);
