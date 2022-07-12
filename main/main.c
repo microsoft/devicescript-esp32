@@ -138,8 +138,8 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 
     worker_do_work(main_worker);
 
+    // TODO move this to a separate thread
     flush_dmesg();
-
     jd_lstore_process();
 
     // re-post ourselves immediately if more frames to process

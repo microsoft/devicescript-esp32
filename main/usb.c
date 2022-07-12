@@ -1,15 +1,15 @@
 #include "jdesp.h"
-
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
-
-#include "tinyusb.h"
-#include "tusb_cdc_acm.h"
 #include "interfaces/jd_usb.h"
 
 #define LOG(msg, ...) DMESG("USB: " msg, ##__VA_ARGS__)
 #define LOGV(msg, ...) ((void)0)
 #undef ERROR
 #define ERROR(msg, ...) DMESG("USB-ERROR: " msg, ##__VA_ARGS__)
+
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+
+#include "tinyusb.h"
+#include "tusb_cdc_acm.h"
 
 static const char *descriptor_str[USB_STRING_DESCRIPTOR_ARRAY_SIZE] = {
     // array of pointer to string descriptors
@@ -105,7 +105,80 @@ void usb_init() {
 
 #else
 
-void hf2_init() {}
-void hf2_send_frame(const void *ptr) {}
+#include "hal/usb_serial_jtag_ll.h"
+#include "soc/periph_defs.h"
+
+static uint8_t tx_buf[64];
+static uint8_t tx_ptr;
+
+int jd_usb_tx_free_space(void) {
+    return sizeof(tx_buf) - tx_ptr;
+}
+
+int jd_usb_tx(const void *data, unsigned len) {
+    int r = 0;
+    target_disable_irq();
+    if (tx_ptr + len <= sizeof(tx_buf)) {
+        memcpy(tx_buf + tx_ptr, data, len);
+        tx_ptr += len;
+    } else {
+        r = -1;
+    }
+    target_enable_irq();
+    return r;
+}
+
+int jd_usb_tx_flush(void) {
+    int r = 0;
+    target_disable_irq();
+    if (tx_ptr == 0)
+        r = -1;
+    if (!usb_serial_jtag_ll_txfifo_writable())
+        r = -2;
+    else {
+        usb_serial_jtag_ll_write_txfifo(tx_buf, tx_ptr);
+        usb_serial_jtag_ll_txfifo_flush();
+        usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+        usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+        tx_ptr = 0;
+    }
+    target_enable_irq();
+    return r;
+}
+
+int jd_usb_rx(void *data, unsigned len) {
+    JD_ASSERT(len >= 64);
+    int r = usb_serial_jtag_ll_read_rxfifo(data, len);
+    usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+    usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+    return r;
+}
+
+static void usb_serial_jtag_isr_handler(void *arg) {
+    uint32_t st = usb_serial_jtag_ll_get_intsts_mask();
+
+    if (st & USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY) {
+        usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+        usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+    }
+
+    if (st & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
+        usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+        usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+        jd_usb_process_rx();
+    }
+}
+
+void usb_init() {
+    LOG("init");
+    usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |
+                                       USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+    usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |
+                                     USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+    intr_handle_t intr_handle;
+    CHK(esp_intr_alloc(ETS_USB_SERIAL_JTAG_INTR_SOURCE, 0, usb_serial_jtag_isr_handler, NULL,
+                       &intr_handle));
+    LOG("init done");
+}
 
 #endif
