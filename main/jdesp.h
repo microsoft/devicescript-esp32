@@ -45,7 +45,7 @@ void worker_do_work(worker_t w);
 
 bool jd_rx_has_frame(void);
 void init_jacscript_manager(void);
-void hf2_init(void);
+void usb_init(void);
 
 extern worker_t fg_worker, main_worker;
 

@@ -24,6 +24,7 @@ idf_component_register(
     "../jacdac-c/source/jd_send_util.c"
     "../jacdac-c/source/jd_services.c"
     "../jacdac-c/source/jd_util.c"
+    "../jacdac-c/source/jd_usb.c"
     "../jacdac-c/source/interfaces/event_queue.c"
     "../jacdac-c/source/interfaces/simple_rx.c"
     "../jacdac-c/source/interfaces/tx_queue.c"

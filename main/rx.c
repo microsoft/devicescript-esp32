@@ -20,7 +20,7 @@ static int jd_rx_frame_received_core(jd_frame_t *frame, int is_loop) {
     memcpy(copy, frame, JD_FRAME_SIZE(frame));
 
     if (!is_loop)
-        hf2_send_frame(copy);
+        JD_BRIDGE_SEND(copy);
 
     if (!frame_queue || !xQueueSendToBackFromISR(frame_queue, &copy, 0)) {
         free(copy);

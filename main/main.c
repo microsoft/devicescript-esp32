@@ -214,7 +214,7 @@ void app_main() {
 
     tim_init();
     uart_init_();
-    hf2_init();
+    usb_init();
 
     CHK(esp_event_handler_instance_register(JD_EVENT, 1, loop_handler, NULL, NULL));
 
