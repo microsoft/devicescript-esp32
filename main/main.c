@@ -114,6 +114,10 @@ static void post_loop(void *dummy) {
     }
 }
 
+void jdesp_wake_main(void) {
+    post_loop(NULL);
+}
+
 static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
                          void *event_data) {
     if (!main_task) {

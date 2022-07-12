@@ -57,4 +57,7 @@
 
 #define JD_SEND_FRAME_SIZE 1024
 
+void jdesp_wake_main(void);
+#define JD_WAKE_MAIN() jdesp_wake_main()
+
 #endif

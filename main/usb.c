@@ -65,6 +65,7 @@ int jd_usb_rx(void *data, unsigned len) {
 
 static void on_cdc_rx(int itf0, cdcacm_event_t *event) {
     jd_usb_process_rx();
+    JD_WAKE_MAIN();
 }
 
 static void on_cdc_line_state_changed(int itf, cdcacm_event_t *event) {
@@ -160,6 +161,7 @@ static void usb_serial_jtag_isr_handler(void *arg) {
     if (st & USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY) {
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
         usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+        JD_WAKE_MAIN();
     }
 
     if (st & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
