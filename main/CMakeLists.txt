@@ -4,7 +4,6 @@ idf_component_register(
     "hw-esp32.c"
     "dmesg.c"
     "ctrl.c"
-    "rx.c"
     "led.c"
     "worker.c"
     "flash.c"
