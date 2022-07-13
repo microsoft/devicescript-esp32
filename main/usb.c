@@ -111,6 +111,8 @@ void usb_init() {
 
 static uint8_t tx_buf[64];
 static uint8_t tx_ptr;
+static uint8_t usb_disconnected;
+static uint32_t usb_wait_start;
 
 int jd_usb_tx_free_space(void) {
     return sizeof(tx_buf) - tx_ptr;
@@ -132,11 +134,27 @@ int jd_usb_tx(const void *data, unsigned len) {
 int jd_usb_tx_flush(void) {
     int r = 0;
     target_disable_irq();
-    if (tx_ptr == 0)
+    if (tx_ptr == 0) {
         r = -1;
-    if (!usb_serial_jtag_ll_txfifo_writable())
-        r = -2;
-    else {
+    } else if (!usb_serial_jtag_ll_txfifo_writable()) {
+        if (usb_disconnected) {
+            tx_ptr = 0;
+        } else {
+            r = -2;
+            uint32_t n = tim_get_micros();
+            if (!usb_wait_start)
+                usb_wait_start = n;
+            else if ((n - usb_wait_start) > (64 << 10)) {
+                usb_disconnected = 1;
+                LOG("disconnected!");
+            }
+        }
+    } else {
+        if (usb_disconnected) {
+            usb_disconnected = 0;
+            LOG("reconnected");
+        }
+        usb_wait_start = 0;
         usb_serial_jtag_ll_write_txfifo(tx_buf, tx_ptr);
         usb_serial_jtag_ll_txfifo_flush();
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
