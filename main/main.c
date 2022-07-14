@@ -77,36 +77,36 @@ FILE *orig_stdout;
 FILE *lstore_stdout;
 
 void flush_dmesg(void) {
-    char *dmesgCopy = malloc(sizeof(codalLogStore));
+    char pref[32];
+
+    static char *dmesgCopy;
     if (!dmesgCopy)
-        return;
+        dmesgCopy = malloc(DEVICE_DMESG_BUFFER_SIZE + sizeof(pref) + 10);
 
     uint32_t len;
 
     target_disable_irq();
     len = codalLogStore.ptr;
-    memcpy(dmesgCopy, codalLogStore.buffer, len);
+    memcpy(dmesgCopy + sizeof(pref), codalLogStore.buffer, len);
     codalLogStore.ptr = 0;
     codalLogStore.buffer[0] = 0;
     target_enable_irq();
 
-    if (len) {
-        jd_usb_write_serial(dmesgCopy, len);
-
-        if (dmesgCopy[len - 1] == '\n')
-            len--;
-        dmesgCopy[len] = 0;
-
-        jd_lstore_append_frag(0, JD_LSTORE_TYPE_DMESG, dmesgCopy, len);
-
-        if (strchr(dmesgCopy, '\n'))
-            fprintf(orig_stdout, LOG_COLOR(LOG_COLOR_CYAN) "DM (%d):\n%s\n" LOG_RESET_COLOR,
-                    esp_log_timestamp(), dmesgCopy);
-        else
-            fprintf(orig_stdout, LOG_COLOR(LOG_COLOR_CYAN) "DM (%d): %s\n" LOG_RESET_COLOR,
-                    esp_log_timestamp(), dmesgCopy);
+    if (len > 1) {
+        int multi = memchr(dmesgCopy + sizeof(pref), '\n', len - 1) != NULL;
+        jd_sprintf(pref, sizeof(pref), LOG_COLOR(LOG_COLOR_CYAN) "DM (%d):%c", esp_log_timestamp(),
+                   multi ? '\n' : ':');
+        int lpref = strlen(pref);
+        char *trg = dmesgCopy + sizeof(pref) - lpref;
+        memcpy(trg, pref, lpref);
+        int totallen = len + lpref;
+        int lsuff = strlen(LOG_RESET_COLOR);
+        memcpy(trg + totallen, LOG_RESET_COLOR, lsuff);
+        totallen += lsuff;
+        jd_lstore_append_frag(0, JD_LSTORE_TYPE_DMESG, dmesgCopy + sizeof(pref), len);
+        jd_usb_write_serial(trg, totallen);
+        fwrite(trg, 1, totallen, orig_stdout);
     }
-    free(dmesgCopy);
 }
 
 static void post_loop(void *dummy) {
@@ -188,6 +188,7 @@ static void flash_init() {
 
 static int log_writefn(void *cookie, const char *data, int size) {
     jd_lstore_append_frag(0, JD_LSTORE_TYPE_LOG, data, size);
+    jd_usb_write_serial(data, size);
     return fwrite(data, 1, size, orig_stdout);
 }
 
