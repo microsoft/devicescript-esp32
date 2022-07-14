@@ -78,32 +78,39 @@ FILE *lstore_stdout;
 
 void flush_dmesg(void) {
     char pref[32];
+    const char *suff = LOG_RESET_COLOR "\n";
 
-    static char *dmesgCopy;
-    if (!dmesgCopy)
-        dmesgCopy = malloc(DEVICE_DMESG_BUFFER_SIZE + sizeof(pref) + 10);
+    static char *dmesg_copy;
+    if (!dmesg_copy)
+        dmesg_copy = malloc(DEVICE_DMESG_BUFFER_SIZE + sizeof(pref) + 10);
 
     uint32_t len;
 
+    char *text_start = dmesg_copy + sizeof(pref);
+
     target_disable_irq();
     len = codalLogStore.ptr;
-    memcpy(dmesgCopy + sizeof(pref), codalLogStore.buffer, len);
+    memcpy(text_start, codalLogStore.buffer, len);
     codalLogStore.ptr = 0;
     codalLogStore.buffer[0] = 0;
     target_enable_irq();
 
-    if (len > 1) {
-        int multi = memchr(dmesgCopy + sizeof(pref), '\n', len - 1) != NULL;
+    if (len >= 1 && text_start[len - 1] == '\n') {
+        len--;
+    }
+
+    if (len > 0) {
+        int multi = memchr(text_start, '\n', len) != NULL;
         jd_sprintf(pref, sizeof(pref), LOG_COLOR(LOG_COLOR_CYAN) "DM (%d):%c", esp_log_timestamp(),
-                   multi ? '\n' : ':');
+                   multi ? '\n' : ' ');
         int lpref = strlen(pref);
-        char *trg = dmesgCopy + sizeof(pref) - lpref;
+        char *trg = text_start - lpref;
         memcpy(trg, pref, lpref);
         int totallen = len + lpref;
-        int lsuff = strlen(LOG_RESET_COLOR);
-        memcpy(trg + totallen, LOG_RESET_COLOR, lsuff);
+        int lsuff = strlen(suff);
+        memcpy(trg + totallen, suff, lsuff);
         totallen += lsuff;
-        jd_lstore_append_frag(0, JD_LSTORE_TYPE_DMESG, dmesgCopy + sizeof(pref), len);
+        jd_lstore_append_frag(0, JD_LSTORE_TYPE_DMESG, text_start, len);
         jd_usb_write_serial(trg, totallen);
         fwrite(trg, 1, totallen, orig_stdout);
     }
