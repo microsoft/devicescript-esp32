@@ -39,32 +39,36 @@ static const char *descriptor_str[USB_STRING_DESCRIPTOR_ARRAY_SIZE] = {
 
 static uint8_t usb_connected;
 
-int jd_usb_tx_free_space(void) {
-    return tud_cdc_n_write_available(TINYUSB_CDC_ACM_0);
+void tud_cdc_tx_complete_cb(uint8_t itf) {
+    while (tud_cdc_n_write_available(TINYUSB_CDC_ACM_0) >= 64) {
+        uint8_t buf[64];
+        int sz = jd_usb_pull(buf);
+        if (sz > 0) {
+            tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, buf, sz);
+            tud_cdc_n_write_flush(TINYUSB_CDC_ACM_0);
+        } else {
+            break;
+        }
+    }
 }
 
-// returns 0 on success
-int jd_usb_tx(const void *data, unsigned len) {
-    if (tud_cdc_n_write_available(TINYUSB_CDC_ACM_0) < len)
-        return -2;
-    int r = tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (uint8_t *)data, len);
-    return r == len ? 0 : -1;
-}
-
-int jd_usb_tx_flush(void) {
-    return tud_cdc_n_write_flush(TINYUSB_CDC_ACM_0) > 0 ? 0 : -1;
-}
-
-int jd_usb_rx(void *data, unsigned len) {
-    size_t rx_size = 0;
-    esp_err_t ret = tinyusb_cdcacm_read(TINYUSB_CDC_ACM_0, data, len, &rx_size);
-    if (ret >= 0)
-        return rx_size;
-    return ret;
+void jd_usb_pull_ready(void) {
+    target_disable_irq();
+    tud_cdc_tx_complete_cb(TINYUSB_CDC_ACM_0);
+    target_enable_irq();
 }
 
 static void on_cdc_rx(int itf0, cdcacm_event_t *event) {
-    jd_usb_process_rx();
+    uint8_t buf[64];
+    for (;;) {
+        size_t rx_size = 0;
+        esp_err_t ret = tinyusb_cdcacm_read(TINYUSB_CDC_ACM_0, buf, sizeof(buf), &rx_size);
+        if (ret >= 0 && rx_size > 0) {
+            jd_usb_push(buf, rx_size);
+        } else {
+            break;
+        }
+    }
     JD_WAKE_MAIN();
 }
 
@@ -109,88 +113,52 @@ void usb_init() {
 #include "hal/usb_serial_jtag_ll.h"
 #include "soc/periph_defs.h"
 
-static uint8_t tx_buf[64];
-static uint8_t tx_ptr;
-static uint8_t usb_disconnected;
-static uint32_t usb_wait_start;
-
-int jd_usb_tx_free_space(void) {
-    return sizeof(tx_buf) - tx_ptr;
-}
-
-int jd_usb_tx(const void *data, unsigned len) {
-    int r = 0;
-    target_disable_irq();
-    if (tx_ptr + len <= sizeof(tx_buf)) {
-        memcpy(tx_buf + tx_ptr, data, len);
-        tx_ptr += len;
-    } else {
-        r = -1;
-    }
-    target_enable_irq();
-    return r;
-}
-
-int jd_usb_tx_flush(void) {
-    int r = 0;
-    target_disable_irq();
-    if (tx_ptr == 0) {
-        r = -1;
-    } else if (!usb_serial_jtag_ll_txfifo_writable()) {
-        if (usb_disconnected) {
-            tx_ptr = 0;
-        } else {
-            r = -2;
-            uint32_t n = tim_get_micros();
-            if (!usb_wait_start)
-                usb_wait_start = n;
-            else if ((n - usb_wait_start) > (64 << 10)) {
-                usb_disconnected = 1;
-                LOG("disconnected!");
-            }
-        }
-    } else {
-        if (usb_disconnected) {
-            usb_disconnected = 0;
-            LOG("reconnected");
-        }
-        usb_wait_start = 0;
-        usb_serial_jtag_ll_write_txfifo(tx_buf, tx_ptr);
+static void fill_buffer(void) {
+    uint8_t buf[64];
+    int len = jd_usb_pull(buf);
+    if (len > 0) {
+        usb_serial_jtag_ll_write_txfifo(buf, len);
         usb_serial_jtag_ll_txfifo_flush();
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
         usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
-        tx_ptr = 0;
+    } else {
+        usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
+        usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
     }
-    target_enable_irq();
-    return r;
 }
 
-int jd_usb_rx(void *data, unsigned len) {
-    JD_ASSERT(len >= 64);
-    int r = usb_serial_jtag_ll_read_rxfifo(data, len);
-    usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
-    usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
-    return r;
+void jd_usb_pull_ready(void) {
+    target_disable_irq();
+    if (usb_serial_jtag_ll_txfifo_writable())
+        fill_buffer();
+    target_enable_irq();
 }
 
 static void usb_serial_jtag_isr_handler(void *arg) {
     uint32_t st = usb_serial_jtag_ll_get_intsts_mask();
 
     if (st & USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY) {
-        usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
-        usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY);
-        JD_WAKE_MAIN();
+        if (usb_serial_jtag_ll_txfifo_writable())
+            fill_buffer();
+        else
+            usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY); // ???
     }
 
     if (st & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
+        uint8_t buf[64];
+        int r = usb_serial_jtag_ll_read_rxfifo(buf, sizeof(buf));
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
-        usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
-        jd_usb_process_rx();
+        usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+        if (r)
+            jd_usb_push(buf, r);
     }
 }
 
+void phy_bbpll_en_usb(bool en);
+
 void usb_init() {
     LOG("init");
+    phy_bbpll_en_usb(true);
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |
                                        USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
     usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |

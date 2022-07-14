@@ -20,6 +20,7 @@ idf_component_register(
     "../jacdac-c/source/jd_physical.c"
     "../jacdac-c/source/jd_protocol.c"
     "../jacdac-c/source/jd_queue.c"
+    "../jacdac-c/source/jd_bqueue.c"
     "../jacdac-c/source/jd_send_util.c"
     "../jacdac-c/source/jd_services.c"
     "../jacdac-c/source/jd_util.c"

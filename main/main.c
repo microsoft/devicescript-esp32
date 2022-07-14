@@ -91,6 +91,8 @@ void flush_dmesg(void) {
     target_enable_irq();
 
     if (len) {
+        jd_usb_write_serial(dmesgCopy, len);
+
         if (dmesgCopy[len - 1] == '\n')
             len--;
         dmesgCopy[len] = 0;
@@ -217,6 +219,10 @@ void app_main() {
     flash_init();
 
     tim_init();
+
+    jd_rx_init();
+    jd_tx_init();
+
     uart_init_();
     usb_init();
 
