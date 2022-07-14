@@ -28,6 +28,9 @@ typedef struct jacdac_ctx {
     volatile bool cb_tx;
     volatile bool cb_fall;
     esp_timer_handle_t timer0;
+
+    esp_timer_handle_t timer_worker;
+    worker_t tim_worker;
 } jacdac_ctx_t;
 
 static jacdac_ctx_t context;
@@ -92,6 +95,19 @@ static void jd_timer0(void *dummy) {
     }
 }
 
+static void jd_tim_worker(void *dummy) {
+    worker_do_work(context.tim_worker);
+}
+
+int tim_worker_run(TaskFunction_t fn, void *arg) {
+    int r = worker_run(context.tim_worker, fn, arg);
+    if (r == 0) {
+        esp_timer_stop(context.timer_worker);
+        esp_timer_start_once(context.timer_worker, 0);
+    }
+    return r;
+}
+
 void tim_init() {
     init_log_pins();
 
@@ -105,6 +121,12 @@ void tim_init() {
     args.callback = (esp_timer_cb_t)jd_timer0;
     args.name = "JD callback";
     esp_timer_create(&args, &context.timer0);
+
+    args.callback = (esp_timer_cb_t)jd_tim_worker;
+    args.name = "tim_worker";
+    esp_timer_create(&args, &context.timer_worker);
+
+    context.tim_worker = worker_alloc();
 }
 
 static void schedule_timer0(void) {

@@ -44,11 +44,13 @@ void worker_set_idle(worker_t w, TaskFunction_t fn, void *arg);
 int worker_run_wait(worker_t w, TaskFunction_t fn, void *arg);
 void worker_do_work(worker_t w);
 
+int tim_worker_run(TaskFunction_t fn, void *arg);
+
 bool jd_rx_has_frame(void);
 void init_jacscript_manager(void);
 void usb_init(void);
 
-extern worker_t fg_worker, main_worker;
+extern worker_t main_worker;
 
 char *extract_property(const char *property_bag, int plen, const char *key);
 char *nvs_get_str_a(nvs_handle_t handle, const char *key);

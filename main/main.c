@@ -12,7 +12,7 @@
 
 const char *JD_EVENT = "JD_EVENT";
 
-worker_t fg_worker, main_worker;
+worker_t main_worker;
 uint32_t now;
 static TaskHandle_t main_task;
 static int loop_pending;
@@ -219,7 +219,6 @@ void app_main() {
     static char stdout_buf[128];
     setvbuf(stdout, stdout_buf, _IOLBF, sizeof(stdout_buf));
 
-    fg_worker = worker_start("jd_fg", 2048);
     main_worker = worker_alloc();
 
     esp_event_loop_create_default();
