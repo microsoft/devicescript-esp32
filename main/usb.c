@@ -39,7 +39,10 @@ static const char *descriptor_str[USB_STRING_DESCRIPTOR_ARRAY_SIZE] = {
 
 static uint8_t usb_connected;
 
-void tud_cdc_tx_complete_cb(uint8_t itf) {
+static volatile uint8_t fq_scheduled;
+
+static void fill_queue(void *dummy) {
+    fq_scheduled = 0;
     while (tud_cdc_n_write_available(TINYUSB_CDC_ACM_0) >= 64) {
         uint8_t buf[64];
         int sz = jd_usb_pull(buf);
@@ -53,9 +56,14 @@ void tud_cdc_tx_complete_cb(uint8_t itf) {
 }
 
 void jd_usb_pull_ready(void) {
-    target_disable_irq();
-    tud_cdc_tx_complete_cb(TINYUSB_CDC_ACM_0);
-    target_enable_irq();
+    if (!fq_scheduled) {
+        fq_scheduled = 1;
+        tim_worker_run(fill_queue, NULL);
+    }
+}
+
+void tud_cdc_tx_complete_cb(uint8_t itf) {
+    jd_usb_pull_ready();
 }
 
 static void on_cdc_rx(int itf0, cdcacm_event_t *event) {
