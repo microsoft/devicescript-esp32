@@ -131,6 +131,8 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
         // this will call app_init_services(), which may try to send something, so we better run it
         // from here
         jd_init();
+
+        DMESG("loop init done");
     }
 
     loop_pending = 0;
@@ -227,8 +229,6 @@ void app_main() {
     uart_init_();
     usb_init();
 
-    CHK(esp_event_handler_instance_register(JD_EVENT, 1, loop_handler, NULL, NULL));
-
     esp_timer_create_args_t args;
     args.callback = post_loop;
     args.arg = NULL;
@@ -237,7 +237,12 @@ void app_main() {
     CHK(esp_timer_create(&args, &main_loop_tick_timer));
     CHK(esp_timer_start_periodic(main_loop_tick_timer, 10000));
 
-    post_loop(NULL); // run the loop for the first time
+    DMESG("app_main mostly done");
+
+    CHK(esp_event_handler_instance_register(JD_EVENT, 1, loop_handler, NULL, NULL));
+    loop_pending = 0; // someone might have tried to post it before, but it would be ignored without
+                      // loop_handler registered
+    post_loop(NULL);  // run the loop for the first time
 
     // unsubscribe current task before exiting
     // the loop_handler should have subscribed itself by now
