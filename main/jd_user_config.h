@@ -32,6 +32,11 @@
 #define PIN_PWR_EN 10
 #define PIN_PWR_FAULT 8
 
+#if PIN_SD_CS == 9
+// GPIO9 is boot pin, connected to button; avoid the MCU driving the pin high, while button pulls it low
+#define JD_SD_CS_PULL_UP 1
+#endif
+
 #else
 
 #define LED_R_MULT 250

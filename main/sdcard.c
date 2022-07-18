@@ -80,6 +80,16 @@ void spi_bb_rx(void *data, unsigned len) {
 
 void panic_dump_dmesg(void);
 
+#ifdef JD_SD_CS_PULL_UP
+static esp_err_t cswrap_sdspi_host_do_transaction(int slot, sdmmc_command_t *cmdinfo) {
+    pin_set(PIN_SD_CS, 1);
+    pin_setup_output(PIN_SD_CS);
+    esp_err_t r = sdspi_host_do_transaction(slot, cmdinfo);
+    pin_setup_input(PIN_SD_CS, PIN_PULL_UP);
+    return r;
+}
+#endif
+
 void init_sdcard(void) {
     esp_err_t ret;
 
@@ -87,6 +97,9 @@ void init_sdcard(void) {
     ESP_LOGI(TAG, "Initializing SD card");
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+#ifdef JD_SD_CS_PULL_UP
+    host.do_transaction = cswrap_sdspi_host_do_transaction;
+#endif
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_SD_MOSI,
         .miso_io_num = PIN_SD_MISO,
@@ -116,6 +129,9 @@ void init_sdcard(void) {
     if (ret != 0) {
         jd_free(card);
         ESP_LOGW(TAG, "Failed to initialize SD card");
+#ifdef JD_SD_CS_PULL_UP
+        pin_setup_input(PIN_SD_CS, PIN_PULL_UP);
+#endif
         return;
     }
 
@@ -124,35 +140,4 @@ void init_sdcard(void) {
     ESP_LOGI(TAG, "SD card initialized");
 
     jd_lstore_init();
-
-#if 0
-    for (int i = 99; i > 0; i--) {
-        char buf[200];
-        jd_sprintf(buf, sizeof(buf),
-                   "%d bottles of beer on the wall! %d bottles of beer, take one down, pass it "
-                   "around, %d bottles of beer.\n",
-                   i, i, i - 1);
-        jd_lstore_panic_print_str(buf);
-    }
-    jd_lstore_panic_print_str(
-        "This is a very long text "
-        "A_0123456789:B_0123456789:C_0123456789:D_0123456789:E_0123456789:F_0123456789:"
-        "xA_0123456789:xB_0123456789:xC_0123456789:xD_0123456789:xE_0123456789:xF_0123456789:"
-        "A_0123456789:B_0123456789:C_0123456789:D_0123456789:E_0123456789:F_0123456789:"
-        "xA_0123456789:xB_0123456789:xC_0123456789:xD_0123456789:xE_0123456789:xF_0123456789:"
-        "A_0123456789:B_0123456789:C_0123456789:D_0123456789:E_0123456789:F_0123456789:"
-        "xA_0123456789:xB_0123456789:xC_0123456789:xD_0123456789:xE_0123456789:xF_0123456789:"
-        "\n");
-    jd_lstore_panic_print_str("The end!\n");
-    jd_lstore_panic_flush();
-
-    panic_dump_dmesg();
-    reboot_to_uf2();
-#endif
 }
-
-/*
-TODO:
-* add emergency_flush in lstor (enables bit banging)
-* wrap print_char
-*/
