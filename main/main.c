@@ -5,7 +5,7 @@
 #include "esp_task_wdt.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
-#define PIN_BOOT_BTN 9
+// #define PIN_BOOT_BTN 9
 #else
 #define PIN_BOOT_BTN 0
 #endif
@@ -34,7 +34,7 @@ typedef struct {
 
 const board_info_t board_infos[9] = {
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
-    [0] = {"Adafruit QT-Py-C3", 0},
+    [0] = {"MSR Brain ESP32-C3 216 v4.5", BOARD_FLAG_PWR_ACTIVE_HI},
 #else
     [BOARD_48] = {"JacdacIoT 48", 0},
     [BOARD_207_V4_2] = {"JM Brain S2-mini 207 v4.2", 0},
@@ -60,10 +60,10 @@ static int detect_pin(int pin) {
 #endif
 
 static void setup_pins(void) {
-    pin_setup_input(PIN_BOOT_BTN, PIN_PULL_UP);
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
     board_type = 0;
 #else
+    pin_setup_input(PIN_BOOT_BTN, PIN_PULL_UP);
     board_type = DET_PINS(detect_pin(33), detect_pin(34));
 #endif
     DMESG("board type: %s", board_infos[board_type].name);
@@ -146,8 +146,10 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 
     CHK(esp_task_wdt_reset());
 
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
     if (pin_get(PIN_BOOT_BTN) == 0)
         reboot_to_uf2();
+#endif
 
     jd_process_everything();
 
@@ -180,10 +182,12 @@ void app_init_services(void) {
 #endif
     jd_role_manager_init();
     init_jacscript_manager();
+#if 1
     wifi_init();
     azureiothub_init();
     jacscloud_init(&azureiothub_cloud);
     tsagg_init(&azureiothub_cloud);
+#endif
 }
 
 static void flash_init() {
@@ -212,6 +216,13 @@ void app_main() {
 
     jd_seed_random(esp_random());
     init_sdcard();
+
+#if 0
+    esp_log_level_set("sdmmc_init", ESP_LOG_VERBOSE);
+    esp_log_level_set("sdmmc_cmd", ESP_LOG_VERBOSE);
+    esp_log_level_set("sdspi_transaction", ESP_LOG_VERBOSE);
+    esp_log_level_set("sdspi_host", ESP_LOG_VERBOSE);
+#endif
 
     orig_stdout = stdout;
     lstore_stdout = stdout = fwopen(NULL, &log_writefn);

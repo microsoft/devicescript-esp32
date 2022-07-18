@@ -11,24 +11,32 @@
 
 #define JD_CLIENT 1
 
-#define LED_R_MULT 250
-#define LED_G_MULT 60
-#define LED_B_MULT 150
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
 
-#define PIN_LED_B 3
-#define PIN_LED_G 1
-#define PIN_LED_R 0
+#define LED_R_MULT 250
+#define LED_G_MULT 250
+#define LED_B_MULT 250
 
-#define PIN_JACDAC 4
+#define PIN_LED_B 5
+#define PIN_LED_G 20
+#define PIN_LED_R 4
 
-#define PIN_SD_MISO 8
+#define PIN_JACDAC 3
+
+#define PIN_SD_MISO 2
 #define PIN_SD_MOSI 7
-#define PIN_SD_SCK 10
-#define PIN_SD_CS 20
+#define PIN_SD_SCK 6
+#define PIN_SD_CS 9
+
+#define PIN_PWR_EN 10
+#define PIN_PWR_FAULT 8
 
 #else
+
+#define LED_R_MULT 250
+#define LED_G_MULT 60
+#define LED_B_MULT 150
 
 #define PIN_LED_B 6
 #define PIN_LED_G 7
