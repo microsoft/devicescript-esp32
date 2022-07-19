@@ -85,6 +85,8 @@ static void on_cdc_line_state_changed(int itf, cdcacm_event_t *event) {
     LOG("connected: %d", usb_connected);
 }
 
+void usb_pre_init() {}
+
 void usb_init() {
     LOG("init");
     tinyusb_config_t tusb_cfg;
@@ -163,10 +165,12 @@ static void usb_serial_jtag_isr_handler(void *arg) {
 }
 
 void phy_bbpll_en_usb(bool en);
+void usb_pre_init() {
+    phy_bbpll_en_usb(true);
+}
 
 void usb_init() {
     LOG("init");
-    phy_bbpll_en_usb(true);
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |
                                        USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
     usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |
@@ -176,5 +180,4 @@ void usb_init() {
                        &intr_handle));
     LOG("init done");
 }
-
 #endif

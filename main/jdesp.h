@@ -49,6 +49,7 @@ int tim_worker_run(TaskFunction_t fn, void *arg);
 bool jd_rx_has_frame(void);
 void init_jacscript_manager(void);
 void usb_init(void);
+void usb_pre_init(void);
 
 extern worker_t main_worker;
 

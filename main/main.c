@@ -214,6 +214,7 @@ void app_main() {
     ESP_LOGI("JD", "starting jacscript-esp32 %s", app_fw_version);
     DMESG("starting jacscript-esp32 %s", app_fw_version);
 
+    usb_pre_init();
     jd_seed_random(esp_random());
     init_sdcard();
 
