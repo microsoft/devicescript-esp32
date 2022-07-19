@@ -31,6 +31,10 @@ endif
 prep: sdkconfig.defaults refresh-version 
 
 all: check-export prep
+	@if test -f sdkconfig ; then \
+		if grep -q 'CONFIG_IDF_TARGET="$(TARGET)"' sdkconfig ; then echo target OK ; \
+		else echo cleaning target... ; rm -rf build sdkconfig ; $(MAKE) refresh-version ; fi ; \
+	fi
 	$(IDF) --ccache build
 	$(MAKE) combine
 
