@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "sdkconfig.h"
+
 #include "dmesg.h"
 
 #include "freertos/FreeRTOS.h"

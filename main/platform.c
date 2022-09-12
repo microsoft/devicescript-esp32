@@ -8,7 +8,7 @@ int jd_pin_num(void) {
     return PIN_JACDAC;
 }
 
-uint64_t jd_device_id(void) {
+uint64_t hw_device_id(void) {
     static uint64_t addr;
     if (!addr) {
         uint8_t mac[6];

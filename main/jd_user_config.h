@@ -4,15 +4,15 @@
 #define DEVICE_DMESG_BUFFER_SIZE 4096
 
 #include "dmesg.h"
-#include "sdkconfig.h"
 
 #define JD_LOG DMESG
 #define JD_WR_OVERHEAD 28
 
 #define JD_CLIENT 1
 
+#ifndef __XTENSA__
 
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
+// ESP32-C3
 
 #define LED_R_MULT 250
 #define LED_G_MULT 250
@@ -38,6 +38,8 @@
 #endif
 
 #else
+
+// ESP32-S2
 
 #define LED_R_MULT 250
 #define LED_G_MULT 60
@@ -72,5 +74,7 @@
 
 void jdesp_wake_main(void);
 #define JD_WAKE_MAIN() jdesp_wake_main()
+
+#define JD_SIMPLE_ALLOC 0
 
 #endif
