@@ -46,6 +46,7 @@ all: check-export prep
 
 sdkconfig.defaults: Makefile.user
 	cat config/sdkconfig.$(TARGET) config/sdkconfig.common > sdkconfig.defaults
+	@mkdir -p build
 	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > build/options.cmake
 
 clean:
