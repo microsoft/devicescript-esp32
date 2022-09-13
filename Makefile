@@ -8,6 +8,12 @@ include Makefile.user
 
 MON_PORT ?= $(SERIAL_PORT)
 
+ifeq ($(TARGET),esp32s2-nojacs)
+TARGET := esp32s2
+TARGET_SUFF := -nojacs
+COMPILE_OPTIONS += -DNO_JACSCRIPT=1
+endif
+
 ifeq ($(TARGET),esp32s2)
 GCC_PREF = xtensa-esp32s2-elf
 UF2 = 1
@@ -40,6 +46,7 @@ all: check-export prep
 
 sdkconfig.defaults: Makefile.user
 	cat config/sdkconfig.$(TARGET) config/sdkconfig.common > sdkconfig.defaults
+	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > build/options.cmake
 
 clean:
 	rm -rf sdkconfig sdkconfig.defaults build
@@ -89,12 +96,12 @@ FW_VERSION = $(shell sh jacdac-c/scripts/git-version.sh)
 dist: all
 	mkdir -p dist
 ifeq ($(UF2),1)
-	cp build/espjd.uf2 dist/jacscript-$(TARGET).uf2
+	cp build/espjd.uf2 dist/jacscript-$(TARGET)$(TARGET_SUFF).uf2
 else
-	cp build/combined.bin dist/jacscript-$(TARGET)-0x0.bin
+	cp build/combined.bin dist/jacscript-$(TARGET)$(TARGET_SUFF)-0x0.bin
 endif
 	# also keep ELF file for addr2line
-	cp build/espjd.elf dist/jacscript-$(TARGET).elf
+	cp build/espjd.elf dist/jacscript-$(TARGET)$(TARGET_SUFF).elf
 
 bump:
 	sh ./scripts/bump.sh

@@ -29,6 +29,16 @@ jobs:
         target: esp32s2
         command: make dist clean
     
+    - run: echo 'TARGET=esp32s2-nojacs' > Makefile.user
+    - run: make prep
+
+    - name: esp-idf build
+      uses: espressif/esp-idf-ci-action@main
+      with:
+        esp_idf_version: v4.4.1
+        target: esp32s2
+        command: make dist clean
+
     - run: echo 'TARGET=esp32c3' > Makefile.user
     - run: make prep
 

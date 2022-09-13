@@ -8,7 +8,14 @@
 #define JD_LOG DMESG
 #define JD_WR_OVERHEAD 28
 
+#ifndef NO_JACSCRIPT
 #define JD_CLIENT 1
+#endif
+
+#define JD_MS_TIMER 1
+#define JD_FREE_SUPPORTED 1
+#define JD_ADVANCED_STRING 1
+#define JD_LSTORE 1
 
 #ifndef __XTENSA__
 

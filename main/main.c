@@ -180,12 +180,14 @@ void app_init_services(void) {
         pwr_cfg.en_active_high = 1;
     power_init(&pwr_cfg);
 #endif
+#ifndef NO_JACSCRIPT
     jd_role_manager_init();
     init_jacscript_manager();
-#if 1
+#endif
     wifi_init();
     azureiothub_init();
     jacscloud_init(&azureiothub_cloud);
+#ifndef NO_JACSCRIPT
     tsagg_init(&azureiothub_cloud);
 #endif
 }
