@@ -45,6 +45,49 @@ REG_DEFINITION(                                                //
     REG_U32(JD_AZURE_IOT_HUB_HEALTH_REG_PUSH_WATCHDOG_PERIOD), //
 )
 
+char *double_array_to_json(int numvals, const double *vals) {
+    if (numvals == 0)
+        return jd_strdup("[]");
+
+    char **parts2 = jd_alloc(sizeof(char *) * (numvals + 2));
+    parts2[0] = "[";
+    for (int i = 0; i < numvals; ++i)
+        parts2[i + 1] = jd_sprintf_a("%f%s", vals[i], i == numvals - 1 ? "]" : ",");
+    parts2[numvals + 1] = NULL;
+    char *msg = jd_concat_many((const char **)parts2);
+    for (int i = 1; parts2[i]; ++i)
+        jd_free(parts2[i]);
+    return msg;
+}
+
+static int parse_json_array(unsigned len, const char *data, double *dst) {
+    char buf[32];
+    int dp = 0;
+    for (unsigned i = 0; i < len; ++i) {
+        char c = data[i];
+        if (c == 0)
+            break;
+        if (strchr("[],\t\n\r ", c))
+            continue;
+        if (isdigit(c) || c == '.' || c == '-' || c == '+') {
+            int j = i + 1;
+            while (j - i < 30 && j < len && data[j] && (isdigit(data[j]) || strchr(".eE+-", data[j]))) {
+                j++;
+            }
+            memcpy(buf, data + i, j - i);
+            buf[j - i] = 0;
+            if (dst)
+                dst[dp] = atof(buf);
+            dp++;
+            i = j - 1;
+        } else {
+            DMESG("invalid num array char '%c'", c);
+            return dp;
+        }
+    }
+    return dp;
+}
+
 static const char *status_name(int st) {
     switch (st) {
     case JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED:
@@ -85,10 +128,60 @@ static void clear_conn_string(srv_t *state) {
     state->pub_topic = NULL;
 }
 
+#define METHOD_PREF "$iothub/methods/POST/"
+
+static void mqtt_on_msg(srv_t *state, esp_mqtt_event_handle_t event) {
+    int preflen = strlen(METHOD_PREF);
+    if (event->topic_len < preflen + 5 || memcmp(event->topic, METHOD_PREF, preflen) != 0) {
+        LOG("invalid data: %d / %d; %s", event->topic_len, event->data_len, event->topic);
+        return;
+    }
+
+    const char *mark = "/?$rid=";
+    int marklen = strlen(mark);
+    const char *rid = memmem(event->topic, event->topic_len, mark, marklen);
+    if (!rid) {
+        LOG("no $rid! %s", event->topic);
+        return;
+    }
+
+    int lbllen = rid - event->topic - preflen;
+
+    rid += marklen;
+    char buf[16];
+    char *bp = buf;
+    int len = event->topic_len - (rid - event->topic);
+    if (len > 14)
+        len = 14;
+    while (len--) {
+        if (!isdigit(*rid))
+            break;
+        *bp++ = *rid++;
+    }
+    *bp = 0;
+    int ridval = atoi(buf);
+
+    char *label = jd_alloc(lbllen + 1);
+    memcpy(label, event->topic + preflen, lbllen);
+
+    LOG("azureiot method: '%s' rid=%d", label, ridval);
+
+    int numvals = parse_json_array(event->data_len, event->data, NULL);
+    double *d = jd_alloc(numvals * 8 + 1);
+    parse_json_array(event->data_len, event->data, d);
+
+    DMESG("args=%-s", double_array_to_json(numvals, d));
+
+    jacscloud_on_method(label, ridval, numvals, d);
+    jd_free(d);
+    jd_free(label);
+}
+
 static esp_err_t mqtt_event_handler_cb(srv_t *state, esp_mqtt_event_handle_t event) {
     switch (event->event_id) {
     case MQTT_EVENT_CONNECTED:
         set_status(state, JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED);
+        esp_mqtt_client_subscribe(state->client, METHOD_PREF "#", 0);
         break;
 
     case MQTT_EVENT_DISCONNECTED:
@@ -102,7 +195,7 @@ static esp_err_t mqtt_event_handler_cb(srv_t *state, esp_mqtt_event_handle_t eve
         break;
 
     case MQTT_EVENT_DATA:
-        LOG("data: %d / %d", event->topic_len, event->data_len);
+        mqtt_on_msg(state, event);
         break;
 
     case MQTT_EVENT_DELETED:
@@ -371,14 +464,16 @@ void azureiothub_init(void) {
     esp_log_level_set("OUTBOX", ESP_LOG_VERBOSE);
 }
 
-int azureiothub_publish(const void *msg, unsigned len) {
+int azureiothub_publish(const void *msg, unsigned len, const char *topic) {
     srv_t *state = _aziot_state;
     if (state->conn_status != JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED)
         return -1;
     int qos = 0;
     int retain = 0;
     bool store = true;
-    if (esp_mqtt_client_enqueue(state->client, state->pub_topic, msg, len, qos, retain, store) < 0)
+    if (topic == NULL)
+        topic = state->pub_topic;
+    if (esp_mqtt_client_enqueue(state->client, topic, msg, len, qos, retain, store) < 0)
         return -2;
 
     feed_watchdog(state);
@@ -390,22 +485,16 @@ int azureiothub_publish(const void *msg, unsigned len) {
 }
 
 static int publish_and_free(char *msg) {
-    int r = azureiothub_publish(msg, strlen(msg));
+    int r = azureiothub_publish(msg, strlen(msg), NULL);
     jd_free(msg);
     return r;
 }
 
 int azureiothub_publish_values(const char *label, int numvals, double *vals) {
-    char **parts2 = jd_alloc(sizeof(char *) * (numvals + 2));
     uint64_t self = jd_device_id();
-    parts2[0] = jd_sprintf_a("{\"device\":\"%-s\", \"label\":%-s, \"values\":[",
-                             jd_to_hex_a(&self, sizeof(self)), jd_json_escape(label));
-    for (int i = 0; i < numvals; ++i)
-        parts2[i + 1] = jd_sprintf_a("%f%s", vals[i], i == numvals - 1 ? "]}" : ",");
-    parts2[numvals + 1] = NULL;
-    char *msg = jd_concat_many((const char **)parts2);
-    for (int i = 0; parts2[i]; ++i)
-        jd_free(parts2[i]);
+    char *msg = jd_sprintf_a("{\"device\":\"%-s\", \"label\":%-s, \"values\":%-s}",
+                             jd_to_hex_a(&self, sizeof(self)), jd_json_escape(label),
+                             double_array_to_json(numvals, vals));
     return publish_and_free(msg);
 }
 
@@ -417,6 +506,18 @@ int azureiothub_publish_bin(const void *data, unsigned datasize) {
 int azureiothub_is_connected(void) {
     srv_t *state = _aziot_state;
     return state->conn_status == JD_AZURE_IOT_HUB_HEALTH_CONNECTION_STATUS_CONNECTED;
+}
+
+int azureiothub_respond_method(uint32_t method_id, uint32_t status, int numvals, double *vals) {
+    char *topic = jd_sprintf_a("$iothub/methods/res/%d/?$rid=%d", status, method_id);
+    char *msg = double_array_to_json(numvals, vals);
+
+    int r = azureiothub_publish(msg, strlen(msg), topic);
+
+    jd_free(msg);
+    jd_free(topic);
+
+    return r;
 }
 
 #if 0
@@ -450,4 +551,5 @@ const jacscloud_api_t azureiothub_cloud = {
     .bin_upload = azureiothub_publish_bin,
     .is_connected = azureiothub_is_connected,
     .max_bin_upload_size = 1024, // just a guess
+    .respond_method = azureiothub_respond_method,
 };
