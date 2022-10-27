@@ -56,3 +56,12 @@ void flash_sync(void) {
     nvs_commit(flash_handle);
     is_erased = 0;
 }
+
+char *jd_settings_get(const char *key) {
+    return nvs_get_str_a(flash_handle, key);
+}
+
+int jd_settings_set(const char *key, const char *val) {
+    CHK(nvs_set_str(flash_handle, key, val));
+    return 0;
+}

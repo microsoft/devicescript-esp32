@@ -8,6 +8,7 @@
 #include "services/interfaces/jd_pins.h"
 #include "services/interfaces/jd_pwm.h"
 #include "interfaces/jd_usb.h"
+#include "network/jd_network.h"
 
 #include "nvs_flash.h"
 

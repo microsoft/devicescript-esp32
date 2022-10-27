@@ -127,6 +127,8 @@ void jdesp_wake_main(void) {
     post_loop(NULL);
 }
 
+void jd_tcpsock_process(void);
+
 static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
                          void *event_data) {
     if (!main_task) {
@@ -159,6 +161,8 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
     flush_dmesg();
     jd_lstore_process();
 
+    jd_tcpsock_process();
+
     // re-post ourselves immediately if more frames to process
     if (jd_rx_has_frame())
         post_loop(NULL);
@@ -185,10 +189,10 @@ void app_init_services(void) {
     init_jacscript_manager();
 #endif
     wifi_init();
-    azureiothub_init();
-    jacscloud_init(&azureiothub_cloud);
+    wsskhealth_init();
+    jacscloud_init(&wssk_cloud);
 #ifndef NO_JACSCRIPT
-    tsagg_init(&azureiothub_cloud);
+    tsagg_init(&wssk_cloud);
 #endif
 }
 
@@ -213,8 +217,8 @@ void app_main() {
     // subscribe current task, in case something goes wrong here (unlikely)
     CHK(esp_task_wdt_add(NULL));
 
-    ESP_LOGI("JD", "starting jacscript-esp32 %s", app_fw_version);
-    DMESG("starting jacscript-esp32 %s", app_fw_version);
+    ESP_LOGI("JD", "starting jacscript-esp32 %s", app_get_fw_version());
+    DMESG("starting jacscript-esp32 %s", app_get_fw_version());
 
     usb_pre_init();
     jd_seed_random(esp_random());

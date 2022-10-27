@@ -77,3 +77,14 @@ void reboot_to_uf2(void) {
 
     esp_restart_noos_dig();
 }
+
+void jd_crypto_get_random(uint8_t *buf, unsigned size) {
+    esp_fill_random(buf, size);
+}
+
+extern const char app_fw_version[];
+extern const char app_dev_class_name[];
+
+const char *app_get_fw_version(void) {
+    return app_fw_version;
+}
