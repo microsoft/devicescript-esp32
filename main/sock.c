@@ -9,8 +9,11 @@
 #include "lwip/dns.h"
 
 #define LOG(fmt, ...) DMESG("SOCK: " fmt, ##__VA_ARGS__)
+#if 1
 #define LOGV(...) ((void)0)
-//#define LOGV LOG
+#else
+#define LOGV LOG
+#endif
 
 #define CHK_ERR(call) CHK(0 != (call))
 
@@ -52,6 +55,10 @@ static void push_error(const char *msg) {
 
 static int sock_fd;
 static void raise_error(const char *msg) {
+    if (msg)
+        LOG("err: %s", msg);
+    else
+        LOG("close");
     if (sock_fd) {
         jd_tcpsock_close();
         if (msg)
@@ -132,6 +139,7 @@ static void process_write(sock_cmd_t *cmd) {
     unsigned size = cmd->write.size;
     uint8_t *buf = cmd->write.data;
     if (sock_fd) {
+        LOGV("wr %u b", size);
         if (forced_write(sock_fd, buf, size) != (int)size)
             raise_error("write error");
     }
@@ -219,6 +227,7 @@ void jd_tcpsock_process(void) {
             return;
         }
         if (r > 0) {
+            LOGV("rd %d", r);
             jd_tcpsock_on_event(JD_CONN_EV_MESSAGE, sockbuf, r);
         } else {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
