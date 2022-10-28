@@ -419,7 +419,7 @@ void wifi_handle_packet(srv_t *state, jd_packet_t *pkt) {
     }
 }
 
-bool wifi_is_connected(void) {
+bool jd_tcpsock_is_available(void) {
     return _wifi_state->is_connected;
 }
 

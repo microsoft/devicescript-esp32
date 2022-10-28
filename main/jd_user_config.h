@@ -83,5 +83,6 @@ void jdesp_wake_main(void);
 #define JD_WAKE_MAIN() jdesp_wake_main()
 
 #define JD_SIMPLE_ALLOC 0
+#define JD_NET_BRIDGE 1
 
 #endif

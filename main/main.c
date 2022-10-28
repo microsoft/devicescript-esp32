@@ -127,8 +127,6 @@ void jdesp_wake_main(void) {
     post_loop(NULL);
 }
 
-void jd_tcpsock_process(void);
-
 static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
                          void *event_data) {
     if (!main_task) {
@@ -140,6 +138,8 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
         // this will call app_init_services(), which may try to send something, so we better run it
         // from here
         jd_init();
+
+        jd_tcpsock_init();
 
         DMESG("loop init done");
     }

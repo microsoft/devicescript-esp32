@@ -64,3 +64,6 @@ void reboot_to_uf2(void);
 void flush_dmesg(void);
 
 void init_sdcard(void);
+
+void jd_tcpsock_process(void);
+void jd_tcpsock_init(void);

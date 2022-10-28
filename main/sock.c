@@ -46,12 +46,16 @@ static void push_event(unsigned event, const void *data, unsigned size) {
     xQueueSend(sock_events, &evt, 20);
 }
 
+static void push_error(const char *msg) {
+    push_event(JD_CONN_EV_ERROR, msg, strlen(msg));
+}
+
 static int sock_fd;
 static void raise_error(const char *msg) {
     if (sock_fd) {
         jd_tcpsock_close();
         if (msg)
-            push_event(JD_CONN_EV_ERROR, msg, strlen(msg));
+            push_error(msg);
         push_event(JD_CONN_EV_CLOSE, NULL, 0);
     }
 }
@@ -66,7 +70,7 @@ static int sock_create_and_connect(const char *hostname, const char *port_num) {
     int s = getaddrinfo(hostname, port_num, &hints, &result);
     if (s) {
         LOG("getaddrinfo %s:%s: %d", hostname, port_num, s);
-        raise_error("can't resolve host");
+        push_error("can't resolve host");
         return -1;
     }
 
@@ -84,7 +88,7 @@ static int sock_create_and_connect(const char *hostname, const char *port_num) {
 
         if (rp->ai_next == NULL) {
             LOG("connect %s:%s: %s", hostname, port_num, strerror(errno));
-            raise_error("can't connect");
+            push_error("can't connect");
         }
 
         close(sfd);
@@ -187,7 +191,7 @@ static void worker_main(void *arg) {
     }
 }
 
-void jd_sock_init(void) {
+void jd_tcpsock_init(void) {
     // The main task is at priority 1, so we're higher priority (run "more often").
     // Timer task runs at much higher priority (~20).
     unsigned stack_size = 4096;
