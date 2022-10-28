@@ -25,7 +25,13 @@ void jd_alloc_stack_check(void) {}
 void jd_alloc_init(void) {}
 
 void *jd_alloc(uint32_t size) {
-    return calloc(size, 1);
+    void *r = calloc(size, 1);
+    if (r == NULL) {
+        DMESG("OOM!");
+        ESP_LOGE("JD", "OOM %d bytes\n", size);
+        jd_panic();
+    }
+    return r;
 }
 
 void jd_free(void *ptr) {

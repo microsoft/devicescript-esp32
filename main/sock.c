@@ -203,7 +203,7 @@ void jd_tcpsock_init(void) {
     // The main task is at priority 1, so we're higher priority (run "more often").
     // Timer task runs at much higher priority (~20).
     unsigned stack_size = 4096;
-    sock_cmds = xQueueCreate(10, sizeof(sock_cmd_t));
+    sock_cmds = xQueueCreate(50, sizeof(sock_cmd_t));
     sock_events = xQueueCreate(10, sizeof(sock_event_t));
     TaskHandle_t task;
     xTaskCreatePinnedToCore(worker_main, "tcpsock", stack_size, NULL, 2, &task, WORKER_CPU);

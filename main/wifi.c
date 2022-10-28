@@ -306,6 +306,9 @@ void wifi_process(srv_t *state) {
     if (jd_should_sample_ms(&state->next_scan, SCAN_SECONDS << 10)) {
         tsagg_update("wifi", wifi_rssi(state));
         tsagg_update("uptime", (double)now_ms_long / 1000);
+        DMESG("free memory: %u bytes (max block: %u bytes)",
+              (unsigned)heap_caps_get_free_size(MALLOC_CAP_8BIT),
+              (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
         if (!state->is_connected)
             wifi_scan(state);
     }
