@@ -77,12 +77,16 @@
 // probably not so useful on brains...
 #define JD_CONFIG_WATCHDOG 0
 
-#define JD_SEND_FRAME_SIZE 1024
 
 void jdesp_wake_main(void);
 #define JD_WAKE_MAIN() jdesp_wake_main()
 
 #define JD_SIMPLE_ALLOC 0
 #define JD_NET_BRIDGE 1
+
+#define JD_GC_KB 8
+
+#define JD_SEND_FRAME_SIZE 1024
+#define JD_RX_QUEUE_SIZE 1024
 
 #endif
