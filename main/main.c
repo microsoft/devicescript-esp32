@@ -29,19 +29,45 @@ static esp_timer_handle_t main_loop_tick_timer;
 
 typedef struct {
     const char *name;
+    uint32_t dev_class;
     uint32_t flags;
 } board_info_t;
 
 const board_info_t board_infos[9] = {
+#ifdef NO_JACSCRIPT
+
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
-    [0] = {"MSR Brain ESP32-C3 216 v4.5", BOARD_FLAG_PWR_ACTIVE_HI},
+    [0] = {"MSR Brain ESP32-C3 Cloud Connector 216 v4.5", 0x39b608d4, BOARD_FLAG_PWR_ACTIVE_HI},
 #else
-    [BOARD_48] = {"JacdacIoT 48", 0},
-    [BOARD_207_V4_2] = {"JM Brain S2-mini 207 v4.2", 0},
-    [BOARD_207_V4_3] = {"JM Brain S2-mini 207 v4.3", BOARD_FLAG_PWR_ACTIVE_HI},
+    [BOARD_48] = {"JacdacIoT Cloud Connector 48 v0.2", 0x30a3c887, 0},
+    [BOARD_207_V4_2] = {"JM Brain S2-mini Cloud Connector 207 v4.2", 0x33b166ba, 0},
+    [BOARD_207_V4_3] = {"JM Brain S2-mini Cloud Connector 207 v4.3", 0x33b166ba,
+                        BOARD_FLAG_PWR_ACTIVE_HI},
 #endif
+
+#else
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    [0] = {"MSR Brain ESP32-C3 Jacscript 216 v4.5", 0x33e239e5, BOARD_FLAG_PWR_ACTIVE_HI},
+#else
+    [BOARD_48] = {"JacdacIoT Jacscript 48 v0.2", 0x3de1398b, 0},
+    [BOARD_207_V4_2] = {"JM Brain S2-mini Jacscript 207 v4.2", 0x322e0e64, 0},
+    [BOARD_207_V4_3] = {"JM Brain S2-mini Jacscript 207 v4.3", 0x322e0e64,
+                        BOARD_FLAG_PWR_ACTIVE_HI},
+#endif
+
+#endif
+
 };
 static int board_type;
+
+const char *app_get_dev_class_name(void) {
+    return board_infos[board_type].name;
+}
+
+uint32_t app_get_device_class(void) {
+    return board_infos[board_type].dev_class;
+}
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3)
 static int detect_pin(int pin) {
