@@ -67,3 +67,5 @@ void init_sdcard(void);
 
 void jd_tcpsock_process(void);
 void jd_tcpsock_init(void);
+
+void get_i2c_pins(uint8_t *sda, uint8_t *scl);
