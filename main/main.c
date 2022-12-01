@@ -265,6 +265,10 @@ void app_main() {
     jd_seed_random(esp_random());
     init_sdcard();
 
+#ifdef LED_SET_RGB
+    LED_SET_RGB(0, 0, 0);
+#endif
+
 #if 0
     esp_log_level_set("sdmmc_init", ESP_LOG_VERBOSE);
     esp_log_level_set("sdmmc_cmd", ESP_LOG_VERBOSE);
@@ -277,6 +281,8 @@ void app_main() {
     // enable line buffering for this stream (to be similar to the regular UART-based output)
     static char stdout_buf[128];
     setvbuf(stdout, stdout_buf, _IOLBF, sizeof(stdout_buf));
+
+    jd_usb_enable_serial();
 
     main_worker = worker_alloc();
 

@@ -21,7 +21,9 @@
 
 // ESP32-C3
 
-#define LED_SET_RGB(...) ((void)0)
+void led_set_rgb(uint8_t r, uint8_t g, uint8_t b);
+#define LED_SET_RGB led_set_rgb
+#define PIN_WS2812B 2
 
 #define PIN_JACDAC 3 // A1
 
