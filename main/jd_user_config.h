@@ -21,23 +21,20 @@
 
 // ESP32-C3
 
-#define LED_R_MULT 250
-#define LED_G_MULT 250
-#define LED_B_MULT 250
+#define LED_SET_RGB(...) ((void)0)
 
-#define PIN_LED_B 5
-#define PIN_LED_G 20
-#define PIN_LED_R 4
+#define PIN_JACDAC 3 // A1
 
-#define PIN_JACDAC 3
-
-#define PIN_SD_MISO 2
+#define PIN_SD_MISO 8
 #define PIN_SD_MOSI 7
-#define PIN_SD_SCK 6
-#define PIN_SD_CS 9
+#define PIN_SD_SCK 10
+#define PIN_SD_CS 4 // A0
 
-#define PIN_PWR_EN 10
-#define PIN_PWR_FAULT 8
+#define PIN_SDA 5
+#define PIN_SCL 6
+
+#define PIN_UART_TX 21
+#define PIN_UART_RX 20
 
 #if PIN_SD_CS == 9
 // GPIO9 is boot pin, connected to button; avoid the MCU driving the pin high, while button pulls it low
