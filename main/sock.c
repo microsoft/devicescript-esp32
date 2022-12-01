@@ -194,7 +194,7 @@ static void worker_main(void *arg) {
             process_write(&cmd);
             break;
         default:
-            jd_panic();
+            JD_PANIC();
         }
     }
 }

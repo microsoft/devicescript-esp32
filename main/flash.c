@@ -2,7 +2,7 @@
 #include "nvs_flash.h"
 
 static nvs_handle_t flash_handle;
-static jacscriptmgr_cfg_t cfg;
+static devicescriptmgr_cfg_t cfg;
 static bool is_erased;
 static uint8_t *max_write;
 
@@ -39,10 +39,10 @@ void flash_erase(void *page_addr) {
     }
 }
 
-void init_jacscript_manager(void) {
+void init_devicescript_manager(void) {
     cfg.max_program_size = 32 * 1024;
     cfg.program_base = jd_alloc(cfg.max_program_size);
-    jacscriptmgr_init(&cfg);
+    devicescriptmgr_init(&cfg);
 
     ESP_ERROR_CHECK(nvs_open("jacsflash", NVS_READWRITE, &flash_handle));
     size_t proglen = cfg.max_program_size;

@@ -248,11 +248,11 @@ void uart_init_() {
     int pinnum = jd_pin_num();
     if (pinnum < 0) {
         DMESG("PIN_JACK_TX not defined");
-        jd_panic();
+        JD_PANIC();
     }
     if (!(1 <= pinnum && pinnum < 32)) {
         DMESG("invalid PIN_JACK_TX");
-        jd_panic();
+        JD_PANIC();
     }
 
     context.uart_num = UART_NUM_MAX - 1;
@@ -375,7 +375,7 @@ static void tx_race() {
 
 int uart_start_tx(const void *data, uint32_t numbytes) {
     if (context.tx_len || context.in_tx) {
-        jd_panic();
+        JD_PANIC();
     }
 
     target_disable_irq();
@@ -428,7 +428,7 @@ void uart_flush_rx(void) {
 
 void uart_start_rx(void *data, uint32_t maxbytes) {
     if (context.rx_len || context.tx_len) {
-        jd_panic();
+        JD_PANIC();
     }
 
     log_pin_pulse(0, 3);

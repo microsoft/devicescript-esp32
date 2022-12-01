@@ -98,12 +98,12 @@ FW_VERSION = $(shell sh jacdac-c/scripts/git-version.sh)
 dist: all
 	mkdir -p dist
 ifeq ($(UF2),1)
-	cp build/espjd.uf2 dist/jacscript-$(TARGET)$(TARGET_SUFF).uf2
+	cp build/espjd.uf2 dist/devicescript-$(TARGET)$(TARGET_SUFF).uf2
 else
-	cp build/combined.bin dist/jacscript-$(TARGET)$(TARGET_SUFF)-0x0.bin
+	cp build/combined.bin dist/devicescript-$(TARGET)$(TARGET_SUFF)-0x0.bin
 endif
 	# also keep ELF file for addr2line
-	cp build/espjd.elf dist/jacscript-$(TARGET)$(TARGET_SUFF).elf
+	cp build/espjd.elf dist/devicescript-$(TARGET)$(TARGET_SUFF).elf
 
 bump:
 	sh ./scripts/bump.sh

@@ -3,7 +3,7 @@
 #include "jdtcp.h"
 #include "jd_client.h"
 #include "storage/jd_storage.h"
-#include "jacscript/jacscript.h"
+#include "devicescript/devicescript.h"
 #include "services/jd_services.h"
 #include "services/interfaces/jd_pins.h"
 #include "services/interfaces/jd_pwm.h"
@@ -18,7 +18,7 @@ bool wifi_is_connected(void);
 void jdtcp_init(void);
 
 void azureiothub_init(void);
-extern const jacscloud_api_t azureiothub_cloud;
+extern const devscloud_api_t azureiothub_cloud;
 
 #define CHK ESP_ERROR_CHECK
 
@@ -48,7 +48,7 @@ void worker_do_work(worker_t w);
 int tim_worker_run(TaskFunction_t fn, void *arg);
 
 bool jd_rx_has_frame(void);
-void init_jacscript_manager(void);
+void init_devicescript_manager(void);
 void usb_init(void);
 void usb_pre_init(void);
 

@@ -29,7 +29,7 @@ void *jd_alloc(uint32_t size) {
     if (r == NULL) {
         DMESG("OOM!");
         ESP_LOGE("JD", "OOM %d bytes\n", size);
-        jd_panic();
+        JD_PANIC();
     }
     return r;
 }

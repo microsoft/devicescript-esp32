@@ -223,11 +223,11 @@ void app_init_services(void) {
 #endif
 #ifndef NO_JACSCRIPT
     jd_role_manager_init();
-    init_jacscript_manager();
+    init_devicescript_manager();
 #endif
     wifi_init();
     wsskhealth_init();
-    jacscloud_init(&wssk_cloud);
+    devscloud_init(&wssk_cloud);
 #ifndef NO_JACSCRIPT
     tsagg_init(&wssk_cloud);
 #endif
@@ -258,8 +258,8 @@ void app_main() {
     // subscribe current task, in case something goes wrong here (unlikely)
     CHK(esp_task_wdt_add(NULL));
 
-    ESP_LOGI("JD", "starting jacscript-esp32 %s", app_get_fw_version());
-    DMESG("starting jacscript-esp32 %s", app_get_fw_version());
+    ESP_LOGI("JD", "starting devicescript-esp32 %s", app_get_fw_version());
+    DMESG("starting devicescript-esp32 %s", app_get_fw_version());
 
     usb_pre_init();
     jd_seed_random(esp_random());
