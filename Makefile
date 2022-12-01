@@ -73,6 +73,9 @@ endif
 mon:
 	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(MON_PORT) --baud 115200 build/espjd.elf
 
+monu:
+	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 115200 build/espjd.elf
+
 mon-2:
 	$(IDF) monitor
 

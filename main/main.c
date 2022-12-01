@@ -165,8 +165,6 @@ void jdesp_wake_main(void) {
 static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
                          void *event_data) {
     if (!main_task) {
-        stdout = lstore_stdout;
-
         CHK(esp_task_wdt_add(NULL));
 
         main_task = xTaskGetCurrentTaskHandle();
@@ -277,7 +275,7 @@ void app_main() {
 #endif
 
     orig_stdout = stdout;
-    lstore_stdout = stdout = fwopen(NULL, &log_writefn);
+    lstore_stdout = _GLOBAL_REENT->_stdout = fwopen(NULL, &log_writefn);
     // enable line buffering for this stream (to be similar to the regular UART-based output)
     static char stdout_buf[128];
     setvbuf(stdout, stdout_buf, _IOLBF, sizeof(stdout_buf));
