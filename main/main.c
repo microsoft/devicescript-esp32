@@ -62,12 +62,17 @@ const board_info_t board_infos[9] = {
 static int board_type;
 
 void get_i2c_pins(uint8_t *sda, uint8_t *scl) {
+#ifdef PIN_SDA
+    *sda = PIN_SDA;
+    *scl = PIN_SCL;
+#else
     if (board_type == BOARD_48) {
         *sda = 9;
         *scl = 10;
     } else {
         *sda = *scl = 0xff;
     }
+#endif
 }
 
 const char *app_get_dev_class_name(void) {

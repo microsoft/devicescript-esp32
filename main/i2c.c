@@ -1,6 +1,7 @@
 #include "jdesp.h"
 #include "jd_drivers.h"
 #include "driver/i2c.h"
+#include "hal/i2c_hal.h"
 
 #define I2C_MASTER_NUM 0
 
@@ -29,9 +30,8 @@ int i2c_init(void) {
     };
 
     JD_CHK(i2c_param_config(I2C_MASTER_NUM, &conf));
-    JD_CHK(i2c_set_timeout(I2C_MASTER_NUM, 0xFFFF0));
+    JD_CHK(i2c_set_timeout(I2C_MASTER_NUM, I2C_LL_MAX_TIMEOUT - 1));
     JD_CHK(i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0));
-
 
     i2c_ok = 1;
 

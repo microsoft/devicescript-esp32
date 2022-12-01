@@ -107,7 +107,7 @@ static void scan_done_handler(void *arg, esp_event_base_t event_base, int32_t ev
 
         esp_err_t err = esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer);
 
-        if (err == ESP_OK) {
+        if (err == ESP_OK && sta_number != 0) {
             res = jd_alloc(sizeof(jd_wifi_results_t) * sta_number);
 
             for (int i = 0; i < sta_number; i++) {
