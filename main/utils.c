@@ -24,30 +24,6 @@ char *extract_property(const char *property_bag, int plen, const char *key) {
     return NULL;
 }
 
-char *nvs_get_str_a(nvs_handle_t handle, const char *key) {
-    size_t sz = 0;
-    int err = nvs_get_str(handle, key, NULL, &sz);
-    if (err == ESP_ERR_NVS_NOT_FOUND)
-        return NULL;
-    JD_ASSERT(err == ESP_OK);
-    char *res = jd_alloc(sz);
-    err = nvs_get_str(handle, key, res, &sz);
-    JD_ASSERT(err == ESP_OK);
-    return res;
-}
-
-void *nvs_get_blob_a(nvs_handle_t handle, const char *key, size_t *outsz) {
-    int err = nvs_get_blob(handle, key, NULL, outsz);
-    if (err == ESP_ERR_NVS_NOT_FOUND)
-        return NULL;
-    JD_ASSERT(err == ESP_OK);
-    void *res = jd_alloc(*outsz);
-    err = nvs_get_blob(handle, key, res, outsz);
-    JD_ASSERT(err == ESP_OK);
-    return res;
-}
-
-
 char *jd_hmac_b64(const char *key, const char **parts) {
     uint8_t binkey[64];
     size_t klen = 0;

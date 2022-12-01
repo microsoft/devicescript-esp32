@@ -1,7 +1,6 @@
 #include "jdesp.h"
 
 #include "freertos/event_groups.h"
-#include "nvs_flash.h"
 #include "esp_wifi.h"
 
 #define SCAN_SECONDS 5
@@ -16,8 +15,6 @@ struct srv_state {
 
     uint8_t enabled;
     uint8_t mac[6];
-
-    nvs_handle_t nvs_handle;
 
     jd_opipe_desc_t scan_pipe;
     jd_wifi_results_t *scan_results;
@@ -236,9 +233,8 @@ static int wifi_cmd_add_network(srv_t *state, jd_packet_t *pkt) {
 
     stop_networks_pipe(state);
 
-    nvs_set_str(state->nvs_handle, "ssid", ssid);
-    nvs_set_str(state->nvs_handle, "password", pass);
-    nvs_commit(state->nvs_handle);
+    jd_settings_set("wifi_ssid", ssid);
+    jd_settings_set("wifi_psk", pass);
 
     jd_send_event(state, JD_WIFI_EV_NETWORKS_CHANGED);
     wifi_connect(state);
@@ -306,9 +302,7 @@ void wifi_process(srv_t *state) {
     if (jd_should_sample_ms(&state->next_scan, SCAN_SECONDS << 10)) {
         tsagg_update("wifi", wifi_rssi(state));
         tsagg_update("uptime", (double)now_ms_long / 1000);
-        DMESG("free memory: %u bytes (max block: %u bytes)",
-              (unsigned)heap_caps_get_free_size(MALLOC_CAP_8BIT),
-              (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        log_free_mem();
         if (!state->is_connected)
             wifi_scan(state);
     }
@@ -434,9 +428,8 @@ void wifi_init(void) {
 
     esp_efuse_mac_get_default(state->mac);
 
-    ESP_ERROR_CHECK(nvs_open("jdwifi", NVS_READWRITE, &state->nvs_handle));
-    state->ssid = nvs_get_str_a(state->nvs_handle, "ssid");
-    state->password = nvs_get_str_a(state->nvs_handle, "password");
+    state->ssid = jd_settings_get("wifi_ssid");
+    state->password = jd_settings_get("wifi_psk");
 
     state->enabled = 1;
 

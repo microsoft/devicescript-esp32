@@ -82,6 +82,7 @@ void jdesp_wake_main(void);
 
 #define JD_SIMPLE_ALLOC 0
 #define JD_NET_BRIDGE 1
+#define JD_FLASH_IN_SETTINGS 1
 
 #define JD_GC_KB 8
 

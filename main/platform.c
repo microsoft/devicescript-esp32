@@ -24,11 +24,18 @@ void jd_alloc_stack_check(void) {}
 
 void jd_alloc_init(void) {}
 
+void log_free_mem(void) {
+    DMESG("free memory: %u bytes (max block: %u bytes)",
+          (unsigned)heap_caps_get_free_size(MALLOC_CAP_8BIT),
+          (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+}
+
 void *jd_alloc(uint32_t size) {
     void *r = calloc(size, 1);
     if (r == NULL) {
-        DMESG("OOM!");
-        ESP_LOGE("JD", "OOM %d bytes\n", size);
+        DMESG("OOM! %u bytes", size);
+        log_free_mem();
+        ESP_LOGE("JD", "OOM %u bytes\n", size);
         JD_PANIC();
     }
     return r;

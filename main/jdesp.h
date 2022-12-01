@@ -7,10 +7,9 @@
 #include "services/jd_services.h"
 #include "services/interfaces/jd_pins.h"
 #include "services/interfaces/jd_pwm.h"
+#include "services/interfaces/jd_flash.h"
 #include "interfaces/jd_usb.h"
 #include "network/jd_network.h"
-
-#include "nvs_flash.h"
 
 void wifi_init(void);
 bool wifi_is_connected(void);
@@ -48,16 +47,14 @@ void worker_do_work(worker_t w);
 int tim_worker_run(TaskFunction_t fn, void *arg);
 
 bool jd_rx_has_frame(void);
-void init_devicescript_manager(void);
 void usb_init(void);
 void usb_pre_init(void);
+
+void log_free_mem(void);
 
 extern worker_t main_worker;
 
 char *extract_property(const char *property_bag, int plen, const char *key);
-char *nvs_get_str_a(nvs_handle_t handle, const char *key);
-void *nvs_get_blob_a(nvs_handle_t handle, const char *key, size_t *outsz);
-
 char *jd_hmac_b64(const char *key, const char **parts);
 
 void reboot_to_uf2(void);

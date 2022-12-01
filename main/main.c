@@ -221,7 +221,7 @@ void app_init_services(void) {
 #endif
 #ifndef NO_JACSCRIPT
     jd_role_manager_init();
-    init_devicescript_manager();
+    devicescriptmgr_init_mem(32 * 1024);
 #endif
     wifi_init();
     wsskhealth_init();
@@ -233,15 +233,6 @@ void app_init_services(void) {
     if (i2c_init() == 0) {
         jd_scan_all();
     }
-}
-
-static void flash_init() {
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
 }
 
 static int log_writefn(void *cookie, const char *data, int size) {
@@ -288,7 +279,7 @@ void app_main() {
 
     setup_pins();
 
-    flash_init();
+    jd_settings_get_bin("no_such_setting", NULL, 0); // force flash init
 
     tim_init();
 
