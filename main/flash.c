@@ -16,18 +16,19 @@ static void nvs_init(void) {
 }
 
 int jd_settings_get_bin(const char *key, void *dst, unsigned space) {
-    size_t len;
+    size_t len = space;
 
     nvs_init();
 
     int err = nvs_get_blob(flash_handle, key, dst, &len);
     if (err == ESP_ERR_NVS_NOT_FOUND)
-        return -1;
+        err = -1;
+    else if (err == 0 || err == ESP_ERR_NVS_INVALID_LENGTH)
+        err = len;
+    else
+        JD_PANIC();
 
-    if (err == ESP_ERR_NVS_INVALID_LENGTH || err == 0)
-        return len;
-
-    JD_PANIC();
+    return err;
 }
 
 int jd_settings_set_bin(const char *key, const void *val, unsigned size) {
