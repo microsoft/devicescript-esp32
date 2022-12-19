@@ -37,7 +37,8 @@ const board_info_t board_infos[9] = {
 #ifdef NO_JACSCRIPT
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
-    [0] = {"MSR Brain ESP32-C3 Cloud Connector 216 v4.5", 0x39b608d4, BOARD_FLAG_PWR_ACTIVE_HI},
+    [0] = {"Adafruit QT Py ESP32-C3 WiFi Dev Board Cloud Connector", 0x33a50075, BOARD_FLAG_PWR_ACTIVE_HI},
+//  [0] = {"MSR Brain ESP32-C3 Cloud Connector 216 v4.5", 0x39b608d4, BOARD_FLAG_PWR_ACTIVE_HI},
 #else
     [BOARD_48] = {"JacdacIoT Cloud Connector 48 v0.2", 0x30a3c887, 0},
     [BOARD_207_V4_2] = {"JM Brain S2-mini Cloud Connector 207 v4.2", 0x33b166ba, 0},
@@ -48,7 +49,8 @@ const board_info_t board_infos[9] = {
 #else
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
-    [0] = {"MSR Brain ESP32-C3 Jacscript 216 v4.5", 0x33e239e5, BOARD_FLAG_PWR_ACTIVE_HI},
+    [0] = {"Adafruit QT Py ESP32-C3 WiFi Dev Board DeviceScript", 0x3693d40b, BOARD_FLAG_PWR_ACTIVE_HI},
+//  [0] = {"MSR Brain ESP32-C3 Jacscript 216 v4.5", 0x33e239e5, BOARD_FLAG_PWR_ACTIVE_HI},
 #else
     [BOARD_48] = {"JacdacIoT Jacscript 48 v0.2", 0x3de1398b, 0},
     [BOARD_207_V4_2] = {"JM Brain S2-mini Jacscript 207 v4.2", 0x322e0e64, 0},
