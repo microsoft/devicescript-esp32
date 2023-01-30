@@ -57,8 +57,7 @@ vscode:
 
 check-export:
 	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
-	@test -f jacdac-c/README.md || git submodule update --init
-	@test -f jacdac-c/network/tiny-AES-c/aes.c || (cd jacdac-c && git submodule update --init)
+	@test -f devicescript/runtime/jacdac-c/jacdac/README.md || git submodule update --init --recursive
 
 f: flash
 r: flash
