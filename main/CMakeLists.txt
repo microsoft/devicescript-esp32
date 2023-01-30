@@ -12,3 +12,4 @@ idf_component_register(
 )
 
 target_link_libraries(${COMPONENT_LIB} PUBLIC jacdac)
+target_link_libraries(${COMPONENT_LIB} PUBLIC devicescript)

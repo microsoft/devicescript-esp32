@@ -3,7 +3,7 @@
 #include "jdtcp.h"
 #include "jd_client.h"
 #include "storage/jd_storage.h"
-#include "devicescript/devicescript.h"
+#include "devicescript.h"
 #include "services/jd_services.h"
 #include "services/interfaces/jd_pins.h"
 #include "services/interfaces/jd_pwm.h"
