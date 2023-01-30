@@ -229,6 +229,7 @@ void app_init_services(void) {
 #ifndef NO_JACSCRIPT
     jd_role_manager_init();
     devsmgr_init_mem(32 * 1024);
+    devsdbg_init();
 #endif
     wifi_init();
     wsskhealth_init();
