@@ -241,6 +241,8 @@ void app_init_services(void) {
     if (i2c_init() == 0) {
         jd_scan_all();
     }
+
+    jd_wifi_rssi(); // make sure it links
 }
 
 static int log_writefn(void *cookie, const char *data, int size) {

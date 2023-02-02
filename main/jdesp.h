@@ -11,28 +11,7 @@
 #include "interfaces/jd_usb.h"
 #include "network/jd_network.h"
 
-void wifi_init(void);
-bool wifi_is_connected(void);
-
-void jdtcp_init(void);
-
-void azureiothub_init(void);
-extern const devscloud_api_t azureiothub_cloud;
-
 #define CHK ESP_ERROR_CHECK
-
-void led_blink(int us);
-void led_set(int state);
-
-typedef struct _ssl_conn_t ssl_conn_t;
-
-ssl_conn_t *ssl_alloc(void);
-int ssl_connect(ssl_conn_t *conn, const char *hostname, int port);
-bool ssl_is_connected(ssl_conn_t *conn);
-int ssl_write(ssl_conn_t *conn, const void *data, uint32_t len);
-int ssl_get_bytes_avail(ssl_conn_t *conn);
-int ssl_read(ssl_conn_t *conn, void *data, uint32_t len);
-void ssl_close(ssl_conn_t *conn);
 
 typedef struct worker *worker_t;
 // needs worker_do_work() called from somewhere
