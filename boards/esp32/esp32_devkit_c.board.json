@@ -1,9 +1,8 @@
 {
     "$schema": "../esp32deviceconfig.schema.json",
-    "devName": "Espressif ESP32 Devkit V1 DeviceScript",
+    "devName": "Espressif ESP32-DevKitC DeviceScript",
     "devClass": "0x3c507a05",
     "jacdac": {
-        "#": "JD is TX2",
         "pin": 17
     },
     "led": {
