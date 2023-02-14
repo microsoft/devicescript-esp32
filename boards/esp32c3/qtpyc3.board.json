@@ -1,0 +1,24 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "Adafruit QT Py ESP32-C3 WiFi Dev Board DeviceScript",
+    "devClass": "0x3693d40b",
+    "jacdac": {
+        "#": "JD is A1",
+        "pin": 3
+    },
+    "led": {
+        "type": 1,
+        "pin": 2
+    },
+    "sd": {
+        "#": "CS is A0",
+        "pinCS": 4,
+        "pinMISO": 8,
+        "pinMOSI": 7,
+        "pinSCK": 10
+    },
+    "i2c": {
+        "pinSCL": 6,
+        "pinSDA": 5
+    }
+}

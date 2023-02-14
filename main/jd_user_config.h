@@ -1,9 +1,9 @@
 #ifndef JD_USER_CONFIG_H
 #define JD_USER_CONFIG_H
 
-#define DEVICE_DMESG_BUFFER_SIZE 4096
+#include <stdint.h>
 
-#include "dmesg.h"
+#define JD_DMESG_BUFFER_SIZE 4096
 
 #define JD_LOG DMESG
 #define JD_WR_OVERHEAD 28
@@ -21,8 +21,6 @@
 
 // ESP32-C3
 
-void led_set_rgb(uint8_t r, uint8_t g, uint8_t b);
-#define LED_SET_RGB led_set_rgb
 #define PIN_WS2812B 2
 
 #define PIN_JACDAC 3 // A1
@@ -39,7 +37,8 @@ void led_set_rgb(uint8_t r, uint8_t g, uint8_t b);
 #define PIN_UART_RX 20
 
 #if PIN_SD_CS == 9
-// GPIO9 is boot pin, connected to button; avoid the MCU driving the pin high, while button pulls it low
+// GPIO9 is boot pin, connected to button; avoid the MCU driving the pin high, while button pulls it
+// low
 #define JD_SD_CS_PULL_UP 1
 #endif
 
@@ -76,7 +75,6 @@ void led_set_rgb(uint8_t r, uint8_t g, uint8_t b);
 // probably not so useful on brains...
 #define JD_CONFIG_WATCHDOG 0
 
-
 void jdesp_wake_main(void);
 #define JD_WAKE_MAIN() jdesp_wake_main()
 
@@ -88,5 +86,13 @@ void jdesp_wake_main(void);
 
 #define JD_SEND_FRAME_SIZE 1024
 #define JD_RX_QUEUE_SIZE 1024
+
+#define JD_I2C_HELPERS 1
+#define JD_WIFI 1
+
+const void *dcfg_base_addr(void);
+#define JD_DCFG_BASE_ADDR dcfg_base_addr()
+
+#define JD_CONFIG_TEMPERATURE 1
 
 #endif

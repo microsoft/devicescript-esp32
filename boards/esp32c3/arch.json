@@ -1,0 +1,7 @@
+{
+    "$schema": "../esp32archconfig.schema.json",
+    "name": "ESP32-C3",
+    "id": "esp32c3",
+    "#": "JD_DCFG_BASE_ADDR",
+    "dcfgOffset": "0x9000"
+}

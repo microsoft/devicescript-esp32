@@ -6,6 +6,7 @@
 #include "devicescript.h"
 #include "services/jd_services.h"
 #include "services/interfaces/jd_pins.h"
+#include "services/interfaces/jd_adc.h"
 #include "services/interfaces/jd_pwm.h"
 #include "services/interfaces/jd_flash.h"
 #include "interfaces/jd_usb.h"

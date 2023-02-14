@@ -141,3 +141,7 @@ int jd_wifi_rssi(void) {
         return -128;
     return info.rssi;
 }
+
+void jd_wifi_process(void) {
+    // do nothing
+}

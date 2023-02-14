@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+        "HexInt": {
+            "type": [
+                "string",
+                "integer"
+            ]
+        }
+    },
+    "properties": {
+        "#": {
+            "description": "All fields starting with '#' arg ignored",
+            "type": "string"
+        },
+        "$schema": {
+            "type": "string"
+        },
+        "dcfgOffset": {
+            "$ref": "#/definitions/HexInt",
+            "description": "Where should DCFG be embedded in generic file."
+        },
+        "genericUrl": {
+            "description": "Where to find a generic (without DCFG) UF2 or BIN file.",
+            "type": "string"
+        },
+        "id": {
+            "description": "Short identification of architecture.",
+            "examples": [
+                "rp2040",
+                "rp2040w",
+                "esp32c3"
+            ],
+            "type": "string"
+        },
+        "name": {
+            "description": "Full name of architecture.",
+            "examples": [
+                "RP2040 + CYW43 WiFi",
+                "ESP32-C3"
+            ],
+            "type": "string"
+        },
+        "uf2Align": {
+            "$ref": "#/definitions/HexInt",
+            "description": "Force alignment of the last page in the patched UF2 file.\nSet to 4096 on RP2040 because wof RP2040-E14."
+        }
+    },
+    "required": [
+        "dcfgOffset",
+        "id",
+        "name",
+        "uf2Align"
+    ],
+    "type": "object"
+}
+

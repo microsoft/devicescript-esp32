@@ -1,5 +1,6 @@
 .SECONDARY: # this prevents object files from being removed
 .DEFAULT_GOAL := all
+CLI = node devicescript/cli/devicescript 
 
 IDF = idf.py
 
@@ -28,7 +29,10 @@ combine:
 	esptool.py --chip $(TARGET) merge_bin \
 		-o build/combined.bin \
 		0x0 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0x10000 build/espjd.bin
+	$(CLI) binpatch --bin build/combined.bin boards/$(TARGET)/*.board.json
 endif
+
+BOARD ?= $(shell basename `ls boards/$(TARGET)/*.board.json | head -1` .board.json)
 
 ifeq ($(GCC_PREF),)
 $(error Define 'TARGET = esp32s2' or similar in Makefile.user)
@@ -66,7 +70,7 @@ flash: all
 ifeq ($(UF2),1)
 	$(IDF) --ccache flash --port $(SERIAL_PORT)
 else
-	esptool.py --chip $(TARGET) -p $(SERIAL_PORT) write_flash 0x0 build/combined.bin
+	esptool.py --chip $(TARGET) -p $(SERIAL_PORT) write_flash 0x0 dist/devicescript-$(TARGET)-$(BOARD).bin
 endif
 
 mon:

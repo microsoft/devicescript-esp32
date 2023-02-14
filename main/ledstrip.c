@@ -1,16 +1,24 @@
 #include "jdesp.h"
 #include "led_strip.h"
 
-#ifdef PIN_WS2812B
+static led_strip_t *strip;
 
-void led_set_rgb(uint8_t r, uint8_t g, uint8_t b) {
-    static led_strip_t *strip;
-    if (!strip) {
-        strip = led_strip_init(0, PIN_WS2812B, 1);
+void jd_rgbext_link(void) {}
+
+void jd_rgbext_init(int type, uint8_t pin) {
+    if (strip)
+        return;
+    DMESG("*** rgb %d %d", type, pin);
+    if (type == 1) {
+        strip = led_strip_init(0, pin, 1);
+        DMESG("npx on %d", pin);
         JD_ASSERT(strip != NULL);
     }
-    strip->set_pixel(strip, 0, r, g, b);
-    strip->refresh(strip, 0);
 }
 
-#endif
+void jd_rgbext_set(uint8_t r, uint8_t g, uint8_t b) {
+    if (strip) {
+        strip->set_pixel(strip, 0, r, g, b);
+        strip->refresh(strip, 0);
+    }
+}

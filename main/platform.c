@@ -2,6 +2,7 @@
 
 #include "esp_timer.h"
 #include "esp_event.h"
+#include "esp_spi_flash.h"
 #include "esp_private/system_internal.h"
 
 int jd_pin_num(void) {
@@ -100,4 +101,14 @@ extern const char app_dev_class_name[];
 
 const char *app_get_fw_version(void) {
     return app_fw_version;
+}
+
+const void *dcfg_base_addr(void) {
+    static const void *result = NULL;
+    if (!result) {
+        spi_flash_mmap_handle_t map;
+        CHK(spi_flash_mmap(0, 0x10000, SPI_FLASH_MMAP_DATA, &result, &map));
+        result = (const uint8_t *)result + 0x9000;
+    }
+    return result;
 }

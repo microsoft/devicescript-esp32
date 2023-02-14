@@ -37,7 +37,8 @@ const board_info_t board_infos[9] = {
 #ifdef NO_JACSCRIPT
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
-    [0] = {"Adafruit QT Py ESP32-C3 WiFi Dev Board Cloud Connector", 0x33a50075, BOARD_FLAG_PWR_ACTIVE_HI},
+    [0] = {"Adafruit QT Py ESP32-C3 WiFi Dev Board Cloud Connector", 0x33a50075,
+           BOARD_FLAG_PWR_ACTIVE_HI},
 //  [0] = {"MSR Brain ESP32-C3 Cloud Connector 216 v4.5", 0x39b608d4, BOARD_FLAG_PWR_ACTIVE_HI},
 #else
     [BOARD_48] = {"JacdacIoT Cloud Connector 48 v0.2", 0x30a3c887, 0},
@@ -49,7 +50,8 @@ const board_info_t board_infos[9] = {
 #else
 
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
-    [0] = {"Adafruit QT Py ESP32-C3 WiFi Dev Board DeviceScript", 0x3693d40b, BOARD_FLAG_PWR_ACTIVE_HI},
+    [0] = {"Adafruit QT Py ESP32-C3 WiFi Dev Board DeviceScript", 0x3693d40b,
+           BOARD_FLAG_PWR_ACTIVE_HI},
 //  [0] = {"MSR Brain ESP32-C3 Jacscript 216 v4.5", 0x33e239e5, BOARD_FLAG_PWR_ACTIVE_HI},
 #else
     [BOARD_48] = {"JacdacIoT Jacscript 48 v0.2", 0x3de1398b, 0},
@@ -112,7 +114,7 @@ static void setup_pins(void) {
 }
 
 int target_in_irq(void) {
-    return xTaskGetCurrentTaskHandle() != main_task;
+    return main_task != NULL && xTaskGetCurrentTaskHandle() != main_task;
 }
 
 FILE *orig_stdout;
@@ -124,7 +126,7 @@ void flush_dmesg(void) {
 
     static char *dmesg_copy;
     if (!dmesg_copy)
-        dmesg_copy = malloc(DEVICE_DMESG_BUFFER_SIZE + sizeof(pref) + 10);
+        dmesg_copy = malloc(JD_DMESG_BUFFER_SIZE + sizeof(pref) + 10);
 
     uint32_t len;
 
@@ -242,7 +244,8 @@ void app_init_services(void) {
         jd_scan_all();
     }
 
-    jd_wifi_rssi(); // make sure it links
+    jd_wifi_rssi();      // make sure WiFi module links
+    adc_can_read_pin(0); // link ADC
 }
 
 static int log_writefn(void *cookie, const char *data, int size) {
@@ -260,13 +263,14 @@ void app_main() {
     ESP_LOGI("JD", "starting devicescript-esp32 %s", app_get_fw_version());
     DMESG("starting devicescript-esp32 %s", app_get_fw_version());
 
+    ESP_LOGW("JD", "devname %s", dcfg_get_string("devName", NULL));
+
+    extern void jd_rgbext_link(void);
+    jd_rgbext_link();
+
     usb_pre_init();
     jd_seed_random(esp_random());
     init_sdcard();
-
-#ifdef LED_SET_RGB
-    LED_SET_RGB(0, 0, 0);
-#endif
 
 #if 0
     esp_log_level_set("sdmmc_init", ESP_LOG_VERBOSE);
