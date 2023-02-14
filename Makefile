@@ -3,13 +3,13 @@
 CLI = node devicescript/cli/devicescript 
 JDC = devicescript/runtime/jacdac-c
 BUILD = build
-
 IDF = idf.py
 
 _IGNORE0 := $(shell test -f Makefile.user || cp sample-Makefile.user Makefile.user)
 include Makefile.user
 
 MON_PORT ?= $(SERIAL_PORT)
+ESPTOOL ?= esptool.py
 
 BL_OFF = $(shell grep CONFIG_BOOTLOADER_OFFSET_IN_FLASH= sdkconfig | sed -e 's/.*=//')
 
@@ -56,7 +56,7 @@ sdkconfig.defaults: Makefile.user
 	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > $(BUILD)/options.cmake
 
 combine:
-	esptool.py --chip $(TARGET) merge_bin \
+	$(ESPTOOL) --chip $(TARGET) merge_bin \
 		-o $(BUILD)/combined.bin \
 		--target-offset $(BL_OFF) \
 		$(BL_OFF) $(BUILD)/bootloader/bootloader.bin \
@@ -85,7 +85,7 @@ f: flash
 r: flash
 
 flash: all
-	esptool.py --chip $(TARGET) -p $(SERIAL_PORT) write_flash \
+	$(ESPTOOL) --chip $(TARGET) -p $(SERIAL_PORT) write_flash \
 		$(BL_OFF) dist/devicescript-$(TARGET)-$(BOARD)-$(BL_OFF).bin
 
 mon:

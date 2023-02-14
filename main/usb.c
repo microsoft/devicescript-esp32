@@ -118,7 +118,7 @@ void usb_init() {
     LOG("init done");
 }
 
-#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
 
 #include "hal/usb_serial_jtag_ll.h"
 #include "soc/periph_defs.h"
@@ -183,9 +183,91 @@ void usb_init() {
 
 #elif defined(CONFIG_IDF_TARGET_ESP32)
 
-void jd_usb_pull_ready() {}
+#include "driver/uart.h"
+#include "driver/periph_ctrl.h"
+#include "hal/uart_ll.h"
+#include "hal/gpio_ll.h"
+
+// https://www.mischianti.org/2021/02/17/doit-esp32-dev-kit-v1-high-resolution-pinout-and-specs/
+// https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+
+#define TX_PIN 1
+#define RX_PIN 3
+
+static uart_dev_t *uart_hw;
+
+static JD_FAST void fill_buffer(void) {
+    int space = UART_FIFO_LEN - uart_hw->status.txfifo_cnt;
+    if (space < 64)
+        return;
+
+    uint8_t buf[64];
+    int len = jd_usb_pull(buf);
+    if (len) {
+        uart_ll_write_txfifo(uart_hw, buf, len);
+        uart_hw->int_clr.txfifo_empty = 1;
+        uart_hw->conf1.txfifo_empty_thrhd = 32;
+        uart_hw->int_ena.txfifo_empty = 1;
+    } else {
+        uart_hw->int_clr.txfifo_empty = 1;
+        uart_hw->int_ena.txfifo_empty = 0;
+    }
+}
+
+static JD_FAST void read_fifo(void) {
+    unsigned n;
+    uint8_t buf[64];
+    while (0 != (n = uart_hw->status.rxfifo_cnt)) {
+        if (n > 64)
+            n = 64;
+        uart_ll_read_rxfifo(uart_hw, buf, n);
+        jd_usb_push(buf, n);
+    }
+}
+
+static JD_FAST void uart_isr(void *dummy) {
+    uint32_t uart_intr_status = uart_hw->int_st.val;
+
+    read_fifo();
+    fill_buffer();
+
+    uart_hw->int_clr.val = uart_intr_status; // clear all
+}
+
+void jd_usb_pull_ready(void) {
+    target_disable_irq();
+    fill_buffer();
+    target_enable_irq();
+}
+
 void usb_pre_init() {}
-void usb_init() {}
+void usb_init() {
+    int uart_idx = 1;
+    uart_hw = UART_LL_GET_HW(uart_idx);
+
+    periph_module_enable(uart_periph_signal[uart_idx].module);
+    const uart_config_t uart_config = {.baud_rate = 921600,
+                                       .data_bits = UART_DATA_8_BITS,
+                                       .parity = UART_PARITY_DISABLE,
+                                       .stop_bits = UART_STOP_BITS_1,
+                                       .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
+    CHK(uart_param_config(uart_idx, &uart_config));
+    intr_handle_t intr_handle;
+    CHK(esp_intr_alloc(uart_periph_signal[uart_idx].irq, 0, uart_isr, NULL, &intr_handle));
+
+    CHK(uart_set_pin(uart_idx, TX_PIN, RX_PIN, -1, -1));
+
+    uart_intr_config_t uart_intr = {
+        .intr_enable_mask = UART_INTR_RXFIFO_TOUT | UART_INTR_TXFIFO_EMPTY | UART_INTR_RXFIFO_FULL,
+        .rxfifo_full_thresh = 64,
+        .rx_timeout_thresh = 30, // us
+        .txfifo_empty_intr_thresh = 32};
+    CHK(uart_intr_config(uart_idx, &uart_intr));
+}
+
+void jd_usb_process(void) {
+    read_fifo();
+}
 
 #else
 #error "unknown target"

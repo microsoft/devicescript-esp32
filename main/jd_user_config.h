@@ -18,7 +18,6 @@
 #define JD_ADVANCED_STRING 1
 #define JD_LSTORE 1
 
-
 #define JD_RAW_FRAME 1
 
 #define JD_FLASH_PAGE_SIZE 1024
@@ -51,5 +50,10 @@ const void *dcfg_base_addr(void);
 #else
 #define JD_CONFIG_TEMPERATURE 1
 #endif
+
+#define JD_FAST _JD_SECTION_ATTR_IMPL(".iram1", __COUNTER__)
+#define _JD_COUNTER_STRINGIFY(COUNTER) #COUNTER
+#define _JD_SECTION_ATTR_IMPL(SECTION, COUNTER)                                                    \
+    __attribute__((section(SECTION "." _JD_COUNTER_STRINGIFY(COUNTER))))
 
 #endif
