@@ -1,6 +1,7 @@
 .SECONDARY: # this prevents object files from being removed
 .DEFAULT_GOAL := all
 CLI = node devicescript/cli/devicescript 
+JDC = devicescript/runtime/jacdac-c
 
 IDF = idf.py
 
@@ -9,27 +10,14 @@ include Makefile.user
 
 MON_PORT ?= $(SERIAL_PORT)
 
-ifeq ($(TARGET),esp32s2-nojacs)
-TARGET := esp32s2
-TARGET_SUFF := -nojacs
-COMPILE_OPTIONS += -DNO_JACSCRIPT=1
-endif
+BL_OFF = $(shell grep CONFIG_BOOTLOADER_OFFSET_IN_FLASH= sdkconfig | sed -e 's/.*=//')
 
 ifeq ($(TARGET),esp32s2)
 GCC_PREF = xtensa-esp32s2-elf
-UF2 = 1
-combine:
-	python3 scripts/uf2conv.py -b 0x0 build/espjd.bin -o build/espjd.uf2 -f ESP32S2
 endif
 
 ifeq ($(TARGET),esp32c3)
-UF2 =
 GCC_PREF = riscv32-esp-elf
-combine:
-	esptool.py --chip $(TARGET) merge_bin \
-		-o build/combined.bin \
-		0x0 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0x10000 build/espjd.bin
-	$(CLI) binpatch --bin build/combined.bin boards/$(TARGET)/*.board.json
 endif
 
 BOARD ?= $(shell basename `ls boards/$(TARGET)/*.board.json | head -1` .board.json)
@@ -53,6 +41,13 @@ sdkconfig.defaults: Makefile.user
 	@mkdir -p build
 	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > build/options.cmake
 
+combine:
+	esptool.py --chip $(TARGET) merge_bin \
+		-o build/combined.bin \
+		$(BL_OFF) build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0x10000 build/espjd.bin
+	mkdir -p dist
+	$(CLI) binpatch --bin build/combined.bin boards/$(TARGET)/*.board.json
+
 clean:
 	rm -rf sdkconfig sdkconfig.defaults build
 
@@ -61,17 +56,13 @@ vscode:
 
 check-export:
 	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
-	@test -f devicescript/runtime/jacdac-c/jacdac/README.md || git submodule update --init --recursive
+	@test -f $(JDC)/jacdac/README.md || git submodule update --init --recursive
 
 f: flash
 r: flash
 
 flash: all
-ifeq ($(UF2),1)
-	$(IDF) --ccache flash --port $(SERIAL_PORT)
-else
 	esptool.py --chip $(TARGET) -p $(SERIAL_PORT) write_flash 0x0 dist/devicescript-$(TARGET)-$(BOARD).bin
-endif
 
 mon:
 	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(MON_PORT) --baud 115200 build/espjd.elf
@@ -98,18 +89,13 @@ rst:
 	echo "c"  >> build/gdbinit
 	$(GCC_PREF)-gdb -x build/gdbinit build/espjd.elf
 
-FW_VERSION = $(shell sh jacdac-c/scripts/git-version.sh)
+FW_VERSION = $(shell sh $(JDC)/scripts/git-version.sh)
 
 .PHONY: dist
 dist: all
 	mkdir -p dist
-ifeq ($(UF2),1)
-	cp build/espjd.uf2 dist/devicescript-$(TARGET)$(TARGET_SUFF).uf2
-else
-	cp build/combined.bin dist/devicescript-$(TARGET)$(TARGET_SUFF)-0x0.bin
-endif
 	# also keep ELF file for addr2line
-	cp build/espjd.elf dist/devicescript-$(TARGET)$(TARGET_SUFF).elf
+	cp build/espjd.elf dist/devicescript-$(TARGET).elf
 
 bump:
 	sh ./scripts/bump.sh

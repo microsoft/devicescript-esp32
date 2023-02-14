@@ -1,0 +1,6 @@
+{
+    "$schema": "../esp32archconfig.schema.json",
+    "name": "ESP32-S2",
+    "id": "esp32s2",
+    "dcfgOffset": "0x9000"
+}

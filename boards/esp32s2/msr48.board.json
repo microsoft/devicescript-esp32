@@ -1,0 +1,38 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "JacdacIoT 48 v0.2 DeviceScript",
+    "devClass": "0x3de1398b",
+    "jacdac": {
+        "pin": 17
+    },
+    "led": {
+        "rgb": [
+            {
+                "pin": 8,
+                "mult": 250
+            },
+            {
+                "pin": 7,
+                "mult": 60
+            },
+            {
+                "pin": 6,
+                "mult": 150
+            }
+        ]
+    },
+    "i2c": {
+        "pinSCL": 10,
+        "pinSDA": 9
+    },
+    "_": [
+        {
+            "service": "power",
+            "name": "power",
+            "mode": 0,
+            "pinEn": 2,
+            "pinFault": 13,
+            "faultIgnoreMs": 100
+        }
+    ]
+}
