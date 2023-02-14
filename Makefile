@@ -28,7 +28,10 @@ endif
 
 prep: devicescript/cli/built/devicescript-cli.cjs sdkconfig.defaults refresh-version 
 
-all: check-export prep
+all: build patch
+
+.PHONY: build
+build: check-export prep
 	$(IDF) --ccache build
 	$(MAKE) combine
 
@@ -48,6 +51,8 @@ combine:
 		$(BL_OFF) build/bootloader/bootloader.bin \
 		0x8000 build/partition_table/partition-table.bin \
 		0x10000 build/espjd.bin
+
+patch:
 	mkdir -p dist
 	$(CLI) binpatch --bin build/combined.bin --elf build/espjd.elf --generic boards/$(TARGET)/*.board.json
 
@@ -98,12 +103,6 @@ rst:
 	$(GCC_PREF)-gdb -x build/gdbinit build/espjd.elf
 
 FW_VERSION = $(shell sh $(JDC)/scripts/git-version.sh)
-
-.PHONY: dist
-dist: all
-	mkdir -p dist
-	# also keep ELF file for addr2line
-	cp build/espjd.elf dist/devicescript-$(TARGET).elf
 
 bump:
 	sh ./scripts/bump.sh
