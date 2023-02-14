@@ -26,7 +26,7 @@ ifeq ($(GCC_PREF),)
 $(error Define 'TARGET = esp32s2' or similar in Makefile.user)
 endif
 
-prep: sdkconfig.defaults refresh-version 
+prep: devicescript/cli/built/devicescript-cli.cjs sdkconfig.defaults refresh-version 
 
 all: check-export prep
 	@if test -f sdkconfig ; then \
@@ -61,11 +61,16 @@ check-export:
 	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
 	@test -f $(JDC)/jacdac/README.md || git submodule update --init --recursive
 
+devicescript/cli/built/devicescript-cli.cjs:
+	cd devicescript && yarn
+	cd devicescript && yarn build-fast
+
 f: flash
 r: flash
 
 flash: all
-	esptool.py --chip $(TARGET) -p $(SERIAL_PORT) write_flash 0x0 dist/devicescript-$(TARGET)-$(BOARD).bin
+	esptool.py --chip $(TARGET) -p $(SERIAL_PORT) write_flash \
+		$(BL_OFF) dist/devicescript-$(TARGET)-$(BOARD)-$(BL_OFF).bin
 
 mon:
 	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(MON_PORT) --baud 115200 build/espjd.elf

@@ -18,7 +18,11 @@ jobs:
       uses: actions/checkout@v2
       with:
           submodules: recursive
-    
+
+    - uses: actions/setup-node@v3
+      with:
+          node-version: 18
+
     - run: echo 'TARGET=esp32s2' > Makefile.user
     - run: make prep
 
