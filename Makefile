@@ -2,6 +2,7 @@
 .DEFAULT_GOAL := all
 CLI = node devicescript/cli/devicescript 
 JDC = devicescript/runtime/jacdac-c
+BUILD = build
 
 IDF = idf.py
 
@@ -28,39 +29,45 @@ endif
 
 prep: devicescript/cli/built/devicescript-cli.cjs sdkconfig.defaults refresh-version 
 
-all: build patch
+all: inner-build patch
 
-.PHONY: build
-build: check-export prep
+inner-build: check-export prep
 	$(IDF) --ccache build
 	$(MAKE) combine
+
+ci-build:
+	$(MAKE) inner-build
+	mv $(BUILD) build-$(TARGET)
+
+ci-patch:
+	$(MAKE) patch BUILD=build-$(TARGET)
 
 sdkconfig.defaults: Makefile.user
 	@if test -f sdkconfig ; then \
 		if grep -q 'CONFIG_IDF_TARGET="$(TARGET)"' sdkconfig ; then echo target OK ; \
-		else echo cleaning target... ; rm -rf build sdkconfig ; $(MAKE) refresh-version ; fi ; \
+		else echo cleaning target... ; rm -rf $(BUILD) sdkconfig ; $(MAKE) refresh-version ; fi ; \
 	fi
 	cat boards/$(TARGET)/sdkconfig.$(TARGET) boards/sdkconfig.common > sdkconfig.defaults
-	@mkdir -p build
-	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > build/options.cmake
+	@mkdir -p $(BUILD)
+	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > $(BUILD)/options.cmake
 
 combine:
 	esptool.py --chip $(TARGET) merge_bin \
-		-o build/combined.bin \
+		-o $(BUILD)/combined.bin \
 		--target-offset $(BL_OFF) \
-		$(BL_OFF) build/bootloader/bootloader.bin \
-		0x8000 build/partition_table/partition-table.bin \
-		0x10000 build/espjd.bin
+		$(BL_OFF) $(BUILD)/bootloader/bootloader.bin \
+		0x8000 $(BUILD)/partition_table/partition-table.bin \
+		0x10000 $(BUILD)/espjd.bin
 
 patch:
 	mkdir -p dist
-	$(CLI) binpatch --bin build/combined.bin --elf build/espjd.elf --generic boards/$(TARGET)/*.board.json
+	$(CLI) binpatch --bin $(BUILD)/combined.bin --elf $(BUILD)/espjd.elf --generic boards/$(TARGET)/*.board.json
 
 clean:
-	rm -rf sdkconfig sdkconfig.defaults build
+	rm -rf sdkconfig sdkconfig.defaults $(BUILD)
 
 vscode:
-	. $$IDF_PATH/export.sh ; $(IDF)  --ccache build
+	. $$IDF_PATH/export.sh ; $(IDF) --ccache build
 
 check-export:
 	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
@@ -78,29 +85,29 @@ flash: all
 		$(BL_OFF) dist/devicescript-$(TARGET)-$(BOARD)-$(BL_OFF).bin
 
 mon:
-	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(MON_PORT) --baud 115200 build/espjd.elf
+	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(MON_PORT) --baud 115200 $(BUILD)/espjd.elf
 
 monu:
-	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 115200 build/espjd.elf
+	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 115200 $(BUILD)/espjd.elf
 
 mon-2:
 	$(IDF) monitor
 
 prep-gdb:
-	echo > build/gdbinit
-	echo "target remote :3333" >> build/gdbinit
-	echo "set remote hardware-watchpoint-limit 2"  >> build/gdbinit
+	echo > $(BUILD)/gdbinit
+	echo "target remote :3333" >> $(BUILD)/gdbinit
+	echo "set remote hardware-watchpoint-limit 2"  >> $(BUILD)/gdbinit
 
 gdb: prep-gdb
-	echo "mon halt"  >> build/gdbinit
-	$(GCC_PREF)-gdb -x build/gdbinit build/espjd.elf
+	echo "mon halt"  >> $(BUILD)/gdbinit
+	$(GCC_PREF)-gdb -x $(BUILD)/gdbinit $(BUILD)/espjd.elf
 
 rst:
-	echo "mon reset halt"  >> build/gdbinit
-	echo "flushregs"  >> build/gdbinit
-	echo "thb app_main"  >> build/gdbinit
-	echo "c"  >> build/gdbinit
-	$(GCC_PREF)-gdb -x build/gdbinit build/espjd.elf
+	echo "mon reset halt"  >> $(BUILD)/gdbinit
+	echo "flushregs"  >> $(BUILD)/gdbinit
+	echo "thb app_main"  >> $(BUILD)/gdbinit
+	echo "c"  >> $(BUILD)/gdbinit
+	$(GCC_PREF)-gdb -x $(BUILD)/gdbinit $(BUILD)/espjd.elf
 
 FW_VERSION = $(shell sh $(JDC)/scripts/git-version.sh)
 
@@ -108,7 +115,7 @@ bump:
 	sh ./scripts/bump.sh
 
 refresh-version:
-	@mkdir -p build
-	echo 'const char app_fw_version[] = "v$(FW_VERSION)";' > build/version-tmp.c
-	@diff build/version.c build/version-tmp.c >/dev/null 2>/dev/null || \
-		(echo "refresh version"; cp build/version-tmp.c build/version.c)
+	@mkdir -p $(BUILD)
+	echo 'const char app_fw_version[] = "v$(FW_VERSION)";' > $(BUILD)/version-tmp.c
+	@diff $(BUILD)/version.c $(BUILD)/version-tmp.c >/dev/null 2>/dev/null || \
+		(echo "refresh version"; cp $(BUILD)/version-tmp.c $(BUILD)/version.c)
