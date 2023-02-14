@@ -44,9 +44,12 @@ sdkconfig.defaults: Makefile.user
 combine:
 	esptool.py --chip $(TARGET) merge_bin \
 		-o build/combined.bin \
-		$(BL_OFF) build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0x10000 build/espjd.bin
+		--target-offset $(BL_OFF) \
+		$(BL_OFF) build/bootloader/bootloader.bin \
+		0x8000 build/partition_table/partition-table.bin \
+		0x10000 build/espjd.bin
 	mkdir -p dist
-	$(CLI) binpatch --bin build/combined.bin boards/$(TARGET)/*.board.json
+	$(CLI) binpatch --bin build/combined.bin --elf build/espjd.elf --generic boards/$(TARGET)/*.board.json
 
 clean:
 	rm -rf sdkconfig sdkconfig.defaults build

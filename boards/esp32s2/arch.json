@@ -2,5 +2,7 @@
     "$schema": "../esp32archconfig.schema.json",
     "name": "ESP32-S2",
     "id": "esp32s2",
-    "dcfgOffset": "0x9000"
+    "dcfgOffset": "0x9000",
+    "binFlashOffset": "0x1000",
+    "binGenericFlashOffset": "0x10000"
 }

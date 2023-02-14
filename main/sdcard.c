@@ -10,9 +10,11 @@
 
 static const char *TAG = "sd";
 
-#define SET_SCK() gpio_ll_set_level(&GPIO, PIN_SD_SCK, 1)
-#define CLR_SCK() gpio_ll_set_level(&GPIO, PIN_SD_SCK, 0)
-#define GET_MISO() gpio_ll_get_level(&GPIO, PIN_SD_MISO)
+static uint8_t pin_mosi, pin_miso, pin_sck, pin_cs;
+
+#define SET_SCK() gpio_ll_set_level(&GPIO, pin_sck, 1)
+#define CLR_SCK() gpio_ll_set_level(&GPIO, pin_sck, 0)
+#define GET_MISO() gpio_ll_get_level(&GPIO, pin_miso)
 
 #if CONFIG_IDF_TARGET_ESP32S2
 #define SPI_DMA_CHAN host.slot
@@ -23,7 +25,7 @@ static const char *TAG = "sd";
 #endif
 
 #define SPI_TX_BIT(n)                                                                              \
-    gpio_ll_set_level(&GPIO, PIN_SD_MOSI, b &(1 << n));                                            \
+    gpio_ll_set_level(&GPIO, pin_mosi, b & (1 << n));                                              \
     SET_SCK();                                                                                     \
     CLR_SCK()
 
@@ -34,15 +36,15 @@ static const char *TAG = "sd";
     CLR_SCK()
 
 void spi_bb_init(void) {
-    pin_setup_analog_input(PIN_SD_SCK);
-    pin_setup_output(PIN_SD_SCK);
-    pin_setup_analog_input(PIN_SD_MOSI);
-    pin_setup_output(PIN_SD_MOSI);
-    pin_setup_analog_input(PIN_SD_MISO);
-    pin_setup_input(PIN_SD_MISO, PIN_PULL_UP);
+    pin_setup_analog_input(pin_sck);
+    pin_setup_output(pin_sck);
+    pin_setup_analog_input(pin_mosi);
+    pin_setup_output(pin_mosi);
+    pin_setup_analog_input(pin_miso);
+    pin_setup_input(pin_miso, PIN_PULL_UP);
 
-    pin_setup_analog_input(PIN_SD_CS);
-    pin_setup_output(PIN_SD_CS);
+    pin_setup_analog_input(pin_cs);
+    pin_setup_output(pin_cs);
 }
 
 void spi_bb_tx(const void *data, unsigned len) {
@@ -60,10 +62,18 @@ void spi_bb_tx(const void *data, unsigned len) {
     }
 }
 
+void spi_bb_set_cs(int val) {
+    pin_set(pin_cs, val);
+}
+
+int spi_bb_get_miso(void) {
+    return pin_get(pin_miso);
+}
+
 void spi_bb_rx(void *data, unsigned len) {
     uint8_t *p = data;
     // keep MOSI high
-    gpio_ll_set_level(&GPIO, PIN_SD_MOSI, 1);
+    gpio_ll_set_level(&GPIO, pin_mosi, 1);
     while (len--) {
         uint32_t b = 0;
         SPI_RX_BIT(7);
@@ -80,30 +90,33 @@ void spi_bb_rx(void *data, unsigned len) {
 
 void panic_dump_dmesg(void);
 
-#ifdef JD_SD_CS_PULL_UP
-static esp_err_t cswrap_sdspi_host_do_transaction(int slot, sdmmc_command_t *cmdinfo) {
-    pin_set(PIN_SD_CS, 1);
-    pin_setup_output(PIN_SD_CS);
-    esp_err_t r = sdspi_host_do_transaction(slot, cmdinfo);
-    pin_setup_input(PIN_SD_CS, PIN_PULL_UP);
-    return r;
-}
-#endif
-
 void init_sdcard(void) {
     esp_err_t ret;
 
     sdmmc_card_t *card;
+
+    pin_miso = dcfg_get_pin("sd.pinMISO");
+    pin_mosi = dcfg_get_pin("sd.pinMOSI");
+    pin_sck = dcfg_get_pin("sd.pinSCK");
+    pin_cs = dcfg_get_pin("sd.pinCS");
+
+    if (pin_miso == NO_PIN || pin_mosi == NO_PIN || pin_sck == NO_PIN || pin_cs == NO_PIN) {
+        ESP_LOGI(TAG, "skipping SD card - no config");
+        return;
+    }
+
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    // 9 is a boot pin connected to button - we should not actively drive it high
+    JD_ASSERT(pin_cs != 9 && pin_sck != 9 && pin_mosi != 9);
+#endif
+
     ESP_LOGI(TAG, "Initializing SD card");
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-#ifdef JD_SD_CS_PULL_UP
-    host.do_transaction = cswrap_sdspi_host_do_transaction;
-#endif
     spi_bus_config_t bus_cfg = {
-        .mosi_io_num = PIN_SD_MOSI,
-        .miso_io_num = PIN_SD_MISO,
-        .sclk_io_num = PIN_SD_SCK,
+        .mosi_io_num = pin_mosi,
+        .miso_io_num = pin_miso,
+        .sclk_io_num = pin_sck,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
@@ -112,7 +125,7 @@ void init_sdcard(void) {
     CHK(spi_bus_initialize(host.slot, &bus_cfg, SPI_DMA_CHAN));
 
     sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_config.gpio_cs = PIN_SD_CS;
+    slot_config.gpio_cs = pin_cs;
     slot_config.host_id = host.slot;
 
     BYTE pdrv = FF_DRV_NOT_USED;
@@ -129,9 +142,6 @@ void init_sdcard(void) {
     if (ret != 0) {
         jd_free(card);
         ESP_LOGW(TAG, "Failed to initialize SD card");
-#ifdef JD_SD_CS_PULL_UP
-        pin_setup_input(PIN_SD_CS, PIN_PULL_UP);
-#endif
         return;
     }
 

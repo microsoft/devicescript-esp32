@@ -17,6 +17,14 @@
         "$schema": {
             "type": "string"
         },
+        "binFlashOffset": {
+            "$ref": "#/definitions/HexInt",
+            "description": "If specified, will be used as part of output file name."
+        },
+        "binGenericFlashOffset": {
+            "$ref": "#/definitions/HexInt",
+            "description": "If specified, this shows where the generic part of BIN file starts."
+        },
         "dcfgOffset": {
             "$ref": "#/definitions/HexInt",
             "description": "Where should DCFG be embedded in generic file."

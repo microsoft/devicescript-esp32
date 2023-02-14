@@ -242,16 +242,14 @@ static IRAM_ATTR void read_fifo(int force) {
     }
 }
 
-int jd_pin_num();
-
 void uart_init_() {
-    int pinnum = jd_pin_num();
-    if (pinnum < 0) {
-        DMESG("PIN_JACK_TX not defined");
+    uint8_t pinnum = dcfg_get_pin("jacdac.pin");
+    if (pinnum == NO_PIN) {
+        DMESG("jacdac.pin not defined");
         JD_PANIC();
     }
     if (!(1 <= pinnum && pinnum < 32)) {
-        DMESG("invalid PIN_JACK_TX");
+        DMESG("invalid jacdac.pin");
         JD_PANIC();
     }
 

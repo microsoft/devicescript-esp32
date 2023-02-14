@@ -10,15 +10,19 @@
         "type": 1,
         "pin": 2
     },
-    "sd": {
-        "#": "CS is A0",
-        "pinCS": 4,
-        "pinMISO": 8,
-        "pinMOSI": 7,
-        "pinSCK": 10
-    },
     "i2c": {
         "pinSCL": 6,
         "pinSDA": 5
+    },
+    "pins": {
+        "TX": 21,
+        "RX": 20,
+        "A0": 4,
+        "A1": 3,
+        "A2": 1,
+        "A3": 0,
+        "MISO": 8,
+        "MOSI": 7,
+        "SCK": 10
     }
 }

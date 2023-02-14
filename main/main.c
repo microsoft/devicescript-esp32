@@ -32,6 +32,13 @@ static esp_timer_handle_t main_loop_tick_timer;
 #endif
 
 // other S2:
+    "sd": {
+        "pinCS": 38,
+        "pinMISO": 37,
+        "pinMOSI": 35,
+        "pinSCK": 36
+    },
+
     [BOARD_207_V4_2] = {"JM Brain S2-mini Jacscript 207 v4.2", 0x322e0e64, 0},
     [BOARD_207_V4_3] = {"JM Brain S2-mini Jacscript 207 v4.3", 0x322e0e64,
                         BOARD_FLAG_PWR_ACTIVE_HI},

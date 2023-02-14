@@ -7,23 +7,29 @@
 #define LOG_TAG "adc"
 #include "devs_logging.h"
 
-#define ADC_EXAMPLE_ATTEN ADC_ATTEN_DB_11
+#define ADC_ATTEN ADC_ATTEN_DB_11
 
 #if CONFIG_IDF_TARGET_ESP32
-#define ADC_EXAMPLE_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_VREF
+#define ADC_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_VREF
+
 #elif CONFIG_IDF_TARGET_ESP32S2
-#define ADC_EXAMPLE_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_TP
+#define ADC_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_TP
+static uint8_t channels[] = {
+    0xff,
+    ADC1_GPIO1_CHANNEL,
+    ADC1_GPIO2_CHANNEL,
+    ADC1_GPIO3_CHANNEL,
+    ADC1_GPIO4_CHANNEL,
+    ADC1_GPIO5_CHANNEL,
+    ADC1_GPIO6_CHANNEL,
+    ADC1_GPIO7_CHANNEL,
+    ADC1_GPIO8_CHANNEL,
+    ADC1_GPIO9_CHANNEL,
+    ADC1_GPIO10_CHANNEL,
+};
+
 #elif CONFIG_IDF_TARGET_ESP32C3
-#define ADC_EXAMPLE_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_TP
-#elif CONFIG_IDF_TARGET_ESP32S3
-#define ADC_EXAMPLE_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_TP_FIT
-#endif
-
-static bool use_calibration;
-static uint32_t inited_channels;
-static esp_adc_cal_characteristics_t adc1_chars;
-
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
+#define ADC_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_TP
 static uint8_t channels[] = {
     0xff,
     ADC1_GPIO1_CHANNEL,
@@ -32,7 +38,17 @@ static uint8_t channels[] = {
     ADC1_GPIO4_CHANNEL,
     ADC1_GPIO5_CHANNEL,
 };
+
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define ADC_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_TP_FIT
+
+#else
+#error "unknown ESP32"
 #endif
+
+static bool use_calibration;
+static uint32_t inited_channels;
+static esp_adc_cal_characteristics_t adc1_chars;
 
 static int adc_ch(uint8_t pin) {
     if (pin < sizeof(channels) && channels[pin] != 0xff)
@@ -48,11 +64,11 @@ static void adc_init(void) {
 
     adc1_config_width(ADC_WIDTH_BIT_DEFAULT);
 
-    int ret = esp_adc_cal_check_efuse(ADC_EXAMPLE_CALI_SCHEME);
+    int ret = esp_adc_cal_check_efuse(ADC_CALI_SCHEME);
     if (ret) {
         LOG("error reading calibration data: %d", ret);
     } else {
-        esp_adc_cal_characterize(ADC_UNIT_1, ADC_EXAMPLE_ATTEN, ADC_WIDTH_BIT_DEFAULT, 0,
+        esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN, ADC_WIDTH_BIT_DEFAULT, 0,
                                  &adc1_chars);
         use_calibration = true;
         LOG("calibration OK");
@@ -70,7 +86,7 @@ uint16_t adc_read_pin(uint8_t pin) {
     if (!(inited_channels & (1 << ch))) {
         adc_init();
         inited_channels |= 1 << ch;
-        adc1_config_channel_atten(ch, ADC_EXAMPLE_ATTEN);
+        adc1_config_channel_atten(ch, ADC_ATTEN);
     }
 
     int res = adc1_get_raw(ch);

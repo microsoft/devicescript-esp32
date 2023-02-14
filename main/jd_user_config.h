@@ -17,54 +17,6 @@
 #define JD_ADVANCED_STRING 1
 #define JD_LSTORE 1
 
-#ifndef __XTENSA__
-
-// ESP32-C3
-
-#define PIN_WS2812B 2
-
-#define PIN_JACDAC 3 // A1
-
-#define PIN_SD_MISO 8
-#define PIN_SD_MOSI 7
-#define PIN_SD_SCK 10
-#define PIN_SD_CS 4 // A0
-
-#define PIN_SDA 5
-#define PIN_SCL 6
-
-#define PIN_UART_TX 21
-#define PIN_UART_RX 20
-
-#if PIN_SD_CS == 9
-// GPIO9 is boot pin, connected to button; avoid the MCU driving the pin high, while button pulls it
-// low
-#define JD_SD_CS_PULL_UP 1
-#endif
-
-#else
-
-// ESP32-S2
-
-#define LED_R_MULT 250
-#define LED_G_MULT 60
-#define LED_B_MULT 150
-
-#define PIN_LED_B 6
-#define PIN_LED_G 7
-#define PIN_LED_R 8
-
-#define PIN_JACDAC 17
-
-#define PIN_PWR_EN 2 // active lo
-#define PIN_PWR_FAULT 13
-
-// only pins 32+ are supported currently
-#define PIN_SD_MISO 37
-#define PIN_SD_MOSI 35
-#define PIN_SD_SCK 36
-#define PIN_SD_CS 38
-#endif
 
 #define JD_RAW_FRAME 1
 

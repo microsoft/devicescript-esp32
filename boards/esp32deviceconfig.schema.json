@@ -299,6 +299,436 @@
             ],
             "type": "object"
         },
+        "PinLabels": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "A0": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A1": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A10": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A11": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A12": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A13": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A14": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A15": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A2": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A3": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A4": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A5": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A6": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A7": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A8": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A9": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "CS": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D0": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D1": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D10": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D11": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D12": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D13": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D14": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D15": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D2": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D3": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D4": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D5": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D6": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D7": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D8": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "D9": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "LED": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "MISO": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "MOSI": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P0": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P1": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P10": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P11": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P12": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P13": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P14": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P15": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P16": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P17": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P18": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P19": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P2": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P20": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P21": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P22": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P23": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P24": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P25": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P26": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P27": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P28": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P29": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P3": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P30": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P31": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P32": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P33": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P34": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P35": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P36": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P37": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P38": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P39": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P4": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P40": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P41": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P42": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P43": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P44": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P45": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P46": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P47": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P48": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P49": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P5": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P50": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P51": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P52": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P53": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P54": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P55": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P56": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P57": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P58": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P59": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P6": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P60": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P61": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P62": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P63": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P7": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P8": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "P9": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "RX": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "SCK": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "SCL": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "SDA": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "TX": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                }
+            },
+            "type": "object"
+        },
         "PotentiometerConfig": {
             "additionalProperties": false,
             "properties": {
@@ -940,6 +1370,9 @@
         },
         "log": {
             "$ref": "#/definitions/LogConfig"
+        },
+        "pins": {
+            "$ref": "#/definitions/PinLabels"
         },
         "sd": {
             "$ref": "#/definitions/SdCardConfig"
