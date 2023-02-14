@@ -1,0 +1,8 @@
+{
+    "$schema": "../esp32archconfig.schema.json",
+    "name": "ESP32",
+    "id": "esp32",
+    "dcfgOffset": "0x9000",
+    "binFlashOffset": "0x1000",
+    "binGenericFlashOffset": "0x10000"
+}

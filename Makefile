@@ -21,6 +21,10 @@ ifeq ($(TARGET),esp32c3)
 GCC_PREF = riscv32-esp-elf
 endif
 
+ifeq ($(TARGET),esp32)
+GCC_PREF = xtensa-esp32-elf
+endif
+
 BOARD ?= $(shell basename `ls boards/$(TARGET)/*.board.json | head -1` .board.json)
 
 ifeq ($(GCC_PREF),)

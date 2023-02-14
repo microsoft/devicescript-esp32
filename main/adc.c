@@ -1,5 +1,4 @@
 #include "jdesp.h"
-#include "driver/temp_sensor.h"
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 #include "hal/adc_hal.h"
@@ -11,6 +10,11 @@
 
 #if CONFIG_IDF_TARGET_ESP32
 #define ADC_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_VREF
+#define CH_OFFSET 32
+static uint8_t channels[] = {
+    ADC1_GPIO32_CHANNEL, ADC1_GPIO33_CHANNEL, ADC1_GPIO34_CHANNEL, ADC1_GPIO35_CHANNEL,
+    ADC1_GPIO36_CHANNEL, ADC1_GPIO37_CHANNEL, ADC1_GPIO38_CHANNEL, ADC1_GPIO39_CHANNEL,
+};
 
 #elif CONFIG_IDF_TARGET_ESP32S2
 #define ADC_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_TP
@@ -51,6 +55,11 @@ static uint32_t inited_channels;
 static esp_adc_cal_characteristics_t adc1_chars;
 
 static int adc_ch(uint8_t pin) {
+#ifdef CH_OFFSET
+    if (pin < CH_OFFSET)
+        return -1;
+    pin -= CH_OFFSET;
+#endif
     if (pin < sizeof(channels) && channels[pin] != 0xff)
         return channels[pin];
     return -1;
@@ -68,8 +77,7 @@ static void adc_init(void) {
     if (ret) {
         LOG("error reading calibration data: %d", ret);
     } else {
-        esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN, ADC_WIDTH_BIT_DEFAULT, 0,
-                                 &adc1_chars);
+        esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN, ADC_WIDTH_BIT_DEFAULT, 0, &adc1_chars);
         use_calibration = true;
         LOG("calibration OK");
     }
@@ -98,6 +106,8 @@ uint16_t adc_read_pin(uint8_t pin) {
     }
 }
 
+#if JD_CONFIG_TEMPERATURE
+#include "driver/temp_sensor.h"
 int32_t adc_read_temp(void) {
     static bool inited;
     if (!inited) {
@@ -112,3 +122,4 @@ int32_t adc_read_temp(void) {
     temp_sensor_read_celsius(&r);
     return (int)r;
 }
+#endif

@@ -2,6 +2,7 @@
 #define JD_USER_CONFIG_H
 
 #include <stdint.h>
+#include "../build/config/sdkconfig.h"
 
 #define JD_DMESG_BUFFER_SIZE 4096
 
@@ -45,6 +46,10 @@ void jdesp_wake_main(void);
 const void *dcfg_base_addr(void);
 #define JD_DCFG_BASE_ADDR dcfg_base_addr()
 
+#if CONFIG_IDF_TARGET_ESP32
+#define JD_CONFIG_TEMPERATURE 0
+#else
 #define JD_CONFIG_TEMPERATURE 1
+#endif
 
 #endif

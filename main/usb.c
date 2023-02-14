@@ -118,7 +118,7 @@ void usb_init() {
     LOG("init done");
 }
 
-#else
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
 
 #include "hal/usb_serial_jtag_ll.h"
 #include "soc/periph_defs.h"
@@ -180,4 +180,13 @@ void usb_init() {
                        &intr_handle));
     LOG("init done");
 }
+
+#elif defined(CONFIG_IDF_TARGET_ESP32)
+
+void jd_usb_pull_ready() {}
+void usb_pre_init() {}
+void usb_init() {}
+
+#else
+#error "unknown target"
 #endif

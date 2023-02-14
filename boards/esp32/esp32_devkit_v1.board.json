@@ -1,0 +1,30 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "Espressif ESP32 Devkit V1 DeviceScript",
+    "devClass": "0x3c507a05",
+    "jacdac": {
+        "#": "JD is TX2",
+        "pin": 17
+    },
+    "led": {
+        "pin": 2
+    },
+    "#i2c": {
+        "pinSCL": 22,
+        "pinSDA": 21
+    },
+    "pins": {
+        "VP": 36,
+        "VN": 39,
+        "P34": 34,
+        "P35": 35,
+        "BOOT": 0,
+        "TX0": 1,
+        "RX0": 3,
+        "LED": 2,
+        "P5": 5,
+        "P12": 12,
+        "P14": 14,
+        "P15": 15
+    }
+}
