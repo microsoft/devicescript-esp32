@@ -40,7 +40,7 @@ sdkconfig.defaults: Makefile.user
 		if grep -q 'CONFIG_IDF_TARGET="$(TARGET)"' sdkconfig ; then echo target OK ; \
 		else echo cleaning target... ; rm -rf build sdkconfig ; $(MAKE) refresh-version ; fi ; \
 	fi
-	cat config/sdkconfig.$(TARGET) config/sdkconfig.common > sdkconfig.defaults
+	cat boards/$(TARGET)/sdkconfig.$(TARGET) boards/sdkconfig.common > sdkconfig.defaults
 	@mkdir -p build
 	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > build/options.cmake
 
