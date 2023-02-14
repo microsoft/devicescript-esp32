@@ -19,7 +19,7 @@ static int loop_pending;
 static esp_timer_handle_t main_loop_tick_timer;
 
 #if 0
-// TODO do we even want to support nodevs builds anymore?
+// TODO do we even want to support no-devs builds anymore?
 #if defined(CONFIG_IDF_TARGET_ESP32C3)
     [0] = {"Adafruit QT Py ESP32-C3 WiFi Dev Board Cloud Connector", 0x33a50075,
            BOARD_FLAG_PWR_ACTIVE_HI},
@@ -30,18 +30,6 @@ static esp_timer_handle_t main_loop_tick_timer;
     [BOARD_207_V4_3] = {"JM Brain S2-mini Cloud Connector 207 v4.3", 0x33b166ba,
                         BOARD_FLAG_PWR_ACTIVE_HI},
 #endif
-
-// other S2:
-    "sd": {
-        "pinCS": 38,
-        "pinMISO": 37,
-        "pinMOSI": 35,
-        "pinSCK": 36
-    },
-
-    [BOARD_207_V4_2] = {"JM Brain S2-mini Jacscript 207 v4.2", 0x322e0e64, 0},
-    [BOARD_207_V4_3] = {"JM Brain S2-mini Jacscript 207 v4.3", 0x322e0e64,
-                        BOARD_FLAG_PWR_ACTIVE_HI},
 #endif
 
 int target_in_irq(void) {

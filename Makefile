@@ -29,14 +29,14 @@ endif
 prep: devicescript/cli/built/devicescript-cli.cjs sdkconfig.defaults refresh-version 
 
 all: check-export prep
-	@if test -f sdkconfig ; then \
-		if grep -q 'CONFIG_IDF_TARGET="$(TARGET)"' sdkconfig ; then echo target OK ; \
-		else echo cleaning target... ; rm -rf build sdkconfig ; $(MAKE) refresh-version ; fi ; \
-	fi
 	$(IDF) --ccache build
 	$(MAKE) combine
 
 sdkconfig.defaults: Makefile.user
+	@if test -f sdkconfig ; then \
+		if grep -q 'CONFIG_IDF_TARGET="$(TARGET)"' sdkconfig ; then echo target OK ; \
+		else echo cleaning target... ; rm -rf build sdkconfig ; $(MAKE) refresh-version ; fi ; \
+	fi
 	cat config/sdkconfig.$(TARGET) config/sdkconfig.common > sdkconfig.defaults
 	@mkdir -p build
 	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > build/options.cmake
