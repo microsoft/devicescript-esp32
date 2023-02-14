@@ -6,7 +6,7 @@ static bool led_inited;
 static uint8_t free_ch;
 
 uint8_t jd_pwm_init(uint8_t pin, uint32_t period, uint32_t duty, uint8_t prescaler) {
-    if (period != 512)
+    if (period != 256)
         hw_panic();
 
     if (!led_inited) {
@@ -14,7 +14,7 @@ uint8_t jd_pwm_init(uint8_t pin, uint32_t period, uint32_t duty, uint8_t prescal
         ledc_fade_func_install(0);
         ledc_timer_config_t ledc_timer;
         memset(&ledc_timer, 0, sizeof(ledc_timer));
-        ledc_timer.duty_resolution = LEDC_TIMER_9_BIT;
+        ledc_timer.duty_resolution = LEDC_TIMER_8_BIT;
         ledc_timer.freq_hz = 50000;
         ledc_timer.speed_mode = LEDC_LOW_SPEED_MODE;
         ledc_timer.timer_num = LEDC_TIMER_1;

@@ -8,10 +8,8 @@ void jd_rgbext_link(void) {}
 void jd_rgbext_init(int type, uint8_t pin) {
     if (strip)
         return;
-    DMESG("*** rgb %d %d", type, pin);
     if (type == 1) {
         strip = led_strip_init(0, pin, 1);
-        DMESG("npx on %d", pin);
         JD_ASSERT(strip != NULL);
     }
 }
