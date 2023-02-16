@@ -107,6 +107,15 @@
                     "description": "All fields starting with '#' arg ignored",
                     "type": "string"
                 },
+                "$connector": {
+                    "description": "How I2C devices are attached.",
+                    "enum": [
+                        "Grove",
+                        "Header",
+                        "Qwiic"
+                    ],
+                    "type": "string"
+                },
                 "inst": {
                     "description": "Hardware instance index.",
                     "type": "integer"
@@ -136,6 +145,13 @@
             "properties": {
                 "#": {
                     "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "$connector": {
+                    "enum": [
+                        "Header",
+                        "Jacdac"
+                    ],
                     "type": "string"
                 },
                 "pin": {
@@ -1335,6 +1351,14 @@
             "description": "All fields starting with '#' arg ignored",
             "type": "string"
         },
+        "$description": {
+            "description": "Short description of the board.",
+            "type": "string"
+        },
+        "$fwUrl": {
+            "description": "Where to download BIN/UF2 file.\nAuto-populated.",
+            "type": "string"
+        },
         "$schema": {
             "type": "string"
         },
@@ -1344,6 +1368,14 @@
                 "$ref": "#/definitions/ServiceConfig"
             },
             "type": "array"
+        },
+        "archId": {
+            "description": "Architecture for the board.\nThis is auto-populated from arch.json file.",
+            "examples": [
+                "esp32c3",
+                "rp2040w"
+            ],
+            "type": "string"
         },
         "devClass": {
             "$ref": "#/definitions/HexInt",
@@ -1362,6 +1394,14 @@
         "i2c": {
             "$ref": "#/definitions/I2CConfig"
         },
+        "id": {
+            "description": "A short ID of the board.\nThis is auto-populated from file name.",
+            "examples": [
+                "adafruit_qt_py_c3",
+                "esp32_devkit_c"
+            ],
+            "type": "string"
+        },
         "jacdac": {
             "$ref": "#/definitions/JacdacConfig"
         },
@@ -1376,6 +1416,10 @@
         },
         "sd": {
             "$ref": "#/definitions/SdCardConfig"
+        },
+        "url": {
+            "description": "Where to buy/read more.",
+            "type": "string"
         }
     },
     "required": [

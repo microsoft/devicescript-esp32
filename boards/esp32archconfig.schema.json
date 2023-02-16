@@ -58,8 +58,7 @@
     "required": [
         "dcfgOffset",
         "id",
-        "name",
-        "uf2Align"
+        "name"
     ],
     "type": "object"
 }

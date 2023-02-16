@@ -4,6 +4,7 @@
     "$include": "msr207_v42.board.json",
     "_": [
         {
+            "service": "power",
             "mode": 1
         }
     ]

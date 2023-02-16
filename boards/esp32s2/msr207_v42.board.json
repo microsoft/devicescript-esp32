@@ -3,6 +3,7 @@
     "devName": "JM Brain S2-mini DeviceScript 207 v4.2",
     "devClass": "0x322e0e64",
     "jacdac": {
+        "$connector": "Jacdac",
         "pin": 17
     },
     "led": {

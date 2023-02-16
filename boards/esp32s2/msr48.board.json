@@ -3,6 +3,7 @@
     "devName": "JacdacIoT 48 v0.2 DeviceScript",
     "devClass": "0x3de1398b",
     "jacdac": {
+        "$connector": "Jacdac",
         "pin": 17
     },
     "led": {
@@ -22,6 +23,7 @@
         ]
     },
     "i2c": {
+        "$connector": "Qwiic",
         "pinSCL": 10,
         "pinSDA": 9
     },
