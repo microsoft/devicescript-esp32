@@ -59,6 +59,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
+          body_path: dist/info.md
           files: dist/*
 
     - name: Save artifacts
