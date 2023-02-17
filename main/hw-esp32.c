@@ -147,7 +147,7 @@ void tim_set_timer(int delta, cb_t callback) {
         delta = 20;
 
     target_disable_irq();
-    if (!!context.intr_handle) {
+    if (!!context.timer) {
         context.timer_cb = callback;
         esp_timer_stop(context.timer);
         if (callback) {
@@ -162,8 +162,8 @@ static IRAM_ATTR esp_err_t xgpio_set_level(gpio_num_t gpio_num, uint32_t level) 
     return ESP_OK;
 }
 
-//#define RX_SIG uart_periph_signal[context.uart_num].rx_sig
-//#define TX_SIG uart_periph_signal[context.uart_num].tx_sig
+// #define RX_SIG uart_periph_signal[context.uart_num].rx_sig
+// #define TX_SIG uart_periph_signal[context.uart_num].tx_sig
 
 #define RX_SIG uart_periph_signal[context.uart_num].pins[SOC_UART_RX_PIN_IDX].signal
 #define TX_SIG uart_periph_signal[context.uart_num].pins[SOC_UART_TX_PIN_IDX].signal
@@ -246,8 +246,9 @@ void uart_init_() {
     uint8_t pinnum = dcfg_get_pin("jacdac.pin");
     if (pinnum == NO_PIN) {
         DMESG("jacdac.pin not defined");
-        JD_PANIC();
+        return;
     }
+
     if (!(1 <= pinnum && pinnum < 32)) {
         DMESG("invalid jacdac.pin");
         JD_PANIC();
@@ -372,6 +373,11 @@ static void tx_race() {
 #endif
 
 int uart_start_tx(const void *data, uint32_t numbytes) {
+    if (!context.uart_hw) {
+        jd_tx_completed(0);
+        return 0;
+    }
+
     if (context.tx_len || context.in_tx) {
         JD_PANIC();
     }
