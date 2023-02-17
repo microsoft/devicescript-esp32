@@ -36,19 +36,6 @@ int target_in_irq(void) {
     return main_task != NULL && xTaskGetCurrentTaskHandle() != main_task;
 }
 
-FILE *orig_stdout;
-FILE *lstore_stdout;
-
-void flush_dmesg(void) {
-    static uint32_t dmesg_state;
-    char buf[256];
-    int size;
-    while ((size = jd_dmesg_read(buf, sizeof(buf) - 1, &dmesg_state)) > 0) {
-        buf[size] = 0;
-        fprintf(orig_stdout, LOG_COLOR(LOG_COLOR_CYAN) "%s" LOG_RESET_COLOR, buf);
-    }
-}
-
 static void post_loop(void *dummy) {
     if (!loop_pending) {
         loop_pending = 1;
@@ -58,6 +45,10 @@ static void post_loop(void *dummy) {
 
 void jdesp_wake_main(void) {
     post_loop(NULL);
+}
+
+void jd_usb_flush_stdout(void) {
+    fflush(stdout);
 }
 
 static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id,
@@ -77,6 +68,12 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 
     loop_pending = 0;
 
+    static int n;
+    if (n++ > 50) {
+        jd_usb_flush_stdout();
+        n = 0;
+    }
+
     CHK(esp_task_wdt_reset());
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2)
@@ -87,10 +84,6 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
     jd_process_everything();
 
     worker_do_work(main_worker);
-
-    // TODO move this to a separate thread
-    flush_dmesg();
-    jd_lstore_process();
 
     jd_tcpsock_process();
 
@@ -119,7 +112,7 @@ void app_init_services(void) {
 static int log_writefn(void *cookie, const char *data, int size) {
     jd_lstore_append_frag(0, JD_LSTORE_TYPE_LOG, data, size);
     jd_usb_write_serial(data, size);
-    return fwrite(data, 1, size, orig_stdout);
+    return size;
 }
 
 void app_main() {
@@ -147,12 +140,12 @@ void app_main() {
     esp_log_level_set("sdspi_host", ESP_LOG_VERBOSE);
 #endif
 
-    orig_stdout = stdout;
-    lstore_stdout = _GLOBAL_REENT->_stdout = fwopen(NULL, &log_writefn);
+    _GLOBAL_REENT->_stdout = fwopen(NULL, &log_writefn);
     // enable line buffering for this stream (to be similar to the regular UART-based output)
     static char stdout_buf[128];
     setvbuf(stdout, stdout_buf, _IOLBF, sizeof(stdout_buf));
 
+    usb_init();
     jd_usb_enable_serial();
 
     main_worker = worker_alloc();
@@ -167,7 +160,6 @@ void app_main() {
     jd_tx_init();
 
     uart_init_();
-    usb_init();
 
     esp_timer_create_args_t args;
     args.callback = post_loop;

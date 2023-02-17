@@ -14,9 +14,7 @@ void __wrap_uart_hal_write_txfifo(void *hal, const uint8_t *buf, uint32_t data_s
                                   uint32_t *write_size) {
     __real_uart_hal_write_txfifo(hal, buf, data_size, write_size);
     if (data_size == 1 && panic_mode_uart) {
-        jd_usb_write_serial(buf, data_size);
-        if (data_size == 1 && buf[0] == '\n')
-            jd_usb_panic_flush();
+        jd_usb_panic_print_char(*buf);
         jd_lstore_panic_print_char(*buf);
     }
 }
@@ -24,7 +22,7 @@ void __wrap_uart_hal_write_txfifo(void *hal, const uint8_t *buf, uint32_t data_s
 void __real_panic_restart(void);
 void __wrap_panic_restart(void) {
     jd_lstore_panic_flush();
-    jd_usb_panic_flush();
+    jd_usb_panic_print_char('\n');
     __real_panic_restart();
 }
 
@@ -44,9 +42,8 @@ void panic_dump_dmesg(void) {
 void __real_esp_panic_handler(void *);
 void __wrap_esp_panic_handler(void *info) {
     panic_mode_uart = 1;
-    jd_usb_panic_enter();
+    jd_usb_panic_start();
     panic_dump_dmesg();
-    jd_usb_panic_flush();
     __real_esp_panic_handler(info);
 }
 
