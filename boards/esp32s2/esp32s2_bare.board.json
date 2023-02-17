@@ -1,0 +1,8 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "Espressif ESP32-S3 (bare) DeviceScript",
+    "devClass": "0x3f140dcc",
+    "$description": "A bare ESP32-S3 board without any pin functions.",
+    "url": "https://www.espressif.com/en/products/socs/esp32-s2",
+    "pins": {}
+}

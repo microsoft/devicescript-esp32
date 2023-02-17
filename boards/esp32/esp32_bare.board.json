@@ -1,0 +1,14 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "Espressif ESP32 (bare) DeviceScript",
+    "devClass": "0x3ff6ffeb",
+    "$description": "Bare ESP32 without any default functions for pins.",
+    "url": "https://www.espressif.com/en/products/socs/esp32",
+    "pins": {
+        "VP": 36,
+        "VN": 39,
+        "BOOT": 0,
+        "TX0": 1,
+        "RX0": 3
+    }
+}
