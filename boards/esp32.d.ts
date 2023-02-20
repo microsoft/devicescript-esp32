@@ -1,11 +1,8 @@
-/// <reference path="../devicescript/runtime/jacdac-c/dcfg/srvcfg.d.ts" />
-
+import { JsonComment, Pin } from "@devicescript/srvcfg"
 import {
-    ArchConfig,
     DeviceConfig,
-    JsonComment,
-    Pin,
-} from "@devicescript/srvcfg"
+    ArchConfig,
+} from "../devicescript/compiler/src/archconfig"
 
 interface ESP32DeviceConfig extends DeviceConfig {
     sd?: SdCardConfig

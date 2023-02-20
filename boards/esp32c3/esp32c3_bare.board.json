@@ -1,7 +1,7 @@
 {
     "$schema": "../esp32deviceconfig.schema.json",
     "devName": "Espressif ESP32-C3 (bare)",
-    "devClass": "0x3a1d89be",
+    "productId": "0x3a1d89be",
     "$description": "A bare ESP32-C3 board without any pin functions.",
     "url": "https://www.espressif.com/en/products/socs/esp32-c3",
     "pins": {}

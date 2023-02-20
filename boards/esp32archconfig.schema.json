@@ -17,6 +17,10 @@
         "$schema": {
             "type": "string"
         },
+        "bareUrl": {
+            "description": "Where to find a UF2 or BIN file with minimal DCFG.\nCan be auto-populated.",
+            "type": "string"
+        },
         "binFlashOffset": {
             "$ref": "#/definitions/HexInt",
             "description": "If specified, will be used as part of output file name."
@@ -48,6 +52,10 @@
                 "RP2040 + CYW43 WiFi",
                 "ESP32-C3"
             ],
+            "type": "string"
+        },
+        "repoUrl": {
+            "description": "Source repo, boards are assumed to sit in `boards/<arch-id>/<board-id>.board.json`\nAuto-populated.",
             "type": "string"
         },
         "uf2Align": {

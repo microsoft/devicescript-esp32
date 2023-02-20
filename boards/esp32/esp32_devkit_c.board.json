@@ -1,7 +1,7 @@
 {
     "$schema": "../esp32deviceconfig.schema.json",
     "devName": "Espressif ESP32-DevKitC",
-    "devClass": "0x3c507a05",
+    "productId": "0x3c507a05",
     "$description": "ESP32-DevKitC is an entry-level development board. It has all the ESP32 pins exposed and is easy to connect and use.",
     "url": "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/hw-reference/esp32/get-started-devkitc.html",
     "jacdac": {

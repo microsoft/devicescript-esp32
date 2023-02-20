@@ -1377,13 +1377,6 @@
             ],
             "type": "string"
         },
-        "devClass": {
-            "$ref": "#/definitions/HexInt",
-            "description": "Device class code, typically given as a hex number starting with 0x3.",
-            "examples": [
-                "0x379ea214"
-            ]
-        },
         "devName": {
             "description": "Name of the device.",
             "examples": [
@@ -1414,6 +1407,13 @@
         "pins": {
             "$ref": "#/definitions/PinLabels"
         },
+        "productId": {
+            "$ref": "#/definitions/HexInt",
+            "description": "Identifier for a particular firmware running on a particular device, typically given as a hex number starting with 0x3.",
+            "examples": [
+                "0x379ea214"
+            ]
+        },
         "sd": {
             "$ref": "#/definitions/SdCardConfig"
         },
@@ -1423,8 +1423,8 @@
         }
     },
     "required": [
-        "devClass",
-        "devName"
+        "devName",
+        "productId"
     ],
     "type": "object"
 }
