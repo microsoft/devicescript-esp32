@@ -1,6 +1,6 @@
 {
     "$schema": "../esp32deviceconfig.schema.json",
-    "devName": "JM Brain S2-mini DeviceScript 207 v4.2",
+    "devName": "MSR JM Brain S2-mini 207 v4.2",
     "devClass": "0x322e0e64",
     "jacdac": {
         "$connector": "Jacdac",

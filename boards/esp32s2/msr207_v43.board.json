@@ -1,6 +1,6 @@
 {
     "$schema": "../esp32deviceconfig.schema.json",
-    "devName": "JM Brain S2-mini DeviceScript 207 v4.3",
+    "devName": "MSR JM Brain S2-mini 207 v4.3",
     "$include": "msr207_v42.board.json",
     "_": [
         {
