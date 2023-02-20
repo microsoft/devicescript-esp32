@@ -246,7 +246,7 @@ void usb_init() {
     uart_hw = UART_LL_GET_HW(uart_idx);
 
     periph_module_enable(uart_periph_signal[uart_idx].module);
-    const uart_config_t uart_config = {.baud_rate = 921600,
+    const uart_config_t uart_config = {.baud_rate = 1500000,
                                        .data_bits = UART_DATA_8_BITS,
                                        .parity = UART_PARITY_DISABLE,
                                        .stop_bits = UART_STOP_BITS_1,
