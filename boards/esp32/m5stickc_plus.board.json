@@ -1,0 +1,35 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "M5Stack M5StickC PLUS ESP32-PICO Mini IoT Dev Kit",
+    "productId": "0x37aef8e7",
+    "$description": "Plastic-enclosed ESP32 dev board with color LCD, IMU, RTC, IR, microphone and LiPo.",
+    "url": "https://shop.m5stack.com/products/m5stickc-plus-esp32-pico-mini-iot-development-kit",
+    "led": {
+        "pin": 10
+    },
+    "#i2c": {
+        "pinSCL": 22,
+        "pinSDA": 21
+    },
+    "pins": {
+        "G32": 32,
+        "G33": 33,
+        "G26": 26,
+        "G25": 25,
+        "G36": 36,
+        "G0": 0,
+        "BUZZER": 2
+    },
+    "_": [
+        {
+            "service": "button",
+            "name": "buttonA",
+            "pin": 37
+        },
+        {
+            "service": "button",
+            "name": "buttonB",
+            "pin": 39
+        }
+    ]
+}
