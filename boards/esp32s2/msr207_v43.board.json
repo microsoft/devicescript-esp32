@@ -2,7 +2,7 @@
     "$schema": "../esp32deviceconfig.schema.json",
     "devName": "MSR JM Brain S2-mini 207 v4.3",
     "$include": "msr207_v42.board.json",
-    "_": [
+    "services": [
         {
             "service": "power",
             "mode": 1

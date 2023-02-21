@@ -4,10 +4,6 @@
     "productId": "0x33f29c59",
     "$description": "A ESP32-C3 dev-board from Espressif with IMU and Temp/Humidity sensor, originally for ESP32 Rust port.",
     "url": "https://github.com/esp-rs/esp-rust-board",
-    "jacdac": {
-        "$connector": "Header",
-        "pin": 6
-    },
     "led": {
         "type": 1,
         "pin": 2
@@ -18,19 +14,20 @@
         "pinSDA": 10
     },
     "pins": {
-        "TX": 21,
-        "RX": 20,
-        "A0": 0,
-        "A1": 1,
-        "A3": 3,
-        "A4": 4,
-        "A5": 5,
-        "LED_R": 7
+        "P0": 0,
+        "P1": 1,
+        "P3": 3,
+        "P4": 4,
+        "P5": 5,
+        "P6": 6,
+        "#LED": 7,
+        "P21": 21,
+        "P20": 20
     },
-    "_": [
+    "services": [
         {
             "service": "button",
-            "name": "bootButton",
+            "name": "buttonBOOT",
             "pin": 9
         }
     ]

@@ -27,7 +27,15 @@
         "pinSCL": 10,
         "pinSDA": 9
     },
-    "_": [
+    "pins": {
+        "TX": 37,
+        "RX": 38,
+        "P33": 33,
+        "P34": 34,
+        "P35": 35,
+        "P36": 36
+    },
+    "services": [
         {
             "service": "power",
             "name": "power",

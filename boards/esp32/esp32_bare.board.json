@@ -5,10 +5,22 @@
     "$description": "Bare ESP32 without any default functions for pins.",
     "url": "https://www.espressif.com/en/products/socs/esp32",
     "pins": {
-        "VP": 36,
-        "VN": 39,
-        "BOOT": 0,
-        "TX0": 1,
-        "RX0": 3
+        "P4": 4,
+        "P13": 13,
+        "P14": 14,
+        "P18": 18,
+        "P19": 19,
+        "P21": 21,
+        "P22": 22,
+        "P23": 23,
+        "P25": 25,
+        "P26": 26,
+        "P27": 27,
+        "P32": 32,
+        "P33": 33,
+        "P34": 34,
+        "P35": 35,
+        "P36": 36,
+        "P39": 39
     }
 }

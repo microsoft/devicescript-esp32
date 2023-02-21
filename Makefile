@@ -6,7 +6,9 @@ BUILD = build
 IDF = idf.py
 
 _IGNORE0 := $(shell test -f Makefile.user || cp sample-Makefile.user Makefile.user)
+ifeq ($(TARGET),)
 include Makefile.user
+endif
 
 MON_PORT ?= $(SERIAL_PORT)
 ESPTOOL ?= esptool.py
@@ -92,7 +94,7 @@ mon:
 	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(MON_PORT) --baud 115200 $(BUILD)/espjd.elf
 
 monf:
-	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 1500000 $(BUILD)/espjd.elf
+	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 750000 $(BUILD)/espjd.elf
 
 monu:
 	. $(IDF_PATH)/export.sh ; $(IDF_PATH)/tools/idf_monitor.py --port $(SERIAL_PORT) --baud 115200 $(BUILD)/espjd.elf
@@ -116,7 +118,11 @@ rst:
 	echo "c"  >> $(BUILD)/gdbinit
 	$(GCC_PREF)-gdb -x $(BUILD)/gdbinit $(BUILD)/espjd.elf
 
-FW_VERSION = $(shell sh $(JDC)/scripts/git-version.sh)
+fake-dist:
+	rm -rf dist/
+	$(MAKE) TARGET=esp32 patch
+	$(MAKE) TARGET=esp32c3 patch
+	$(MAKE) TARGET=esp32s2 patch
 
 bump:
 	sh ./scripts/bump.sh

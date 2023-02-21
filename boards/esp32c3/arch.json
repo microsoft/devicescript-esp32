@@ -4,5 +4,14 @@
     "id": "esp32c3",
     "dcfgOffset": "0x9000",
     "binFlashOffset": 0,
-    "binGenericFlashOffset": "0x10000"
+    "binGenericFlashOffset": "0x10000",
+    "pins": {
+        "analogIn": "0-4",
+        "bootUart": "20,21",
+        "io": "0-10,bootUart",
+        "boot": "2,8,9",
+        "flash": "11-17",
+        "usb": "18,19",
+        "debug": "4-7"
+    }
 }

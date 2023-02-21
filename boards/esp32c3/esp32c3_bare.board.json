@@ -4,5 +4,25 @@
     "productId": "0x3a1d89be",
     "$description": "A bare ESP32-C3 board without any pin functions.",
     "url": "https://www.espressif.com/en/products/socs/esp32-c3",
-    "pins": {}
+    "pins": {
+        "P0": 0,
+        "P1": 1,
+        "P2": 2,
+        "P3": 3,
+        "P4": 4,
+        "P5": 5,
+        "P6": 6,
+        "P7": 7,
+        "P8": 8,
+        "P10": 10,
+        "P20": 20,
+        "P21": 21
+    },
+    "services": [
+        {
+            "service": "button",
+            "name": "buttonBOOT",
+            "pin": 9
+        }
+    ]
 }

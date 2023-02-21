@@ -22,13 +22,17 @@
             }
         ]
     },
+    "pins": {
+        "P33": 33,
+        "P34": 34
+    },
     "sd": {
         "pinCS": 38,
         "pinMISO": 37,
         "pinMOSI": 35,
         "pinSCK": 36
     },
-    "_": [
+    "services": [
         {
             "service": "power",
             "name": "power",

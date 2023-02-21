@@ -4,5 +4,15 @@
     "id": "esp32s2",
     "dcfgOffset": "0x9000",
     "binFlashOffset": "0x1000",
-    "binGenericFlashOffset": "0x10000"
+    "binGenericFlashOffset": "0x10000",
+    "pins": {
+        "boot": "0,45,46",
+        "analogIn": "1-10",
+        "io": "0-18,21,33-45",
+        "input": "io,46",
+        "flash": "26-32",
+        "debug": "39-42",
+        "analogOut": "17,18",
+        "usb": "19,20"
+    }
 }
