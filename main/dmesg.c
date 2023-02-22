@@ -102,4 +102,8 @@ void uart_log_dmesg(void) {
     }
 }
 
+#else
+void uart_log_init(void) {}
+void uart_log_dmesg(void) {}
+void uart_log_write(const void *data0, unsigned size) {}
 #endif
