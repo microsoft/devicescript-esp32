@@ -7,7 +7,8 @@
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 // #define PIN_BOOT_BTN 9
 #else
-#define PIN_BOOT_BTN 0
+// this makes the board reset
+// #define PIN_BOOT_BTN 0
 #endif
 
 const char *JD_EVENT = "JD_EVENT";
@@ -76,7 +77,7 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 
     CHK(esp_task_wdt_reset());
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(PIN_BOOT_BTN)
     if (pin_get(PIN_BOOT_BTN) == 0)
         reboot_to_uf2();
 #endif
