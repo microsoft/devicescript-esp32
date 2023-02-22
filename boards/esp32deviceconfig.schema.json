@@ -1167,6 +1167,22 @@
                 }
             ]
         },
+        "SetupPin": {
+            "additionalProperties": false,
+            "properties": {
+                "out": {
+                    "type": "integer"
+                },
+                "pin": {
+                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "pin"
+            ],
+            "type": "object"
+        },
         "SoilMoistureConfig": {
             "additionalProperties": false,
             "properties": {
@@ -1434,6 +1450,12 @@
             "description": "Services to mount. Each starts with { \"service\": \"...\" }",
             "items": {
                 "$ref": "#/definitions/ServiceConfig"
+            },
+            "type": "array"
+        },
+        "setupPins": {
+            "items": {
+                "$ref": "#/definitions/SetupPin"
             },
             "type": "array"
         },
