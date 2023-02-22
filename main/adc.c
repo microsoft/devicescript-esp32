@@ -80,6 +80,7 @@ static void adc_init(void) {
         esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN, ADC_WIDTH_BIT_DEFAULT, 0, &adc1_chars);
         use_calibration = true;
         LOG("calibration OK");
+        use_calibration = false; // disable for now
     }
 }
 
@@ -102,7 +103,7 @@ uint16_t adc_read_pin(uint8_t pin) {
         unsigned mv = esp_adc_cal_raw_to_voltage(res, &adc1_chars);
         return mv;
     } else {
-        return res;
+        return res << (16 - SOC_ADC_MAX_BITWIDTH);
     }
 }
 
