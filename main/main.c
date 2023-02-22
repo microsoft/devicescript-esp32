@@ -87,6 +87,8 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 
     jd_tcpsock_process();
 
+    uart_log_dmesg();
+
     // re-post ourselves immediately if more frames to process
     if (jd_rx_has_frame())
         post_loop(NULL);
@@ -112,6 +114,7 @@ void app_init_services(void) {
 static int log_writefn(void *cookie, const char *data, int size) {
     jd_lstore_append_frag(0, JD_LSTORE_TYPE_LOG, data, size);
     jd_usb_write_serial(data, size);
+    uart_log_write(data, size);
     return size;
 }
 
@@ -146,6 +149,7 @@ void app_main() {
     setvbuf(stdout, stdout_buf, _IOLBF, sizeof(stdout_buf));
 
     usb_init();
+    uart_log_init();
     jd_usb_enable_serial();
 
     main_worker = worker_alloc();

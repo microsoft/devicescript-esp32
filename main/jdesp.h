@@ -31,6 +31,9 @@ void usb_init(void);
 void usb_pre_init(void);
 
 void log_free_mem(void);
+void uart_log_init(void);
+void uart_log_write(const void *data0, unsigned size);
+void uart_log_dmesg(void);
 
 extern worker_t main_worker;
 

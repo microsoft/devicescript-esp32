@@ -48,3 +48,58 @@ void __wrap_esp_panic_handler(void *info) {
 }
 
 #endif
+
+#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#define LOGGING_TX_PIN 43
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#define LOGGING_TX_PIN 21
+#endif
+
+#if defined(LOGGING_TX_PIN)
+#include "hal/uart_ll.h"
+
+static uart_dev_t *log_uart;
+void uart_log_write(const void *data0, unsigned size) {
+    if (log_uart) {
+        const uint8_t *data = data0;
+        while (size > 0) {
+            uint16_t fill_len = uart_ll_get_txfifo_len(log_uart);
+            int n = fill_len;
+            if (n > size)
+                n = size;
+            uart_ll_write_txfifo(log_uart, data, n);
+            data += n;
+            size -= n;
+            vTaskDelay(1);
+        }
+    }
+}
+
+void uart_log_init(void) {
+    if (dcfg_get_bool("uartLog")) {
+        DMESG("uartLog on GPIO%d", LOGGING_TX_PIN);
+        log_uart = &UART0;
+    } else {
+        DMESG("uartLog not set");
+    }
+}
+
+void uart_log_dmesg(void) {
+    static uint32_t dmesg_ptr;
+
+    if (!log_uart)
+        return;
+
+    while (uart_ll_get_txfifo_len(log_uart) > 64) {
+        uint8_t buf[64];
+        int n = jd_dmesg_read(buf, sizeof(buf), &dmesg_ptr);
+        if (n > 0) {
+            jd_usb_flush_stdout();
+            uart_log_write(buf, n);
+        } else {
+            break;
+        }
+    }
+}
+
+#endif

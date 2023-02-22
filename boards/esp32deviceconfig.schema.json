@@ -203,7 +203,11 @@
                     "type": "boolean"
                 },
                 "pin": {
-                    "description": "If a single mono LED.",
+                    "description": "If a single mono LED, or programmable RGB LED.",
+                    "type": "integer"
+                },
+                "pinCLK": {
+                    "description": "Clock pin, if any.",
                     "type": "integer"
                 },
                 "rgb": {
@@ -217,7 +221,7 @@
                 },
                 "type": {
                     "default": 0,
-                    "description": "0 - use `pin` or `rgb` as regular pins\n1 - use `pin` as WS2812B (supported only on some boards)\nOther options (in range 100+) are also possible on some boards.",
+                    "description": "0 - use `pin` or `rgb` as regular pins\n1 - use `pin` as WS2812B (supported only on some boards)\n2 - use `pin` as APA102 DATA, and `pinCLK` as CLOCK\n3 - use `pin` as SK9822 DATA, and `pinCLK` as CLOCK\nOther options (in range 100+) are also possible on some boards.",
                     "type": "integer"
                 }
             },
@@ -771,12 +775,6 @@
                     "type": "integer"
                 }
             },
-            "required": [
-                "LED0",
-                "LED1",
-                "LED2",
-                "LED3"
-            ],
             "type": "object"
         },
         "PotentiometerConfig": {
@@ -1438,6 +1436,9 @@
                 "$ref": "#/definitions/ServiceConfig"
             },
             "type": "array"
+        },
+        "uartLog": {
+            "type": "boolean"
         },
         "url": {
             "description": "Where to buy/read more.",

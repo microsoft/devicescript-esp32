@@ -48,8 +48,10 @@ void pin_set(int pin, int v) {
 }
 
 void pin_setup_output(int pin) {
-    if ((uint8_t)pin != NO_PIN)
-        gpio_set_direction(pin, GPIO_MODE_OUTPUT);
+    if ((uint8_t)pin != NO_PIN) {
+        PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
+        CHK(gpio_set_direction(pin, GPIO_MODE_OUTPUT));
+    }
 }
 
 int pin_get(int pin) {
@@ -61,8 +63,9 @@ int pin_get(int pin) {
 void pin_setup_input(int pin, int pull) {
     if ((uint8_t)pin == NO_PIN)
         return;
+    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
     pin_set_pull(pin, pull);
-    gpio_set_direction(pin, GPIO_MODE_INPUT);
+    CHK(gpio_set_direction(pin, GPIO_MODE_INPUT));
 }
 
 void pin_set_pull(int pin, int pull) {
@@ -82,8 +85,11 @@ void pin_set_pull(int pin, int pull) {
 }
 
 void pin_setup_analog_input(int pin) {
+    if ((uint8_t)pin == NO_PIN)
+        return;
+    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin], PIN_FUNC_GPIO);
     pin_set_pull(pin, PIN_PULL_NONE);
-    gpio_set_direction(pin, GPIO_MODE_DISABLE);
+    CHK(gpio_set_direction(pin, GPIO_MODE_DISABLE));
 }
 
 void pwr_enter_no_sleep(void) {}

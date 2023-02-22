@@ -1,0 +1,52 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "Unexpected Maker FeatherS2 ESP32-S2",
+    "productId": "0x3126f707",
+    "$description": "ESP32-S2 based development board in a Feather format.",
+    "url": "https://unexpectedmaker.com/shop/feathers2-esp32-s2",
+    "uartLog": true,
+    "i2c": {
+        "pinSCL": 9,
+        "pinSDA": 8,
+        "$connector": "Qwiic"
+    },
+    "led": {
+        "pin": 40,
+        "pinCLK": 45,
+        "type": 2
+    },
+    "pins": {
+        "P17": 17,
+        "P18": 18,
+        "P14": 14,
+        "P12": 12,
+        "P6": 6,
+        "P5": 5,
+        "SCK": 36,
+        "MOSI": 35,
+        "MISO": 37,
+        "RX": 44,
+        "#TX": 43,
+        "P11": 11,
+        "P10": 10,
+        "P7": 7,
+        "P3": 3,
+        "P1": 1,
+        "P38": 38,
+        "P33": 33,
+        "LED0": 13,
+        "REG_EN": 21
+    },
+    "services": [
+        {
+            "service": "button",
+            "name": "buttonBOOT",
+            "pin": 0
+        },
+        {
+            "service": "analog:lightLevel",
+            "name": "ambientLight",
+            "pin": 4
+        }
+    ]
+}
