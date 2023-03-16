@@ -96,16 +96,11 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 }
 
 void app_init_services(void) {
-    jd_role_manager_init();
-    devsmgr_init_mem(32 * 1024);
-    devsdbg_init();
-    wifi_init();
-    wsskhealth_init();
-    devscloud_init(&wssk_cloud);
-    tsagg_init(&wssk_cloud);
+    devs_service_full_init(devsmgr_init_mem(32 * 1024));
 
     if (i2c_init() == 0) {
         jd_scan_all();
+        i2cserv_init();
     }
 
     jd_wifi_rssi();      // make sure WiFi module links
