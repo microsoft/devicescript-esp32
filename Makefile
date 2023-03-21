@@ -125,7 +125,7 @@ fake-dist:
 	$(MAKE) TARGET=esp32s2 patch
 
 bump:
-	sh ./scripts/bump.sh
+	node devicescript/scripts/bumparch.mjs
 
 refresh-version:
 	@mkdir -p $(BUILD)
