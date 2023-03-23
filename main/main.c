@@ -18,6 +18,18 @@ uint32_t now;
 static TaskHandle_t main_task;
 static int loop_pending;
 static esp_timer_handle_t main_loop_tick_timer;
+uint16_t tim_max_sleep;
+
+static void sync_main_loop_timer(void) {
+    static uint16_t max_sleep;
+    if (!tim_max_sleep)
+        tim_max_sleep = 10000;
+    if (max_sleep != tim_max_sleep) {
+        esp_timer_stop(main_loop_tick_timer);
+        max_sleep = tim_max_sleep;
+        CHK(esp_timer_start_periodic(main_loop_tick_timer, max_sleep));
+    }
+}
 
 #if 0
 // TODO do we even want to support no-devs builds anymore?
@@ -93,6 +105,8 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
     // re-post ourselves immediately if more frames to process
     if (jd_rx_has_frame())
         post_loop(NULL);
+    else
+        sync_main_loop_timer();
 }
 
 void app_init_services(void) {
@@ -167,7 +181,7 @@ void app_main() {
     args.dispatch_method = ESP_TIMER_TASK;
     args.name = "10ms";
     CHK(esp_timer_create(&args, &main_loop_tick_timer));
-    CHK(esp_timer_start_periodic(main_loop_tick_timer, 10000));
+    sync_main_loop_timer();
 
     DMESG("app_main mostly done");
 
