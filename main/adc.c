@@ -35,12 +35,9 @@ static uint8_t channels[] = {
 #elif CONFIG_IDF_TARGET_ESP32C3
 #define ADC_CALI_SCHEME ESP_ADC_CAL_VAL_EFUSE_TP
 static uint8_t channels[] = {
-    0xff,
-    ADC1_GPIO1_CHANNEL,
-    ADC1_GPIO2_CHANNEL,
-    ADC1_GPIO3_CHANNEL,
-    ADC1_GPIO4_CHANNEL,
-    ADC1_GPIO5_CHANNEL,
+    // ADC1_GPIO1_CHANNEL in fact uses GPIO0 not GPIO1
+    // just use the raw channel names
+    ADC1_CHANNEL_0, ADC1_CHANNEL_1, ADC1_CHANNEL_2, ADC1_CHANNEL_3, ADC1_CHANNEL_4,
 };
 
 #elif CONFIG_IDF_TARGET_ESP32S3
