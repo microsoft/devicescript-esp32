@@ -117,7 +117,10 @@ void app_init_services(void) {
         i2cserv_init();
     }
 
-    jd_wifi_rssi();      // make sure WiFi module links
+#if JD_WIFI
+    jd_wifi_rssi(); // make sure WiFi module links
+#endif
+
     adc_can_read_pin(0); // link ADC
 }
 

@@ -2,6 +2,8 @@
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
 
+#if JD_WIFI
+
 // #define LOG(...) ESP_LOGI(TAG, __VA_ARGS__);
 #define LOG(msg, ...) DMESG("wifi: " msg, ##__VA_ARGS__)
 
@@ -145,3 +147,5 @@ int jd_wifi_rssi(void) {
 void jd_wifi_process(void) {
     // do nothing
 }
+
+#endif

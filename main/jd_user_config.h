@@ -31,7 +31,6 @@ void jdesp_wake_main(void);
 #define JD_WAKE_MAIN() jdesp_wake_main()
 
 #define JD_SIMPLE_ALLOC 0
-#define JD_NET_BRIDGE 1
 #define JD_FLASH_IN_SETTINGS 1
 
 #define JD_GC_KB 8
@@ -41,6 +40,7 @@ void jdesp_wake_main(void);
 
 #define JD_I2C_HELPERS 1
 #define JD_WIFI 1
+#define JD_NET_BRIDGE JD_WIFI
 
 const void *dcfg_base_addr(void);
 #define JD_DCFG_BASE_ADDR dcfg_base_addr()
