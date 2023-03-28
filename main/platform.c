@@ -4,6 +4,7 @@
 #include "esp_event.h"
 #include "esp_spi_flash.h"
 #include "esp_private/system_internal.h"
+#include "esp_sleep.h"
 
 uint64_t hw_device_id(void) {
     static uint64_t addr;
@@ -48,6 +49,10 @@ void *jd_alloc_emergency_area(uint32_t size) {
 
 void target_reset() {
     ESP_LOGE("JD", "target_reset()\n");
+    // reset through deep sleep to make sure the C3 USB is disconnected
+    esp_sleep_enable_timer_wakeup(20000);
+    esp_deep_sleep_start();
+    // just in case...
     esp_restart_noos_dig();
 }
 
