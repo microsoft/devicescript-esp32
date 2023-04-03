@@ -127,7 +127,10 @@ fake-dist:
 	$(MAKE) TARGET=esp32c3 patch
 	$(MAKE) TARGET=esp32s2 patch
 
-bump: devicescript/cli/built/devicescript-cli.cjs
+update-devs: devicescript/cli/built/devicescript-cli.cjs
+	node devicescript/scripts/bumparch.mjs --update
+
+bump: update-devs
 	node devicescript/scripts/bumparch.mjs
 
 refresh-version:
