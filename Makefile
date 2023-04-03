@@ -37,7 +37,7 @@ prep: devicescript/cli/built/devicescript-cli.cjs sdkconfig.defaults refresh-ver
 
 all: inner-build patch
 
-inner-build: check-export prep
+inner-build: check-export check-submodule prep
 	$(IDF) --ccache build
 	$(MAKE) combine
 
@@ -75,11 +75,14 @@ clean:
 vscode:
 	. $$IDF_PATH/export.sh ; $(IDF) --ccache build
 
-check-export:
-	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
+check-submodule:
 	@test -f $(JDC)/jacdac/README.md || git submodule update --init --recursive
 
-devicescript/cli/built/devicescript-cli.cjs:
+check-export:
+	@if [ "X$$IDF_TOOLS_EXPORT_CMD" = X ] ; then echo Run: ; echo . $$IDF_PATH/export.sh ; exit 1 ; fi
+	
+
+devicescript/cli/built/devicescript-cli.cjs: check-submodule
 	cd devicescript && yarn
 	cd devicescript && yarn build-fast
 
@@ -124,7 +127,7 @@ fake-dist:
 	$(MAKE) TARGET=esp32c3 patch
 	$(MAKE) TARGET=esp32s2 patch
 
-bump:
+bump: devicescript/cli/built/devicescript-cli.cjs
 	node devicescript/scripts/bumparch.mjs
 
 refresh-version:
