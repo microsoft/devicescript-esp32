@@ -67,7 +67,7 @@ combine:
 
 patch:
 	mkdir -p dist
-	$(CLI) binpatch --slug microsoft/jacdac-esp32 --bin $(BUILD)/combined.bin --elf $(BUILD)/espjd.elf --generic boards/$(TARGET)/*.board.json
+	$(CLI) binpatch --slug microsoft/devicescript-esp32 --bin $(BUILD)/combined.bin --elf $(BUILD)/espjd.elf --generic boards/$(TARGET)/*.board.json
 
 clean:
 	rm -rf sdkconfig sdkconfig.defaults $(BUILD)
