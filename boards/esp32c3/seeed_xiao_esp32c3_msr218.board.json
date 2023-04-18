@@ -1,0 +1,41 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "Seeed Studio XIAO ESP32C3 with MSR218 base",
+    "productId": "0x36b64827",
+    "$description": "A tiny ESP32-C3 board mounted on base with Jacdac, Qwiic and Grove connectors.",
+    "url": "https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html",
+    "uartLog": true,
+    "pins": {
+        "A0": 2,
+        "A1": 3,
+        "A2": 4,
+        "#JD": 5,
+        "#SDA": 6,
+        "#SCL": 7,
+        "#TX": 21,
+        "RX": 20,
+        "#LED_PWR": 8,
+        "D9": 9,
+        "#LED": 10
+    },
+    "jacdac": {
+        "$connector": "Jacdac",
+        "pin": 5
+    },
+    "led": {
+        "type": 1,
+        "pin": 10
+    },
+    "setupPins": [
+        {
+            "pin": 8,
+            "out": 1
+        }
+    ],
+    "i2c": {
+        "$connector": "Qwiic",
+        "pinSCL": 7,
+        "pinSDA": 6
+    },
+    "services": []
+}
