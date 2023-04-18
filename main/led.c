@@ -5,7 +5,7 @@
 #include "hal/gpio_ll.h"
 #include "esp_rom_gpio.h"
 
-#define LEDC_TIMER_DIV_NUM_MAX    (0x3FFFF)
+#define LEDC_TIMER_DIV_NUM_MAX (0x3FFFF)
 
 typedef struct timer_info {
     uint8_t tim_num;
@@ -193,3 +193,8 @@ void pin_setup_analog_input(int pin) {
 void pwr_enter_no_sleep(void) {}
 void pwr_enter_tim(void) {}
 void pwr_leave_tim(void) {}
+
+void pwr_enter_pll(void) {}
+void pwr_leave_pll(void) {}
+
+void power_pin_enable(int en) {}
