@@ -69,7 +69,6 @@
                     "type": "string"
                 },
                 "pin": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "pinBacklight": {
@@ -94,11 +93,192 @@
             ],
             "type": "object"
         },
+        "BuzzerConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "activeLow": {
+                    "description": "When set, the `pin` will be set to `1` when no sound is playing\n(because power flows through speaker when `pin` is set to `0`).\nWhen unset, the `pin` will be set to `0` when no sound is playing.",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "pin": {
+                    "description": "The driving pin.",
+                    "type": "integer"
+                },
+                "service": {
+                    "enum": [
+                        "buzzer"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
+                "pin",
+                "service"
+            ],
+            "type": "object"
+        },
+        "FlexConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "pinH": {
+                    "type": "integer"
+                },
+                "pinL": {
+                    "type": "integer"
+                },
+                "pinM": {
+                    "type": "integer"
+                },
+                "service": {
+                    "enum": [
+                        "flex"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
+                "pinH",
+                "pinL",
+                "pinM",
+                "service"
+            ],
+            "type": "object"
+        },
         "HexInt": {
             "type": [
                 "string",
                 "integer"
             ]
+        },
+        "HidJoystickConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "service": {
+                    "enum": [
+                        "hidJoystick"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
+                "service"
+            ],
+            "type": "object"
+        },
+        "HidKeyboardConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "service": {
+                    "enum": [
+                        "hidKeyboard"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
+                "service"
+            ],
+            "type": "object"
+        },
+        "HidMouseConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "service": {
+                    "enum": [
+                        "hidMouse"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
+                "service"
+            ],
+            "type": "object"
         },
         "I2CConfig": {
             "additionalProperties": false,
@@ -126,11 +306,9 @@
                     "type": "integer"
                 },
                 "pinSCL": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "pinSDA": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 }
             },
@@ -155,7 +333,6 @@
                     "type": "string"
                 },
                 "pin": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 }
             },
@@ -178,7 +355,6 @@
                     "type": "integer"
                 },
                 "pin": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 }
             },
@@ -227,6 +403,51 @@
             },
             "type": "object"
         },
+        "LightBulbConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "activeLow": {
+                    "description": "When set, the relay is considered 'active' when `pin` is low.",
+                    "type": "boolean"
+                },
+                "dimmable": {
+                    "description": "When set, the pin will be operated with PWM at a few kHz.",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "pin": {
+                    "description": "The driving pin.",
+                    "type": "integer"
+                },
+                "service": {
+                    "enum": [
+                        "lightBulb"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
+                "pin",
+                "service"
+            ],
+            "type": "object"
+        },
         "LightLevelConfig": {
             "additionalProperties": false,
             "properties": {
@@ -243,7 +464,7 @@
                     "type": "string"
                 },
                 "offset": {
-                    "default": 1024,
+                    "default": 0,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -270,7 +491,7 @@
                     "type": "integer"
                 },
                 "scale": {
-                    "default": 0,
+                    "default": 1024,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -321,6 +542,7 @@
         },
         "PinLabels": {
             "additionalProperties": false,
+            "description": "Typical pin labels, others are allowed.\nPin labels starting with '@' are hidden to the user.",
             "properties": {
                 "#": {
                     "description": "All fields starting with '#' arg ignored",
@@ -793,7 +1015,7 @@
                     "type": "string"
                 },
                 "offset": {
-                    "default": 1024,
+                    "default": 0,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -820,7 +1042,7 @@
                     "type": "integer"
                 },
                 "scale": {
-                    "default": 0,
+                    "default": 1024,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -872,7 +1094,6 @@
                     "type": "string"
                 },
                 "pinEn": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "pinFault": {
@@ -912,6 +1133,10 @@
             ],
             "type": "object"
         },
+        "Record<string,0|1>": {
+            "additionalProperties": false,
+            "type": "object"
+        },
         "ReflectedLightConfig": {
             "additionalProperties": false,
             "properties": {
@@ -928,7 +1153,7 @@
                     "type": "string"
                 },
                 "offset": {
-                    "default": 1024,
+                    "default": 0,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -955,7 +1180,7 @@
                     "type": "integer"
                 },
                 "scale": {
-                    "default": 0,
+                    "default": 1024,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -989,6 +1214,10 @@
                     "description": "All fields starting with '#' arg ignored",
                     "type": "string"
                 },
+                "activeLow": {
+                    "description": "When set, the relay is considered 'active' when `pin` is low.",
+                    "type": "boolean"
+                },
                 "initalActive": {
                     "description": "Whether to activate the relay upon boot.",
                     "type": "boolean"
@@ -1012,10 +1241,6 @@
                 "pin": {
                     "description": "The driving pin.",
                     "type": "integer"
-                },
-                "pinActiveLow": {
-                    "description": "When set, the relay is considered 'active' when `pin` is low.",
-                    "type": "boolean"
                 },
                 "pinFeedback": {
                     "description": "Active-high pin that indicates the actual state of the relay.",
@@ -1072,11 +1297,9 @@
                     "type": "string"
                 },
                 "pin0": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "pin1": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "service": {
@@ -1139,10 +1362,25 @@
                     "$ref": "#/definitions/ButtonConfig"
                 },
                 {
+                    "$ref": "#/definitions/SwitchConfig"
+                },
+                {
+                    "$ref": "#/definitions/FlexConfig"
+                },
+                {
                     "$ref": "#/definitions/RelayConfig"
                 },
                 {
                     "$ref": "#/definitions/PowerConfig"
+                },
+                {
+                    "$ref": "#/definitions/LightBulbConfig"
+                },
+                {
+                    "$ref": "#/definitions/BuzzerConfig"
+                },
+                {
+                    "$ref": "#/definitions/ServoConfig"
                 },
                 {
                     "$ref": "#/definitions/LightLevelConfig"
@@ -1164,22 +1402,80 @@
                 },
                 {
                     "$ref": "#/definitions/AccelerometerConfig"
+                },
+                {
+                    "$ref": "#/definitions/HidJoystickConfig"
+                },
+                {
+                    "$ref": "#/definitions/HidKeyboardConfig"
+                },
+                {
+                    "$ref": "#/definitions/HidMouseConfig"
                 }
             ]
         },
-        "SetupPin": {
+        "ServoConfig": {
             "additionalProperties": false,
             "properties": {
-                "out": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "fixed": {
+                    "description": "When set, the min/maxAngle/Pulse can't be changed by the user.",
+                    "type": "boolean"
+                },
+                "maxAngle": {
+                    "default": 90,
+                    "description": "Maximum angle supported by the servo in degrees.\nAlways minAngle < maxAngle",
                     "type": "integer"
                 },
+                "maxPulse": {
+                    "default": 600,
+                    "description": "Pulse value to use to reach maxAngle in us.\nTypically minPulse > maxPulse",
+                    "type": "integer"
+                },
+                "minAngle": {
+                    "default": -90,
+                    "description": "Minimum angle supported by the servo in degrees.\nAlways minAngle < maxAngle",
+                    "type": "integer"
+                },
+                "minPulse": {
+                    "default": 2500,
+                    "description": "Pulse value to use to reach minAngle in us.\nTypically minPulse > maxPulse",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
                 "pin": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "description": "The driving (PWM) pin.",
+                    "type": "integer"
+                },
+                "powerPin": {
+                    "description": "The pin to set low when servo is used. Floating otherwise.",
+                    "type": "integer"
+                },
+                "service": {
+                    "enum": [
+                        "servo"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
                     "type": "integer"
                 }
             },
             "required": [
-                "pin"
+                "name",
+                "pin",
+                "service"
             ],
             "type": "object"
         },
@@ -1199,7 +1495,7 @@
                     "type": "string"
                 },
                 "offset": {
-                    "default": 1024,
+                    "default": 0,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -1226,7 +1522,7 @@
                     "type": "integer"
                 },
                 "scale": {
-                    "default": 0,
+                    "default": 1024,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -1269,7 +1565,7 @@
                     "type": "string"
                 },
                 "offset": {
-                    "default": 1024,
+                    "default": 0,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -1296,7 +1592,7 @@
                     "type": "integer"
                 },
                 "scale": {
-                    "default": 0,
+                    "default": 1024,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -1310,6 +1606,42 @@
                     "default": 100,
                     "description": "Default interval in milliseconds between streaming samples.",
                     "type": "integer"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
+                "pin",
+                "service"
+            ],
+            "type": "object"
+        },
+        "SwitchConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "pin": {
+                    "type": "integer"
+                },
+                "service": {
+                    "enum": [
+                        "switch"
+                    ],
+                    "type": "string"
                 },
                 "variant": {
                     "description": "Service variant (see service definition for possible values).",
@@ -1339,7 +1671,7 @@
                     "type": "string"
                 },
                 "offset": {
-                    "default": 1024,
+                    "default": 0,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -1366,7 +1698,7 @@
                     "type": "integer"
                 },
                 "scale": {
-                    "default": 0,
+                    "default": 1024,
                     "description": "Reading is `offset + (raw_reading * scale) / 1024`",
                     "type": "integer"
                 },
@@ -1406,6 +1738,14 @@
         "$schema": {
             "type": "string"
         },
+        "@name": {
+            "description": "Name of the program, derived from package.json. Exposed as `program_name` register.",
+            "type": "string"
+        },
+        "@version": {
+            "description": "Version number of the program, derived from package.json and git. Exposed as `program_version` register.",
+            "type": "string"
+        },
         "archId": {
             "description": "Architecture for the board.\nThis is auto-populated from arch.json file.",
             "examples": [
@@ -1433,6 +1773,10 @@
         "log": {
             "$ref": "#/definitions/LogConfig"
         },
+        "noScanI2C": {
+            "description": "When set to true, disables automatic I2C bus scanning at startup.\nSet if you want to use your own I2C drivers.",
+            "type": "boolean"
+        },
         "pins": {
             "$ref": "#/definitions/PinLabels"
         },
@@ -1443,6 +1787,10 @@
                 "0x379ea214"
             ]
         },
+        "sPin": {
+            "$ref": "#/definitions/Record<string,0|1>",
+            "description": "Initial values for pins."
+        },
         "sd": {
             "$ref": "#/definitions/SdCardConfig"
         },
@@ -1450,12 +1798,6 @@
             "description": "Services to mount. Each starts with { \"service\": \"...\" }",
             "items": {
                 "$ref": "#/definitions/ServiceConfig"
-            },
-            "type": "array"
-        },
-        "setupPins": {
-            "items": {
-                "$ref": "#/definitions/SetupPin"
             },
             "type": "array"
         },
