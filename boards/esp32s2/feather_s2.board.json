@@ -40,7 +40,7 @@
     "sPin": {
         "LED_PWR": 1
     },
-    "services": [
+    "$services": [
         {
             "service": "button",
             "name": "buttonBOOT",

@@ -33,7 +33,7 @@
         "pinMOSI": 35,
         "pinSCK": 36
     },
-    "services": [
+    "$services": [
         {
             "service": "power",
             "name": "power",

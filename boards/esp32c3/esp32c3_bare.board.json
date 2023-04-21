@@ -19,7 +19,7 @@
         "P20": 20,
         "@P21": 21
     },
-    "services": [
+    "$services": [
         {
             "service": "button",
             "name": "buttonBOOT",

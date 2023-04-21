@@ -34,5 +34,5 @@
         "pinSCL": 7,
         "pinSDA": 6
     },
-    "services": []
+    "$services": []
 }

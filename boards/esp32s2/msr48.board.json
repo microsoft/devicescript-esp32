@@ -36,7 +36,7 @@
         "P35": 35,
         "P36": 36
     },
-    "services": [
+    "$services": [
         {
             "service": "power",
             "name": "power",

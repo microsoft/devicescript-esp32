@@ -1738,6 +1738,13 @@
         "$schema": {
             "type": "string"
         },
+        "$services": {
+            "description": "Services to expose via `startXYZ()` API. Each starts with { \"service\": \"...\" }",
+            "items": {
+                "$ref": "#/definitions/ServiceConfig"
+            },
+            "type": "array"
+        },
         "@name": {
             "description": "Name of the program, derived from package.json. Exposed as `program_name` register.",
             "type": "string"
@@ -1795,7 +1802,7 @@
             "$ref": "#/definitions/SdCardConfig"
         },
         "services": {
-            "description": "Services to mount. Each starts with { \"service\": \"...\" }",
+            "description": "Services to mount. Each starts with { \"service\": \"...\" }\nThis should not be present in .board.json files.",
             "items": {
                 "$ref": "#/definitions/ServiceConfig"
             },
