@@ -56,6 +56,11 @@ void target_reset() {
     esp_restart_noos_dig();
 }
 
+void target_standby(uint32_t duration_ms) {
+    esp_sleep_enable_timer_wakeup(duration_ms * 1000LL);
+    esp_deep_sleep_start();
+}
+
 IRAM_ATTR void target_wait_us(uint32_t us) {
     int64_t later = esp_timer_get_time() + us;
     while (esp_timer_get_time() < later) {
