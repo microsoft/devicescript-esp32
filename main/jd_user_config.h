@@ -35,9 +35,6 @@ void jdesp_wake_main(void);
 
 #define JD_GC_KB 32
 
-#define JD_SEND_FRAME_SIZE 1024
-#define JD_RX_QUEUE_SIZE 1024
-
 #define JD_I2C_HELPERS 1
 #define JD_WIFI 1
 #define JD_NET_BRIDGE JD_WIFI
