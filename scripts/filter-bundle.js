@@ -6,14 +6,16 @@ const https = require('https');
 const msftTrusted = {}
 
 // see https://docs.microsoft.com/en-us/security/trusted-root/participants-list
-https.get('https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFTCSV', (resp) => {
+https.get('https://ccadb.my.salesforce-sites.com/microsoft/IncludedCACertificateReportForMSFTCSV', (resp) => {
     let data = '';
     resp.on('data', (chunk) => { data += chunk; });
     resp.on('end', () => {
+        const fields=["Microsoft Status","CA Owner","CA Common Name or Certificate Name","SHA-1 Fingerprint","SHA-256 Fingerprint","Microsoft EKUs","Valid From [GMT]","Valid To [GMT]","Public Key Algorithm","Signature Hash Algorithm"]
         for (const ln of data.split(/\n/)) {
             const words = JSON.parse("[" + ln + "]")
-            if (/Server Authentication/i.test(words[8]) && /Included/.test(words[9]))
-                msftTrusted[words[3]] = 1
+            if (/Server Authentication/i.test(words[5]) && /Included/.test(words[0])) {
+                msftTrusted[words[4]] = 1
+            }
         }
 
         // These keys share public key, but for whatever reason were re-issued and
