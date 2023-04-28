@@ -126,8 +126,7 @@ void app_init_services(void) {
 
 static int log_writefn(void *cookie, const char *data, int size) {
     jd_lstore_append_frag(0, JD_LSTORE_TYPE_LOG, data, size);
-    jd_usb_write_serial(data, size);
-    uart_log_write(data, size);
+    jd_dmesg_write(data, size);
     return size;
 }
 
