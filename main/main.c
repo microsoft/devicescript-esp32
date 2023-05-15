@@ -2,6 +2,7 @@
 
 #include "esp_timer.h"
 #include "esp_event.h"
+#include "esp_pm.h"
 #include "esp_task_wdt.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
@@ -85,6 +86,13 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
     if (n++ > 50) {
         jd_usb_flush_stdout();
         n = 0;
+    }
+
+    static uint8_t pm_en;
+    if (!pm_en && now >= (10 << 20)) {
+        pm_en = 1;
+        pwr_leave_no_sleep();
+        DMESG("enabling light sleep");
     }
 
     CHK(esp_task_wdt_reset());
@@ -184,6 +192,16 @@ void app_main() {
     args.name = "10ms";
     CHK(esp_timer_create(&args, &main_loop_tick_timer));
     sync_main_loop_timer();
+
+    pwr_enter_no_sleep(); // take power lock, it's released a bit later
+#if CONFIG_IDF_TARGET_ESP32C3
+    const esp_pm_config_esp32c3_t config = {
+        .max_freq_mhz = CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ,
+        .min_freq_mhz = (int)rtc_clk_xtal_freq_get(),
+        .light_sleep_enable = true,
+    };
+    CHK(esp_pm_configure(&config));
+#endif
 
     DMESG("app_main mostly done");
 

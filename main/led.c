@@ -4,6 +4,7 @@
 #include "hal/ledc_ll.h"
 #include "hal/gpio_ll.h"
 #include "esp_rom_gpio.h"
+#include "esp_pm.h"
 
 #define LEDC_TIMER_DIV_NUM_MAX (0x3FFFF)
 
@@ -190,7 +191,6 @@ void pin_setup_analog_input(int pin) {
     CHK(gpio_set_direction(pin, GPIO_MODE_DISABLE));
 }
 
-void pwr_enter_no_sleep(void) {}
 void pwr_enter_tim(void) {}
 void pwr_leave_tim(void) {}
 
@@ -198,3 +198,15 @@ void pwr_enter_pll(void) {}
 void pwr_leave_pll(void) {}
 
 void power_pin_enable(int en) {}
+
+static esp_pm_lock_handle_t pwr_handle;
+void pwr_enter_no_sleep(void) {
+    if (!pwr_handle) {
+        esp_pm_lock_create(ESP_PM_CPU_FREQ_MAX, 0, "PWR", &pwr_handle);
+    }
+    esp_pm_lock_acquire(pwr_handle);
+}
+
+void pwr_leave_no_sleep(void) {
+    esp_pm_lock_release(pwr_handle);
+}
