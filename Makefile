@@ -42,7 +42,8 @@ inner-build: check-export check-submodule prep
 	$(MAKE) combine
 
 ci-build:
-	$(MAKE) inner-build
+	$(IDF) --ccache build
+	$(MAKE) combine
 	mv $(BUILD) build-$(TARGET)
 
 ci-patch:
