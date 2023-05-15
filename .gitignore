@@ -5,3 +5,4 @@ sdkconfig
 sdkconfig.defaults
 Makefile.user
 dist/
+dependencies.lock

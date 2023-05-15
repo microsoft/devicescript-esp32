@@ -133,6 +133,7 @@ update-devs: devicescript/cli/built/devicescript-cli.cjs
 bump: update-devs
 	node devicescript/scripts/bumparch.mjs
 
+FW_VERSION = $(shell sh $(JDC)/scripts/git-version.sh)
 refresh-version:
 	@mkdir -p $(BUILD)
 	echo 'const char app_fw_version[] = "v$(FW_VERSION)";' > $(BUILD)/version-tmp.c
