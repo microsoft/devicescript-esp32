@@ -53,4 +53,7 @@ const void *dcfg_base_addr(void);
 #define _JD_SECTION_ATTR_IMPL(SECTION, COUNTER)                                                    \
     __attribute__((section(SECTION "." _JD_COUNTER_STRINGIFY(COUNTER))))
 
+#define JD_SPI 1
+
+
 #endif

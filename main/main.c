@@ -3,6 +3,7 @@
 #include "esp_timer.h"
 #include "esp_event.h"
 #include "esp_task_wdt.h"
+#include "services/interfaces/jd_spi.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 // #define PIN_BOOT_BTN 9
@@ -30,20 +31,6 @@ static void sync_main_loop_timer(void) {
         CHK(esp_timer_start_periodic(main_loop_tick_timer, max_sleep));
     }
 }
-
-#if 0
-// TODO do we even want to support no-devs builds anymore?
-#if defined(CONFIG_IDF_TARGET_ESP32C3)
-    [0] = {"Adafruit QT Py ESP32-C3 WiFi Dev Board Cloud Connector", 0x33a50075,
-           BOARD_FLAG_PWR_ACTIVE_HI},
-//  [0] = {"MSR Brain ESP32-C3 Cloud Connector 216 v4.5", 0x39b608d4, BOARD_FLAG_PWR_ACTIVE_HI},
-#else
-    [BOARD_48] = {"JacdacIoT Cloud Connector 48 v0.2", 0x30a3c887, 0},
-    [BOARD_207_V4_2] = {"JM Brain S2-mini Cloud Connector 207 v4.2", 0x33b166ba, 0},
-    [BOARD_207_V4_3] = {"JM Brain S2-mini Cloud Connector 207 v4.3", 0x33b166ba,
-                        BOARD_FLAG_PWR_ACTIVE_HI},
-#endif
-#endif
 
 int target_in_irq(void) {
     return main_task != NULL && xTaskGetCurrentTaskHandle() != main_task;
@@ -122,6 +109,7 @@ void app_init_services(void) {
 #endif
 
     adc_can_read_pin(0); // link ADC
+    jd_spi_is_ready(); // link SPI
 }
 
 static int log_writefn(void *cookie, const char *data, int size) {
