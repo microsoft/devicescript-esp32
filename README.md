@@ -1,8 +1,7 @@
-# Jacdac for ESP32
+# DeviceScript Runtime for ESP32
 
-This repo contains implementation of Jacdac protocol for ESP32.
-It's currently set up for ESP32-S2, in particular for
-[Jacdac ESP32 Brain](https://microsoft.github.io/jacdac-docs/devices/microsoft-research/jmbrainesp3248v03/).
+This repo contains implementation of DeviceScrip virtual machine and runtime for ESP32.
+See https://microsoft.github.io/devicescript/devices/esp32 .
 
 ## Building
 
