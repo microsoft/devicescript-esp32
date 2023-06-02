@@ -35,7 +35,7 @@ static void worker_main(void *arg) {
     }
 }
 
-worker_t worker_alloc() {
+worker_t worker_alloc(void) {
     worker_t w = (worker_t)calloc(1, sizeof(struct worker));
     w->queue = xQueueCreate(20, sizeof(qitem_t));
     return w;

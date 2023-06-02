@@ -118,7 +118,7 @@ static int log_writefn(void *cookie, const char *data, int size) {
     return size;
 }
 
-void app_main() {
+void app_main(void) {
     // reboot after 5s without watchdog
     CHK(esp_task_wdt_init(5, true));
     // subscribe current task, in case something goes wrong here (unlikely)

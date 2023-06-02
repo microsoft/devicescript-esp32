@@ -47,7 +47,7 @@ static jacdac_ctx_t context;
 
 static IRAM_ATTR void uart_isr(void *);
 
-static void init_log_pins() {
+static void init_log_pins(void) {
 #ifdef PIN_LOG_0
     gpio_set_direction(PIN_LOG_0, GPIO_MODE_OUTPUT);
     gpio_set_direction(PIN_LOG_1, GPIO_MODE_OUTPUT);
@@ -108,7 +108,7 @@ int tim_worker_run(TaskFunction_t fn, void *arg) {
     return r;
 }
 
-void tim_init() {
+void tim_init(void) {
     init_log_pins();
 
     esp_timer_create_args_t args;
@@ -166,7 +166,7 @@ static IRAM_ATTR esp_err_t xgpio_set_level(gpio_num_t gpio_num, uint32_t level) 
 #define RX_SIG uart_periph_signal[context.uart_num].pins[SOC_UART_RX_PIN_IDX].signal
 #define TX_SIG uart_periph_signal[context.uart_num].pins[SOC_UART_TX_PIN_IDX].signal
 
-static IRAM_ATTR void pin_rx() {
+static IRAM_ATTR void pin_rx(void) {
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[context.pin_num], PIN_FUNC_GPIO);
     REG_SET_BIT(GPIO_PIN_MUX_REG[context.pin_num], FUN_PU);
     PIN_INPUT_ENABLE(GPIO_PIN_MUX_REG[context.pin_num]);
@@ -174,7 +174,7 @@ static IRAM_ATTR void pin_rx() {
     gpio_matrix_in(context.pin_num, RX_SIG, 0);
 }
 
-static IRAM_ATTR void pin_tx() {
+static IRAM_ATTR void pin_tx(void) {
     gpio_matrix_in(GPIO_FUNC_IN_HIGH, RX_SIG,
                    0); // context.uart_hw
     GPIO.pin[context.pin_num].int_type = GPIO_PIN_INTR_DISABLE;
@@ -183,7 +183,7 @@ static IRAM_ATTR void pin_tx() {
     gpio_matrix_out(context.pin_num, TX_SIG, 0, 0);
 }
 
-static IRAM_ATTR void fill_fifo() {
+static IRAM_ATTR void fill_fifo(void) {
     if (!context.tx_len) {
         return;
     }
@@ -240,7 +240,7 @@ static IRAM_ATTR void read_fifo(int force) {
     }
 }
 
-void uart_init_() {
+void uart_init_(void) {
     uint8_t pinnum = dcfg_get_pin("jacdac.pin");
     if (pinnum == NO_PIN) {
         DMESG("jacdac.pin not defined");
@@ -291,7 +291,7 @@ void uart_init_() {
 
 #define END_RX_FLAGS (UART_RXFIFO_TOUT_INT_ST | UART_BRK_DET_INT_ST | UART_FRM_ERR_INT_ST)
 
-static IRAM_ATTR void start_bg_rx() {
+static IRAM_ATTR void start_bg_rx(void) {
     JD_ASSERT(!context.in_tx);
     read_fifo(1); // flush any data
     context.seen_low = 1;
@@ -353,7 +353,7 @@ static IRAM_ATTR NOINLINE_ATTR void probe_and_set(volatile uint32_t *oe, volatil
     *oe = *inp & mask;
 }
 
-static void tx_race() {
+static void tx_race(void) {
     // don't reconnect the pin in the middle of the low-pulse
     int timeout = 50000;
     while (timeout-- > 0 && gpio_get_level(context.pin_num) == 0) {
@@ -458,7 +458,7 @@ void uart_start_rx(void *data, uint32_t maxbytes) {
     }
 }
 
-void uart_disable() {
+void uart_disable(void) {
     target_disable_irq();
     context.uart_hw->int_clr.val = context.uart_hw->int_st.val;
     context.uart_hw->int_ena.val = UART_BRK_DET_INT_ENA;
@@ -473,7 +473,7 @@ void uart_disable() {
     log_pin_pulse(1, 1);
 }
 
-int uart_wait_high() {
+int uart_wait_high(void) {
     // we already started RX at this point
     return 0;
 }

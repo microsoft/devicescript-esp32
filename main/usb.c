@@ -85,9 +85,9 @@ static void on_cdc_line_state_changed(int itf, cdcacm_event_t *event) {
     LOG("connected: %d", usb_connected);
 }
 
-void usb_pre_init() {}
+void usb_pre_init(void) {}
 
-void usb_init() {
+void usb_init(void) {
     LOG("init");
     tinyusb_config_t tusb_cfg;
     memset(&tusb_cfg, 0, sizeof(tusb_cfg));
@@ -165,11 +165,11 @@ static void usb_serial_jtag_isr_handler(void *arg) {
 }
 
 void phy_bbpll_en_usb(bool en);
-void usb_pre_init() {
+void usb_pre_init(void) {
     phy_bbpll_en_usb(true);
 }
 
-void usb_init() {
+void usb_init(void) {
     LOG("init");
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |
                                        USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
@@ -240,8 +240,8 @@ void jd_usb_pull_ready(void) {
     target_enable_irq();
 }
 
-void usb_pre_init() {}
-void usb_init() {
+void usb_pre_init(void) {}
+void usb_init(void) {
     int uart_idx = 1;
     uart_hw = UART_LL_GET_HW(uart_idx);
 

@@ -47,7 +47,7 @@ void *jd_alloc_emergency_area(uint32_t size) {
     return calloc(size, 1);
 }
 
-void target_reset() {
+void target_reset(void) {
     ESP_LOGE("JD", "target_reset()\n");
     // reset through deep sleep to make sure the C3 USB is disconnected
     esp_sleep_enable_timer_wakeup(20000);
@@ -71,12 +71,12 @@ IRAM_ATTR void target_wait_us(uint32_t us) {
 static portMUX_TYPE global_int_mux = portMUX_INITIALIZER_UNLOCKED;
 int int_level;
 
-IRAM_ATTR void target_disable_irq() {
+IRAM_ATTR void target_disable_irq(void) {
     portENTER_CRITICAL_ISR(&global_int_mux);
     int_level++;
 }
 
-IRAM_ATTR void target_enable_irq() {
+IRAM_ATTR void target_enable_irq(void) {
     int_level--;
     portEXIT_CRITICAL_ISR(&global_int_mux);
 }
