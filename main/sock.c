@@ -29,7 +29,7 @@
 
 static xQueueHandle sock_cmds;
 static xQueueHandle sock_events;
-static uint8_t sockbuf[128];
+static uint8_t sockbuf[1024];
 
 typedef struct {
     mbedtls_ssl_context ssl;
