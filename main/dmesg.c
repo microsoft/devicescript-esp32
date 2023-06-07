@@ -19,11 +19,12 @@ void __wrap_uart_hal_write_txfifo(void *hal, const uint8_t *buf, uint32_t data_s
     }
 }
 
-void __real_panic_restart(void);
+// void __real_panic_restart(void);
 void __wrap_panic_restart(void) {
     jd_lstore_panic_flush();
     jd_usb_panic_print_char('\n');
-    __real_panic_restart();
+    target_reset(); // this make sure to reset USB connection state on ESP32-C3
+    // __real_panic_restart();
 }
 
 void panic_dump_dmesg(void) {

@@ -48,7 +48,7 @@ void *jd_alloc_emergency_area(uint32_t size) {
 }
 
 void target_reset(void) {
-    ESP_LOGE("JD", "target_reset()\n");
+    // ESP_LOGE("JD", "target_reset()\n");
     // reset through deep sleep to make sure the C3 USB is disconnected
     esp_sleep_enable_timer_wakeup(20000);
     esp_deep_sleep_start();
