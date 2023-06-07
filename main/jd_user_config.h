@@ -33,7 +33,7 @@ void jdesp_wake_main(void);
 #define JD_SIMPLE_ALLOC 0
 #define JD_FLASH_IN_SETTINGS 1
 
-#define JD_GC_KB 32
+#define JD_GC_KB 64
 
 #define JD_I2C_HELPERS 1
 #define JD_WIFI 1
