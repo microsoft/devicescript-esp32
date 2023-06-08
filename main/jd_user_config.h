@@ -33,7 +33,11 @@ void jdesp_wake_main(void);
 #define JD_SIMPLE_ALLOC 0
 #define JD_FLASH_IN_SETTINGS 1
 
+#if CONFIG_IDF_TARGET_ESP32S2
+#define JD_GC_KB 40
+#else
 #define JD_GC_KB 64
+#endif
 
 #define JD_I2C_HELPERS 1
 #define JD_WIFI 1
@@ -54,6 +58,7 @@ const void *dcfg_base_addr(void);
     __attribute__((section(SECTION "." _JD_COUNTER_STRINGIFY(COUNTER))))
 
 #define JD_SPI 1
+#define JD_I2C 1
 
 
 #endif
