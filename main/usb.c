@@ -122,6 +122,22 @@ void usb_init(void) {
 
 #include "hal/usb_serial_jtag_ll.h"
 #include "soc/periph_defs.h"
+#include "esp_pm.h"
+
+static void check_usb(void) {
+    static bool usb_detected;
+    static esp_pm_lock_handle_t pwr_handle;
+
+    if (usb_detected)
+        return;
+    if (USB_SERIAL_JTAG.fram_num.sof_frame_index) {
+        usb_detected = true;
+        LOG("detected USB connection; preventing sleep");
+        if (!pwr_handle)
+            esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "USB", &pwr_handle);
+        esp_pm_lock_acquire(pwr_handle);
+    }
+}
 
 static void fill_buffer(void) {
     uint8_t buf[64];
@@ -138,6 +154,7 @@ static void fill_buffer(void) {
 }
 
 void jd_usb_pull_ready(void) {
+    check_usb();
     target_disable_irq();
     if (usb_serial_jtag_ll_txfifo_writable())
         fill_buffer();
@@ -159,8 +176,10 @@ static void usb_serial_jtag_isr_handler(void *arg) {
         int r = usb_serial_jtag_ll_read_rxfifo(buf, sizeof(buf));
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
         usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
-        if (r)
+        if (r) {
+            pwr_enter_no_sleep();
             jd_usb_push(buf, r);
+        }
     }
 }
 
@@ -171,6 +190,8 @@ void usb_pre_init(void) {
 
 void usb_init(void) {
     LOG("init");
+    check_usb();
+
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |
                                        USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
     usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_IN_EMPTY |

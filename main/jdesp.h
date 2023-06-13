@@ -9,6 +9,7 @@
 #include "services/interfaces/jd_adc.h"
 #include "services/interfaces/jd_pwm.h"
 #include "services/interfaces/jd_flash.h"
+#include "services/interfaces/jd_hw_pwr.h"
 #include "interfaces/jd_usb.h"
 #include "network/jd_network.h"
 
