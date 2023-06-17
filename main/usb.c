@@ -7,7 +7,7 @@
 #undef ERROR
 #define ERROR(msg, ...) DMESG("USB-ERROR: " msg, ##__VA_ARGS__)
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"

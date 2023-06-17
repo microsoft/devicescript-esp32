@@ -1,0 +1,18 @@
+{
+    "$schema": "../esp32archconfig.schema.json",
+    "name": "ESP32-S3",
+    "id": "esp32s3",
+    "dcfgOffset": "0x9000",
+    "binFlashOffset": "0x0",
+    "binGenericFlashOffset": "0x10000",
+    "pins": {
+        "boot": "0,45,46",
+        "analogIn": "1-10",
+        "io": "0-18,21,33-45,47,48",
+        "input": "io,46",
+        "flash": "26-32",
+        "debug": "39-42",
+        "analogOut": "17,18",
+        "usb": "19,20"
+    }
+}

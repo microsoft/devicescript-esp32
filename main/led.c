@@ -25,7 +25,7 @@ static void apply_config(timer_info_t *t) {
     ledc_timer_t tim = t->tim_num;
 
     ledc_ll_set_clock_divider(&LEDC, LEDC_LOW_SPEED_MODE, tim, t->div);
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32S3)
     ledc_ll_set_clock_source(&LEDC, LEDC_LOW_SPEED_MODE, tim, LEDC_APB_CLK);
 #endif
     ledc_ll_set_duty_resolution(&LEDC, LEDC_LOW_SPEED_MODE, tim, t->bits);

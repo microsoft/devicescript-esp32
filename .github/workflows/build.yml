@@ -33,6 +33,16 @@ jobs:
         command: make ci-build
     - run: make ci-patch
     
+    - run: echo 'TARGET=esp32s3' > Makefile.user
+    - run: make prep
+    - name: esp-idf build
+      uses: espressif/esp-idf-ci-action@main
+      with:
+        esp_idf_version: v5.0.2
+        target: esp32s3
+        command: make ci-build
+    - run: make ci-patch
+    
     - run: echo 'TARGET=esp32c3' > Makefile.user
     - run: make prep
     - name: esp-idf build

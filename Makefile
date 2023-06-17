@@ -19,6 +19,10 @@ ifeq ($(TARGET),esp32s2)
 GCC_PREF = xtensa-esp32s2-elf
 endif
 
+ifeq ($(TARGET),esp32s3)
+GCC_PREF = xtensa-esp32s3-elf
+endif
+
 ifeq ($(TARGET),esp32c3)
 GCC_PREF = riscv32-esp-elf
 endif

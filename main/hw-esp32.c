@@ -36,6 +36,14 @@ typedef struct jacdac_ctx {
 
 static jacdac_ctx_t context;
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S3)
+#define tx_brk_done_int_clr tx_brk_done
+#define tx_brk_done_int_ena tx_brk_done
+#define txfifo_empty_int_clr txfifo_empty
+#define txfifo_empty_int_ena txfifo_empty
+#define brk_det_int_raw brk_det
+#endif
+
 // #define LOG(msg, ...) DMESG("JD: " msg, ##__VA_ARGS__)
 #define LOG JD_NOLOG
 
@@ -202,13 +210,13 @@ static IRAM_ATTR void fill_fifo(void) {
     if (context.tx_len == 0) {
         LOG("txbrk");
         uart_ll_tx_break(context.uart_hw, 14);
-        context.uart_hw->int_clr.tx_brk_done = 1;
-        context.uart_hw->int_ena.tx_brk_done = 1;
+        context.uart_hw->int_clr.tx_brk_done_int_clr = 1;
+        context.uart_hw->int_ena.tx_brk_done_int_ena = 1;
     }
 
-    context.uart_hw->int_clr.txfifo_empty = 1;
+    context.uart_hw->int_clr.txfifo_empty_int_clr = 1;
     context.uart_hw->conf1.txfifo_empty_thrhd = UART_EMPTY_THRESH_DEFAULT;
-    context.uart_hw->int_ena.txfifo_empty = 1;
+    context.uart_hw->int_ena.txfifo_empty_int_ena = 1;
 }
 
 static IRAM_ATTR void read_fifo(int force) {
@@ -331,7 +339,7 @@ static void uart_isr(void *dummy) {
         context.cb_tx = 1;
         schedule_timer0();
     } else if (uart_intr_status & UART_TXFIFO_EMPTY_INT_ST) {
-        uart_reg->int_ena.txfifo_empty = 0;
+        uart_reg->int_ena.txfifo_empty_int_ena = 0;
         fill_fifo();
     } else if (uart_intr_status & END_RX_FLAGS) {
         log_pin_pulse(0, 4);
@@ -382,7 +390,7 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
     }
 
     target_disable_irq();
-    if (!context.intr_handle || context.seen_low || context.uart_hw->int_raw.brk_det) {
+    if (!context.intr_handle || context.seen_low || context.uart_hw->int_raw.brk_det_int_raw) {
         LOG("seen low %p %d %p", &context, context.seen_low, context.uart_hw->int_raw.brk_det);
         target_enable_irq();
         return -1;
