@@ -5,6 +5,8 @@
 #include "esp_spi_flash.h"
 #include "esp_private/system_internal.h"
 #include "esp_sleep.h"
+#include "esp_random.h"
+#include "esp_mac.h"
 
 uint64_t hw_device_id(void) {
     static uint64_t addr;
@@ -31,9 +33,9 @@ void log_free_mem(void) {
 void *jd_alloc(uint32_t size) {
     void *r = calloc(size, 1);
     if (r == NULL) {
-        DMESG("OOM! %u bytes", size);
+        DMESG("OOM! %u bytes", (unsigned)size);
         log_free_mem();
-        ESP_LOGE("JD", "OOM %u bytes\n", size);
+        ESP_LOGE("JD", "OOM %u bytes\n", (unsigned)size);
         JD_PANIC();
     }
     return r;

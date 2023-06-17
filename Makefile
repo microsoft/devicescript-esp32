@@ -55,6 +55,9 @@ sdkconfig.defaults: Makefile.user
 		else echo cleaning target... ; rm -rf $(BUILD) sdkconfig ; $(MAKE) refresh-version ; fi ; \
 	fi
 	cat boards/$(TARGET)/sdkconfig.$(TARGET) boards/sdkconfig.common > sdkconfig.defaults
+	for folder in boards/$(TARGET)/ boards/ ; do \
+	   if test -f $$folder/idf_component.yml ; then cp $$folder/idf_component.yml main/ ; break ; fi ; \
+	done
 	@mkdir -p $(BUILD)
 	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > $(BUILD)/options.cmake
 

@@ -57,7 +57,7 @@ int jd_spi_init(const jd_spi_cfg_t *cfg) {
     };
 
     DMESG("SPI init: miso=%d mosi=%d sck=%d hz=%u", buscfg.miso_io_num, buscfg.mosi_io_num,
-          buscfg.sclk_io_num, cfg->hz);
+          buscfg.sclk_io_num, (unsigned)cfg->hz);
 
     spi_device_interface_config_t devcfg = {
         .clock_speed_hz = cfg->hz,

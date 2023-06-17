@@ -2,7 +2,7 @@
 
 struct worker {
     TaskHandle_t task;
-    xQueueHandle queue;
+    QueueHandle_t queue;
     TaskFunction_t fn;
     void *arg;
 };

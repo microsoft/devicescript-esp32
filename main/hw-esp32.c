@@ -2,11 +2,12 @@
 
 #include "driver/uart.h"
 #include "driver/gpio.h"
-#include "driver/periph_ctrl.h"
+#include "esp_private/periph_ctrl.h"
 #include "esp_timer.h"
 #include "driver/uart.h"
 #include "hal/uart_ll.h"
 #include "hal/gpio_ll.h"
+#include "rom/gpio.h"
 
 typedef struct jacdac_ctx {
     uint8_t pin_num;
@@ -302,7 +303,7 @@ static IRAM_ATTR void start_bg_rx(void) {
     }
 }
 
-static IRAM_ATTR void uart_isr(void *dummy) {
+static void uart_isr(void *dummy) {
     log_pin_pulse(0, 1);
 
     if (!context.intr_handle)
