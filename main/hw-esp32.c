@@ -275,7 +275,8 @@ void uart_init_(void) {
                                        .data_bits = UART_DATA_8_BITS,
                                        .parity = UART_PARITY_DISABLE,
                                        .stop_bits = UART_STOP_BITS_1,
-                                       .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
+                                       .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+                                       .source_clk = UART_SCLK_DEFAULT};
     CHK(uart_param_config(context.uart_num, &uart_config));
     CHK(esp_intr_alloc(uart_periph_signal[context.uart_num].irq, 0, (void (*)(void *))uart_isr,
                        &context, &context.intr_handle));

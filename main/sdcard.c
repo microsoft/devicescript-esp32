@@ -16,7 +16,7 @@ static uint8_t pin_mosi, pin_miso, pin_sck, pin_cs;
 #define CLR_SCK() gpio_ll_set_level(&GPIO, pin_sck, 0)
 #define GET_MISO() gpio_ll_get_level(&GPIO, pin_miso)
 
-#if CONFIG_IDF_TARGET_ESP32S2
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 #define SPI_DMA_CHAN host.slot
 #elif CONFIG_IDF_TARGET_ESP32C3
 #define SPI_DMA_CHAN SPI_DMA_CH_AUTO
