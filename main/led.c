@@ -5,6 +5,8 @@
 #include "hal/gpio_ll.h"
 #include "esp_rom_gpio.h"
 
+#include "esp_private/periph_ctrl.h"
+
 #define LEDC_TIMER_DIV_NUM_MAX (0x3FFFF)
 
 typedef struct timer_info {
@@ -17,13 +19,13 @@ typedef struct timer_info {
 
 static timer_info_t timers[LEDC_TIMER_MAX];
 
-uint8_t cpu_mhz = LEDC_APB_CLK_HZ / 1000000;
+uint8_t cpu_mhz = APB_CLK_FREQ / 1000000;
 
 static void apply_config(timer_info_t *t) {
     ledc_timer_t tim = t->tim_num;
 
     ledc_ll_set_clock_divider(&LEDC, LEDC_LOW_SPEED_MODE, tim, t->div);
-#if !defined(CONFIG_IDF_TARGET_ESP32C3)
+#if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32S3)
     ledc_ll_set_clock_source(&LEDC, LEDC_LOW_SPEED_MODE, tim, LEDC_APB_CLK);
 #endif
     ledc_ll_set_duty_resolution(&LEDC, LEDC_LOW_SPEED_MODE, tim, t->bits);

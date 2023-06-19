@@ -1,6 +1,7 @@
 #include "jdesp.h"
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
+#include "esp_mac.h"
 
 #if JD_WIFI
 

@@ -5,6 +5,8 @@
 #include "esp_spi_flash.h"
 #include "esp_private/system_internal.h"
 #include "esp_sleep.h"
+#include "esp_random.h"
+#include "esp_mac.h"
 
 uint64_t hw_device_id(void) {
     static uint64_t addr;
@@ -31,9 +33,9 @@ void log_free_mem(void) {
 void *jd_alloc(uint32_t size) {
     void *r = calloc(size, 1);
     if (r == NULL) {
-        DMESG("OOM! %u bytes", size);
+        DMESG("OOM! %u bytes", (unsigned)size);
         log_free_mem();
-        ESP_LOGE("JD", "OOM %u bytes\n", size);
+        ESP_LOGE("JD", "OOM %u bytes\n", (unsigned)size);
         JD_PANIC();
     }
     return r;
@@ -89,7 +91,7 @@ void hw_panic(void) {
 void reboot_to_uf2(void) {
     ESP_LOGE("JD", "reset to UF2\n");
 
-#if CONFIG_IDF_TARGET_ESP32S2
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     // call esp_reset_reason() is required for idf.py to properly links esp_reset_reason_set_hint()
     (void)esp_reset_reason();
     esp_reset_reason_set_hint((esp_reset_reason_t)0x11F2);

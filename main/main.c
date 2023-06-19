@@ -2,6 +2,7 @@
 
 #include "esp_timer.h"
 #include "esp_event.h"
+#include "esp_random.h"
 #include "esp_task_wdt.h"
 #include "services/interfaces/jd_spi.h"
 
@@ -120,7 +121,11 @@ static int log_writefn(void *cookie, const char *data, int size) {
 
 void app_main(void) {
     // reboot after 5s without watchdog
-    CHK(esp_task_wdt_init(5, true));
+    esp_task_wdt_config_t wdt_cfg = {
+        .timeout_ms = 5000,
+        .trigger_panic = true,
+    };
+    CHK(esp_task_wdt_init(&wdt_cfg));
     // subscribe current task, in case something goes wrong here (unlikely)
     CHK(esp_task_wdt_add(NULL));
 

@@ -1,37 +1,38 @@
 #include "jdesp.h"
 #include "interfaces/jd_usb.h"
+#include "esp_mac.h"
 
 #define LOG(msg, ...) DMESG("USB: " msg, ##__VA_ARGS__)
 #define LOGV(msg, ...) ((void)0)
 #undef ERROR
 #define ERROR(msg, ...) DMESG("USB-ERROR: " msg, ##__VA_ARGS__)
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
 static const char *descriptor_str[USB_STRING_DESCRIPTOR_ARRAY_SIZE] = {
     // array of pointer to string descriptors
-    (char[]){0x09, 0x04},                // 0: is supported language is English (0x0409)
-    CONFIG_USB_DESC_MANUFACTURER_STRING, // 1: Manufacturer
-    "Jacscript",                         // 2: Product
-    "",                                  // 3: Serials -> replaced
+    (char[]){0x09, 0x04},                    // 0: is supported language is English (0x0409)
+    CONFIG_TINYUSB_DESC_MANUFACTURER_STRING, // 1: Manufacturer
+    "DeviceScript",                          // 2: Product
+    "",                                      // 3: Serials -> replaced
 
-#if CONFIG_USB_CDC_ENABLED
-    CONFIG_USB_DESC_CDC_STRING, // 4: CDC Interface
+#if CONFIG_TINYUSB_CDC_ENABLED
+    CONFIG_TINYUSB_DESC_CDC_STRING, // 4: CDC Interface
 #else
     "",
 #endif
 
-#if CONFIG_USB_MSC_ENABLED
-    CONFIG_USB_DESC_MSC_STRING, // 5: MSC Interface
+#if CONFIG_TINYUSB_MSC_ENABLED
+    CONFIG_TINYUSB_DESC_MSC_STRING, // 5: MSC Interface
 #else
     "",
 #endif
 
-#if CONFIG_USB_HID_ENABLED
-    CONFIG_USB_DESC_HID_STRING // 6: HIDs
+#if CONFIG_TINYUSB_HID_ENABLED
+    CONFIG_TINYUSB_DESC_HID_STRING // 6: HIDs
 #else
     "",
 #endif
@@ -184,7 +185,7 @@ void usb_init(void) {
 #elif defined(CONFIG_IDF_TARGET_ESP32)
 
 #include "driver/uart.h"
-#include "driver/periph_ctrl.h"
+#include "esp_private/periph_ctrl.h"
 #include "hal/uart_ll.h"
 #include "hal/gpio_ll.h"
 

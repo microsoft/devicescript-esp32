@@ -19,6 +19,10 @@ ifeq ($(TARGET),esp32s2)
 GCC_PREF = xtensa-esp32s2-elf
 endif
 
+ifeq ($(TARGET),esp32s3)
+GCC_PREF = xtensa-esp32s3-elf
+endif
+
 ifeq ($(TARGET),esp32c3)
 GCC_PREF = riscv32-esp-elf
 endif
@@ -55,6 +59,9 @@ sdkconfig.defaults: Makefile.user
 		else echo cleaning target... ; rm -rf $(BUILD) sdkconfig ; $(MAKE) refresh-version ; fi ; \
 	fi
 	cat boards/$(TARGET)/sdkconfig.$(TARGET) boards/sdkconfig.common > sdkconfig.defaults
+	for folder in boards/$(TARGET)/ boards/ ; do \
+	   if test -f $$folder/idf_component.yml ; then cp $$folder/idf_component.yml main/ ; break ; fi ; \
+	done
 	@mkdir -p $(BUILD)
 	echo "idf_build_set_property(COMPILE_OPTIONS "$(COMPILE_OPTIONS)" APPEND)" > $(BUILD)/options.cmake
 

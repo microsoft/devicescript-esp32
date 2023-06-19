@@ -28,8 +28,18 @@ jobs:
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@main
       with:
-        esp_idf_version: v4.4.1
+        esp_idf_version: v5.0.2
         target: esp32s2
+        command: make ci-build
+    - run: make ci-patch
+    
+    - run: echo 'TARGET=esp32s3' > Makefile.user
+    - run: make prep
+    - name: esp-idf build
+      uses: espressif/esp-idf-ci-action@main
+      with:
+        esp_idf_version: v5.0.2
+        target: esp32s3
         command: make ci-build
     - run: make ci-patch
     
@@ -38,7 +48,7 @@ jobs:
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@main
       with:
-        esp_idf_version: v4.4.1
+        esp_idf_version: v5.0.2
         target: esp32c3
         command: make ci-build
     - run: make ci-patch
@@ -48,7 +58,7 @@ jobs:
     - name: esp-idf build
       uses: espressif/esp-idf-ci-action@main
       with:
-        esp_idf_version: v4.4.1
+        esp_idf_version: v5.0.2
         target: esp32
         command: make ci-build
     - run: make ci-patch

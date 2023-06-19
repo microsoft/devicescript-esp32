@@ -50,7 +50,7 @@ void __wrap_esp_panic_handler(void *info) {
 
 #endif
 
-#if defined(CONFIG_IDF_TARGET_ESP32S2)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
 #define LOGGING_TX_PIN 43
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #define LOGGING_TX_PIN 21
