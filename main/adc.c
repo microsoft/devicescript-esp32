@@ -6,7 +6,7 @@
 #include "devs_logging.h"
 
 #define ADC_ATTEN ADC_ATTEN_DB_11
-#define ADC_BITS ADC_BITWIDTH_DEFAULT
+#define ADC_BITS SOC_ADC_RTC_MAX_BITWIDTH
 
 #if CONFIG_IDF_TARGET_ESP32
 #define CH_OFFSET 32
@@ -77,7 +77,7 @@ static void adc_init(void) {
         .unit_id = ADC_UNIT_1,
         .ulp_mode = ADC_ULP_MODE_DISABLE,
     };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
+    CHK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 }
 
 bool adc_can_read_pin(uint8_t pin) {
