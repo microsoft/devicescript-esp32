@@ -98,7 +98,7 @@ static void call_fn(void *f) {
 }
 
 int jd_spi_xfer(const void *txdata, void *rxdata, unsigned numbytes, cb_t done_fn) {
-    JD_ASSERT(!target_in_irq());
+    // JD_ASSERT(!target_in_irq()); this can in fact be invoked from done_fn()...
     JD_ASSERT(done_fn != NULL);
 
     if (!jd_spi_is_ready())
