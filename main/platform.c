@@ -2,7 +2,7 @@
 
 #include "esp_timer.h"
 #include "esp_event.h"
-#include "esp_spi_flash.h"
+#include "spi_flash_mmap.h"
 #include "esp_private/system_internal.h"
 #include "esp_sleep.h"
 #include "esp_random.h"

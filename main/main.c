@@ -98,7 +98,7 @@ static void loop_handler(void *event_handler_arg, esp_event_base_t event_base, i
 }
 
 void app_init_services(void) {
-    devs_service_full_init(devsmgr_init_mem(32 * 1024));
+    devs_service_full_init();
 
     if (i2c_init() == 0) {
         jd_scan_all();
@@ -152,6 +152,8 @@ void app_main(void) {
     // enable line buffering for this stream (to be similar to the regular UART-based output)
     static char stdout_buf[128];
     setvbuf(stdout, stdout_buf, _IOLBF, sizeof(stdout_buf));
+
+    flash_init();
 
     usb_init();
     uart_log_init();

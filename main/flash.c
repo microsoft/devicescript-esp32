@@ -1,40 +1,40 @@
 #include "jdesp.h"
-#include "nvs_flash.h"
+#include "esp_partition.h"
+#include "esp_flash.h"
+#include "spi_flash_mmap.h"
 
-static nvs_handle_t flash_handle;
+uint32_t flash_size, flash_base;
+int32_t flash_offset;
 
-static void nvs_init(void) {
-    if (!flash_handle) {
-        esp_err_t ret = nvs_flash_init();
-        if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-            ESP_ERROR_CHECK(nvs_flash_erase());
-            ret = nvs_flash_init();
-        }
-        JD_CHK(ret);
-        JD_CHK(nvs_open("jdsett", NVS_READWRITE, &flash_handle));
-    }
+void flash_init(void) {
+    const esp_partition_t *part = esp_partition_find_first(0x8A, 0x01, NULL);
+    JD_ASSERT(part != NULL);
+    JD_ASSERT((part->address & 0xffff) == 0);
+    JD_ASSERT((part->size & (JD_FLASH_PAGE_SIZE - 1)) == 0);
+
+    const void *rd_part;
+    spi_flash_mmap_handle_t map;
+    CHK(spi_flash_mmap(part->address, part->size, SPI_FLASH_MMAP_DATA, &rd_part, &map));
+
+    flash_size = part->size;
+    flash_base = (uint32_t)rd_part;
+    flash_offset = part->address - flash_base;
+
+    DMESG("fstor at %x -> %p (%ukB)", (unsigned)part->address, rd_part,
+          (unsigned)(flash_size >> 10));
 }
 
-int jd_settings_get_bin(const char *key, void *dst, unsigned space) {
-    size_t len = space;
-
-    nvs_init();
-
-    int err = nvs_get_blob(flash_handle, key, dst, &len);
-    if (err == ESP_ERR_NVS_NOT_FOUND)
-        err = -1;
-    else if (err == 0 || err == ESP_ERR_NVS_INVALID_LENGTH)
-        err = len;
-    else
-        JD_PANIC();
-
-    return err;
+static uint32_t flash_addr(void *addr) {
+    JD_ASSERT(flash_offset != 0);
+    return (uint32_t)addr + flash_offset;
 }
 
-int jd_settings_set_bin(const char *key, const void *val, unsigned size) {
-    nvs_init();
-    int r = nvs_set_blob(flash_handle, key, val, size);
-    if (r != 0)
-        return r;
-    return nvs_commit(flash_handle);
+void flash_erase(void *page_addr) {
+    CHK(esp_flash_erase_region(NULL, flash_addr(page_addr), JD_FLASH_PAGE_SIZE));
 }
+
+void flash_program(void *dst, const void *src, uint32_t len) {
+    CHK(esp_flash_write(NULL, src, flash_addr(dst), len));
+}
+
+void flash_sync(void) {}

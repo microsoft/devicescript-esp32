@@ -2,6 +2,7 @@
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
 #include "esp_mac.h"
+#include "nvs_flash.h"
 
 #if JD_WIFI
 
@@ -108,6 +109,13 @@ int jd_wifi_init(uint8_t mac_out[6]) {
 
     esp_log_level_set(TAG, ESP_LOG_INFO);
     esp_efuse_mac_get_default(mac_out);
+
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    JD_CHK(ret);
 
     ESP_ERROR_CHECK(esp_netif_init());
 

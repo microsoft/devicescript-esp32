@@ -20,7 +20,7 @@
 
 #define JD_RAW_FRAME 1
 
-#define JD_FLASH_PAGE_SIZE 1024
+#define JD_FLASH_PAGE_SIZE 4096
 
 #define JD_USB_BRIDGE 1
 
@@ -31,7 +31,6 @@ void jdesp_wake_main(void);
 #define JD_WAKE_MAIN() jdesp_wake_main()
 
 #define JD_SIMPLE_ALLOC 0
-#define JD_FLASH_IN_SETTINGS 1
 
 #if CONFIG_IDF_TARGET_ESP32S2
 #define JD_GC_KB 40
@@ -60,5 +59,9 @@ const void *dcfg_base_addr(void);
 #define JD_SPI 1
 #define JD_I2C 1
 
+extern uint32_t flash_size, flash_base;
+#define JD_FSTOR_TOTAL_SIZE flash_size
+#define JD_FSTOR_BASE_ADDR flash_base
+#define JD_FSTOR_MAX_DATA_PAGES (512 / 4)
 
 #endif
