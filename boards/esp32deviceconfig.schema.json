@@ -1826,6 +1826,18 @@
             "description": "Don't start internal cloud adapter service (including the WiFi adapter) and instead use one running\non the computer connected via USB.",
             "type": "boolean"
         },
+        "flashPageSize": {
+            "description": "Size of a flash page, typically 4096.",
+            "type": "integer"
+        },
+        "fstorOffset": {
+            "$ref": "#/definitions/HexInt",
+            "description": "Offset where FSTOR sits in total flash space."
+        },
+        "fstorPages": {
+            "description": "Total number of pages in FSTOR. \nOften 32 (for 128k) or 64 (for 256k).",
+            "type": "integer"
+        },
         "i2c": {
             "$ref": "#/definitions/I2CConfig"
         },

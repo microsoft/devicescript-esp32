@@ -5,6 +5,9 @@
     "dcfgOffset": "0x9000",
     "binFlashOffset": "0x1000",
     "binGenericFlashOffset": "0x10000",
+    "flashPageSize": 4096,
+    "fstorPages": 64,
+    "fstorOffset": "0x1c0000",
     "pins": {
         "boot": "0,45,46",
         "analogIn": "1-10",

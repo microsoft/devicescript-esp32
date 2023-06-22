@@ -33,6 +33,18 @@
             "$ref": "#/definitions/HexInt",
             "description": "Where should DCFG be embedded in generic file."
         },
+        "flashPageSize": {
+            "description": "Size of a flash page, typically 4096.",
+            "type": "integer"
+        },
+        "fstorOffset": {
+            "$ref": "#/definitions/HexInt",
+            "description": "Offset where FSTOR sits in total flash space."
+        },
+        "fstorPages": {
+            "description": "Total number of pages in FSTOR. \nOften 32 (for 128k) or 64 (for 256k).",
+            "type": "integer"
+        },
         "genericUrl": {
             "description": "Where to find a generic (without DCFG) UF2 or BIN file.",
             "type": "string"
@@ -122,11 +134,14 @@
         },
         "uf2Align": {
             "$ref": "#/definitions/HexInt",
-            "description": "Force alignment of the last page in the patched UF2 file.\nSet to 4096 on RP2040 because wof RP2040-E14."
+            "description": "Force alignment of the last page in the patched UF2 file.\nSet to 4096 on RP2040 because of RP2040-E14."
         }
     },
     "required": [
         "dcfgOffset",
+        "flashPageSize",
+        "fstorOffset",
+        "fstorPages",
         "id",
         "name"
     ],

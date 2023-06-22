@@ -75,7 +75,9 @@ combine:
 
 patch:
 	mkdir -p dist
-	$(CLI) binpatch --slug microsoft/devicescript-esp32 --bin $(BUILD)/combined.bin --elf $(BUILD)/espjd.elf --generic boards/$(TARGET)/*.board.json
+	$(CLI) binpatch --slug microsoft/devicescript-esp32 \
+		--bin $(BUILD)/combined.bin --elf $(BUILD)/espjd.elf --generic \
+		boards/$(TARGET)/*.board.json $(PATCH_ARGS)
 
 clean:
 	rm -rf sdkconfig sdkconfig.defaults $(BUILD)
@@ -131,9 +133,10 @@ rst:
 
 fake-dist:
 	rm -rf dist/
-	$(MAKE) TARGET=esp32 patch
-	$(MAKE) TARGET=esp32c3 patch
-	$(MAKE) TARGET=esp32s2 patch
+	$(MAKE) TARGET=esp32   PATCH_ARGS=--fake patch
+	$(MAKE) TARGET=esp32c3 PATCH_ARGS=--fake patch
+	$(MAKE) TARGET=esp32s2 PATCH_ARGS=--fake patch
+	$(MAKE) TARGET=esp32s3 PATCH_ARGS=--fake patch
 
 update-devs: devicescript/cli/built/devicescript-cli.cjs
 	node devicescript/scripts/bumparch.mjs --update
