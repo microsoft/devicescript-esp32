@@ -251,7 +251,8 @@ void usb_init(void) {
                                        .data_bits = UART_DATA_8_BITS,
                                        .parity = UART_PARITY_DISABLE,
                                        .stop_bits = UART_STOP_BITS_1,
-                                       .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
+                                       .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+                                       .source_clk = UART_SCLK_DEFAULT};
     CHK(uart_param_config(uart_idx, &uart_config));
     intr_handle_t intr_handle;
     CHK(esp_intr_alloc(uart_periph_signal[uart_idx].irq, 0, uart_isr, NULL, &intr_handle));
