@@ -41,6 +41,8 @@ int i2c_init_(void) {
 
     i2c_ok = 1;
 
+    DMESG("i2c OK: sda=%d scl=%d %dkHz", sda, scl, khz);
+
     return 0;
 }
 
@@ -48,7 +50,7 @@ int i2c_init_(void) {
 
 int i2c_read_ex(uint8_t device_address, void *dst, unsigned len) {
     if (!i2c_ok)
-        return -1;
+        return -108;
 
     esp_err_t err = ESP_OK;
     uint8_t buffer[I2C_TRANS_BUF_MINIMUM_SIZE] = {0};
@@ -80,7 +82,7 @@ end:
 int i2c_write_ex2(uint8_t device_address, const void *src, unsigned len, const void *src2,
                   unsigned len2, bool repeated) {
     if (!i2c_ok)
-        return -1;
+        return -108;
 
     esp_err_t err = ESP_OK;
     uint8_t buffer[I2C_TRANS_BUF_MINIMUM_SIZE] = {0};
