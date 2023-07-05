@@ -6,7 +6,6 @@ import {
 
 interface ESP32DeviceConfig extends DeviceConfig {
     sd?: SdCardConfig
-    uartLog?: boolean
 }
 
 interface ESP32ArchConfig extends ArchConfig {}

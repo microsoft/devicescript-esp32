@@ -4,24 +4,27 @@
     "productId": "0x3eff6b51",
     "$description": "A tiny ESP32-C3 board.",
     "url": "https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html",
-    "uartLog": true,
+    "log": {
+        "pinTX": "TX_D6"
+    },
     "pins": {
-        "D0": 2,
-        "D1": 3,
-        "D2": 4,
-        "D3": 5,
-        "D4": 6,
-        "D5": 7,
-        "D7": 20,
-        "D8": 8,
-        "@D9": 9,
-        "D10": 10
+        "A0_D0": 2,
+        "A1_D1": 3,
+        "A2_D2": 4,
+        "A3_D3": 5,
+        "SDA_D4": 6,
+        "SCL_D5": 7,
+        "TX_D6": 21,
+        "RX_D7": 20,
+        "SCK_D8": 8,
+        "MISO_D9": 9,
+        "MOSI_D10": 10
     },
     "$services": [
         {
             "service": "button",
             "name": "buttonBOOT",
-            "pin": 9
+            "pin": "MISO_D9"
         }
     ]
 }

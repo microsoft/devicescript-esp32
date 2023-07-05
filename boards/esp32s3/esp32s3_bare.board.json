@@ -4,7 +4,9 @@
     "productId": "0x3e121501",
     "$description": "A bare ESP32-S3 board without any pin functions.",
     "url": "https://www.espressif.com/en/products/socs/esp32-s3",
-    "uartLog": true,
+    "log": {
+        "pinTX": "P43"
+    },
     "pins": {
         "P0": 0,
         "P1": 1,
@@ -36,7 +38,7 @@
         "P40": 40,
         "P41": 41,
         "P42": 42,
-        "@P43": 43,
+        "P43": 43,
         "P44": 44,
         "P45": 45,
         "P46": 46,

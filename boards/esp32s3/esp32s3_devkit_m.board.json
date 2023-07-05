@@ -4,9 +4,11 @@
     "productId": "0x3574d277",
     "$description": "ESP32-S3 DevKitM development board. Should also work for DevKitC.",
     "url": "https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/hw-reference/esp32s3/user-guide-devkitm-1.html",
-    "uartLog": true,
+    "log": {
+        "pinTX": "P43"
+    },
     "led": {
-        "pin": 48,
+        "pin": "P48",
         "type": 1
     },
     "pins": {
@@ -37,8 +39,10 @@
         "P40": 40,
         "P41": 41,
         "P42": 42,
+        "P43": 43,
         "P45": 45,
         "P46": 46,
-        "P47": 47
+        "P47": 47,
+        "P48": 48
     }
 }

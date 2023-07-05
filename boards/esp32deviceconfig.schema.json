@@ -69,11 +69,11 @@
                     "type": "string"
                 },
                 "pin": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pinBacklight": {
-                    "description": "This pin is set high when the button is pressed.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "This pin is set high when the button is pressed."
                 },
                 "service": {
                     "enum": [
@@ -113,8 +113,8 @@
                     "type": "string"
                 },
                 "pin": {
-                    "description": "The driving pin.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "The driving pin."
                 },
                 "service": {
                     "enum": [
@@ -150,13 +150,13 @@
                     "type": "string"
                 },
                 "pinH": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pinL": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pinM": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "service": {
                     "enum": [
@@ -174,6 +174,106 @@
                 "pinH",
                 "pinL",
                 "pinM",
+                "service"
+            ],
+            "type": "object"
+        },
+        "GamepadConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "activeHigh": {
+                    "description": "Buttons are normally active-low and pulled high.\nThis makes them active-high and pulled low.",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "pinA": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button A"
+                },
+                "pinAX": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "When gamepad is analog, set this to horizontal pin."
+                },
+                "pinAY": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "When gamepad is analog, set this to vertical pin."
+                },
+                "pinB": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button B"
+                },
+                "pinDown": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Down"
+                },
+                "pinExit": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Exit"
+                },
+                "pinHigh": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull high before analog read and release afterwards."
+                },
+                "pinLeft": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Left"
+                },
+                "pinLow": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull low before analog read and release afterwards."
+                },
+                "pinMenu": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Menu"
+                },
+                "pinReset": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Reset"
+                },
+                "pinRight": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Right"
+                },
+                "pinSelect": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Select"
+                },
+                "pinUp": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Up"
+                },
+                "pinX": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button X"
+                },
+                "pinY": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin for button Y"
+                },
+                "service": {
+                    "enum": [
+                        "gamepad"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
                 "service"
             ],
             "type": "object"
@@ -306,10 +406,10 @@
                     "type": "integer"
                 },
                 "pinSCL": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pinSDA": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 }
             },
             "required": [
@@ -333,7 +433,7 @@
                     "type": "string"
                 },
                 "pin": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 }
             },
             "required": [
@@ -355,7 +455,7 @@
                     "type": "integer"
                 },
                 "pin": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 }
             },
             "required": [
@@ -379,12 +479,12 @@
                     "type": "boolean"
                 },
                 "pin": {
-                    "description": "If a single mono LED, or programmable RGB LED.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "If a single mono LED, or programmable RGB LED."
                 },
                 "pinCLK": {
-                    "description": "Clock pin, if any.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Clock pin, if any."
                 },
                 "rgb": {
                     "description": "RGB LED driven by PWM.",
@@ -427,8 +527,8 @@
                     "type": "string"
                 },
                 "pin": {
-                    "description": "The driving pin.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "The driving pin."
                 },
                 "service": {
                     "enum": [
@@ -469,16 +569,16 @@
                     "type": "integer"
                 },
                 "pin": {
-                    "description": "Pin to analog read.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to analog read."
                 },
                 "pinHigh": {
-                    "description": "Pin to pull high before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull high before analog read and release afterwards."
                 },
                 "pinLow": {
-                    "description": "Pin to pull low before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull low before analog read and release afterwards."
                 },
                 "samplingDelay": {
                     "default": 0,
@@ -531,8 +631,8 @@
                     "type": "integer"
                 },
                 "pinTX": {
-                    "description": "Where to send logs.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Where to send logs."
                 }
             },
             "required": [
@@ -570,8 +670,8 @@
                     "type": "string"
                 },
                 "pin": {
-                    "description": "The input pin.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "The input pin."
                 },
                 "service": {
                     "enum": [
@@ -591,6 +691,58 @@
             ],
             "type": "object"
         },
+        "MotorConfig": {
+            "additionalProperties": false,
+            "properties": {
+                "#": {
+                    "description": "All fields starting with '#' arg ignored",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Instance/role name to be assigned to service.",
+                    "examples": [
+                        "buttonA",
+                        "activityLed"
+                    ],
+                    "type": "string"
+                },
+                "pin1": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "The channel 1 pin."
+                },
+                "pin2": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "The channel 2 pin."
+                },
+                "pinEnable": {
+                    "$ref": "#/definitions/Pin",
+                    "description": "The enable (NSLEEP) pin if any, active high."
+                },
+                "service": {
+                    "enum": [
+                        "motor"
+                    ],
+                    "type": "string"
+                },
+                "variant": {
+                    "description": "Service variant (see service definition for possible values).",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "name",
+                "pin1",
+                "service"
+            ],
+            "type": "object"
+        },
+        "Pin": {
+            "description": "Hardware pin number or label.\nNaming convention - fields with `Pin` type start with `pin*`",
+            "type": [
+                "string",
+                "integer"
+            ]
+        },
         "PinLabels": {
             "additionalProperties": false,
             "description": "Typical pin labels, others are allowed.\nPin labels starting with '@' are hidden to the user.",
@@ -600,451 +752,591 @@
                     "type": "string"
                 },
                 "A0": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A0_D0": {
                     "type": "integer"
                 },
                 "A1": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A10": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A11": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A12": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A13": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A14": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A15": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A1_D1": {
                     "type": "integer"
                 },
                 "A2": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A2_D2": {
                     "type": "integer"
                 },
                 "A3": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A3_D3": {
                     "type": "integer"
                 },
                 "A4": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A4_D24": {
                     "type": "integer"
                 },
                 "A5": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "A5_D25": {
                     "type": "integer"
                 },
                 "A6": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A7": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A8": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "A9": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "BOOT": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "CS": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D0": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D1": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D10": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D11": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D12": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D13": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D14": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D15": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D2": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D3": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D4": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D5": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D6": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D7": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D8": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "D9": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "GP0": {
+                    "type": "integer"
+                },
+                "GP1": {
+                    "type": "integer"
+                },
+                "GP10": {
+                    "type": "integer"
+                },
+                "GP11": {
+                    "type": "integer"
+                },
+                "GP12": {
+                    "type": "integer"
+                },
+                "GP13": {
+                    "type": "integer"
+                },
+                "GP14": {
+                    "type": "integer"
+                },
+                "GP15": {
+                    "type": "integer"
+                },
+                "GP16": {
+                    "type": "integer"
+                },
+                "GP17": {
+                    "type": "integer"
+                },
+                "GP18": {
+                    "type": "integer"
+                },
+                "GP19": {
+                    "type": "integer"
+                },
+                "GP2": {
+                    "type": "integer"
+                },
+                "GP20": {
+                    "type": "integer"
+                },
+                "GP21": {
+                    "type": "integer"
+                },
+                "GP22": {
+                    "type": "integer"
+                },
+                "GP23": {
+                    "type": "integer"
+                },
+                "GP24": {
+                    "type": "integer"
+                },
+                "GP25": {
+                    "type": "integer"
+                },
+                "GP26": {
+                    "type": "integer"
+                },
+                "GP26_A0": {
+                    "type": "integer"
+                },
+                "GP27": {
+                    "type": "integer"
+                },
+                "GP27_A1": {
+                    "type": "integer"
+                },
+                "GP28": {
+                    "type": "integer"
+                },
+                "GP28_A2": {
+                    "type": "integer"
+                },
+                "GP29": {
+                    "type": "integer"
+                },
+                "GP3": {
+                    "type": "integer"
+                },
+                "GP30": {
+                    "type": "integer"
+                },
+                "GP31": {
+                    "type": "integer"
+                },
+                "GP32": {
+                    "type": "integer"
+                },
+                "GP33": {
+                    "type": "integer"
+                },
+                "GP34": {
+                    "type": "integer"
+                },
+                "GP35": {
+                    "type": "integer"
+                },
+                "GP36": {
+                    "type": "integer"
+                },
+                "GP37": {
+                    "type": "integer"
+                },
+                "GP38": {
+                    "type": "integer"
+                },
+                "GP39": {
+                    "type": "integer"
+                },
+                "GP4": {
+                    "type": "integer"
+                },
+                "GP40": {
+                    "type": "integer"
+                },
+                "GP41": {
+                    "type": "integer"
+                },
+                "GP42": {
+                    "type": "integer"
+                },
+                "GP43": {
+                    "type": "integer"
+                },
+                "GP44": {
+                    "type": "integer"
+                },
+                "GP45": {
+                    "type": "integer"
+                },
+                "GP46": {
+                    "type": "integer"
+                },
+                "GP47": {
+                    "type": "integer"
+                },
+                "GP48": {
+                    "type": "integer"
+                },
+                "GP49": {
+                    "type": "integer"
+                },
+                "GP5": {
+                    "type": "integer"
+                },
+                "GP50": {
+                    "type": "integer"
+                },
+                "GP51": {
+                    "type": "integer"
+                },
+                "GP52": {
+                    "type": "integer"
+                },
+                "GP53": {
+                    "type": "integer"
+                },
+                "GP54": {
+                    "type": "integer"
+                },
+                "GP55": {
+                    "type": "integer"
+                },
+                "GP56": {
+                    "type": "integer"
+                },
+                "GP57": {
+                    "type": "integer"
+                },
+                "GP58": {
+                    "type": "integer"
+                },
+                "GP59": {
+                    "type": "integer"
+                },
+                "GP6": {
+                    "type": "integer"
+                },
+                "GP60": {
+                    "type": "integer"
+                },
+                "GP61": {
+                    "type": "integer"
+                },
+                "GP62": {
+                    "type": "integer"
+                },
+                "GP63": {
+                    "type": "integer"
+                },
+                "GP7": {
+                    "type": "integer"
+                },
+                "GP8": {
+                    "type": "integer"
+                },
+                "GP9": {
                     "type": "integer"
                 },
                 "LED": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "LED0": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "LED1": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "LED2": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "LED3": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "LED_PWR": {
                     "type": "integer"
                 },
                 "MISO": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "MISO_D9": {
                     "type": "integer"
                 },
                 "MOSI": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "MOSI_D10": {
                     "type": "integer"
                 },
                 "P0": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P1": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P10": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P11": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P12": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P13": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P14": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P15": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P16": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P17": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P18": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P19": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P2": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P20": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P21": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P22": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P23": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P24": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P25": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P26": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P27": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P28": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P29": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P3": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P30": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P31": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P32": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P33": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P34": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P35": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P36": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P37": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P38": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P39": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P4": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P40": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P41": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P42": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P43": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P44": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P45": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P46": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P47": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P48": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P49": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P5": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P50": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P51": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P52": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P53": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P54": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P55": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P56": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P57": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P58": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P59": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P6": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P60": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P61": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P62": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P63": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P7": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P8": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "P9": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "PWR": {
                     "type": "integer"
                 },
                 "RX": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "RX_D0": {
+                    "type": "integer"
+                },
+                "RX_D7": {
                     "type": "integer"
                 },
                 "SCK": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "SCK_D8": {
                     "type": "integer"
                 },
                 "SCL": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "SCL_D5": {
                     "type": "integer"
                 },
                 "SDA": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "SDA_D4": {
                     "type": "integer"
                 },
                 "TX": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
+                    "type": "integer"
+                },
+                "TX_D1": {
+                    "type": "integer"
+                },
+                "TX_D6": {
                     "type": "integer"
                 },
                 "VN": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 },
                 "VP": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
                     "type": "integer"
                 }
             },
@@ -1071,16 +1363,16 @@
                     "type": "integer"
                 },
                 "pin": {
-                    "description": "Pin to analog read.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to analog read."
                 },
                 "pinHigh": {
-                    "description": "Pin to pull high before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull high before analog read and release afterwards."
                 },
                 "pinLow": {
-                    "description": "Pin to pull low before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull low before analog read and release afterwards."
                 },
                 "samplingDelay": {
                     "default": 0,
@@ -1145,23 +1437,23 @@
                     "type": "string"
                 },
                 "pinEn": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pinFault": {
-                    "description": "Always active low.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Always active low."
                 },
                 "pinLedPulse": {
-                    "description": "Additional power LED to pulse.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Additional power LED to pulse."
                 },
                 "pinPulse": {
-                    "description": "Active-low pin for pulsing battery banks.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Active-low pin for pulsing battery banks."
                 },
                 "pinUsbDetect": {
-                    "description": "Pin that is high when we are connected to USB or similar power source.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin that is high when we are connected to USB or similar power source."
                 },
                 "service": {
                     "enum": [
@@ -1188,6 +1480,10 @@
             "additionalProperties": false,
             "type": "object"
         },
+        "Record<string,string>": {
+            "additionalProperties": false,
+            "type": "object"
+        },
         "ReflectedLightConfig": {
             "additionalProperties": false,
             "properties": {
@@ -1209,16 +1505,16 @@
                     "type": "integer"
                 },
                 "pin": {
-                    "description": "Pin to analog read.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to analog read."
                 },
                 "pinHigh": {
-                    "description": "Pin to pull high before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull high before analog read and release afterwards."
                 },
                 "pinLow": {
-                    "description": "Pin to pull low before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull low before analog read and release afterwards."
                 },
                 "samplingDelay": {
                     "default": 0,
@@ -1290,16 +1586,16 @@
                     "type": "string"
                 },
                 "pin": {
-                    "description": "The driving pin.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "The driving pin."
                 },
                 "pinFeedback": {
-                    "description": "Active-high pin that indicates the actual state of the relay.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Active-high pin that indicates the actual state of the relay."
                 },
                 "pinLed": {
-                    "description": "This pin will be driven when relay is active.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "This pin will be driven when relay is active."
                 },
                 "service": {
                     "enum": [
@@ -1348,10 +1644,10 @@
                     "type": "string"
                 },
                 "pin0": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pin1": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "service": {
                     "enum": [
@@ -1380,20 +1676,16 @@
                     "type": "string"
                 },
                 "pinCS": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pinMISO": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pinMOSI": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "pinSCK": {
-                    "description": "Hardware pin number. In future we may allow labels.\nNaming convention - fields with `Pin` type start with `pin*`",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 }
             },
             "required": [
@@ -1426,6 +1718,9 @@
                 },
                 {
                     "$ref": "#/definitions/MotionConfig"
+                },
+                {
+                    "$ref": "#/definitions/MotorConfig"
                 },
                 {
                     "$ref": "#/definitions/LightBulbConfig"
@@ -1465,6 +1760,9 @@
                 },
                 {
                     "$ref": "#/definitions/HidMouseConfig"
+                },
+                {
+                    "$ref": "#/definitions/GamepadConfig"
                 }
             ]
         },
@@ -1508,12 +1806,12 @@
                     "type": "string"
                 },
                 "pin": {
-                    "description": "The driving (PWM) pin.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "The driving (PWM) pin."
                 },
                 "powerPin": {
-                    "description": "The pin to set low when servo is used. Floating otherwise.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "The pin to set low when servo is used. Floating otherwise."
                 },
                 "service": {
                     "enum": [
@@ -1554,16 +1852,16 @@
                     "type": "integer"
                 },
                 "pin": {
-                    "description": "Pin to analog read.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to analog read."
                 },
                 "pinHigh": {
-                    "description": "Pin to pull high before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull high before analog read and release afterwards."
                 },
                 "pinLow": {
-                    "description": "Pin to pull low before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull low before analog read and release afterwards."
                 },
                 "samplingDelay": {
                     "default": 0,
@@ -1624,16 +1922,16 @@
                     "type": "integer"
                 },
                 "pin": {
-                    "description": "Pin to analog read.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to analog read."
                 },
                 "pinHigh": {
-                    "description": "Pin to pull high before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull high before analog read and release afterwards."
                 },
                 "pinLow": {
-                    "description": "Pin to pull low before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull low before analog read and release afterwards."
                 },
                 "samplingDelay": {
                     "default": 0,
@@ -1689,7 +1987,7 @@
                     "type": "string"
                 },
                 "pin": {
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin"
                 },
                 "service": {
                     "enum": [
@@ -1730,16 +2028,16 @@
                     "type": "integer"
                 },
                 "pin": {
-                    "description": "Pin to analog read.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to analog read."
                 },
                 "pinHigh": {
-                    "description": "Pin to pull high before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull high before analog read and release afterwards."
                 },
                 "pinLow": {
-                    "description": "Pin to pull low before analog read and release afterwards.",
-                    "type": "integer"
+                    "$ref": "#/definitions/Pin",
+                    "description": "Pin to pull low before analog read and release afterwards."
                 },
                 "samplingDelay": {
                     "default": 0,
@@ -1789,6 +2087,10 @@
             "description": "Short description of the board.",
             "type": "string"
         },
+        "$pins": {
+            "$ref": "#/definitions/Record<string,string>",
+            "description": "Labels to expose pins in `@dsboard/foo` modules\nIf pin X (`pins.X`) is to be exposed as Y, then `$pins.Y == X`."
+        },
         "$schema": {
             "type": "string"
         },
@@ -1835,7 +2137,7 @@
             "description": "Offset where FSTOR sits in total flash space."
         },
         "fstorPages": {
-            "description": "Total number of pages in FSTOR. \nOften 32 (for 128k) or 64 (for 256k).",
+            "description": "Total number of pages in FSTOR.\nOften 32 (for 128k) or 64 (for 256k).",
             "type": "integer"
         },
         "i2c": {
@@ -1877,9 +2179,6 @@
                 "$ref": "#/definitions/ServiceConfig"
             },
             "type": "array"
-        },
-        "uartLog": {
-            "type": "boolean"
         },
         "url": {
             "description": "Where to buy/read more.",

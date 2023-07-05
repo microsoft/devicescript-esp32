@@ -4,10 +4,12 @@
     "productId": "0x3c2ed99e",
     "$description": "A S2 Feather from Adafruit. (untested)",
     "url": "https://www.adafruit.com/product/5000",
-    "uartLog": true,
+    "log": {
+        "pinTX": 43
+    },
     "i2c": {
-        "pinSCL": 4,
-        "pinSDA": 3,
+        "pinSCL": "SCL",
+        "pinSDA": "SDA",
         "$connector": "Qwiic"
     },
     "led": {
@@ -23,21 +25,23 @@
         "A1": 17,
         "A2": 16,
         "A3": 15,
-        "A4": 14,
-        "A5": 8,
+        "A4_D24": 14,
+        "A5_D25": 8,
         "SCK": 36,
         "MOSI": 35,
         "MISO": 37,
-        "RX": 38,
-        "TX": 39,
-        "LED_PWR": 21,
-        "PWR": 7,
-        "D13": 13,
-        "D12": 12,
-        "D11": 11,
-        "D10": 10,
-        "D9": 9,
+        "RX_D0": 38,
+        "TX_D1": 39,
+        "SDA": 3,
+        "SCL": 4,
+        "D5": 5,
         "D6": 6,
-        "D5": 5
+        "D9": 9,
+        "D10": 10,
+        "D11": 11,
+        "D12": 12,
+        "D13": 13,
+        "LED_PWR": 21,
+        "PWR": 7
     }
 }

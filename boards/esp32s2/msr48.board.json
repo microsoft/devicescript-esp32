@@ -2,7 +2,9 @@
     "$schema": "../esp32deviceconfig.schema.json",
     "devName": "MSR JacdacIoT 48 v0.2",
     "productId": "0x3de1398b",
-    "uartLog": true,
+    "log": {
+        "pinTX": 43
+    },
     "jacdac": {
         "$connector": "Jacdac",
         "pin": 17

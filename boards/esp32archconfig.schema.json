@@ -42,7 +42,7 @@
             "description": "Offset where FSTOR sits in total flash space."
         },
         "fstorPages": {
-            "description": "Total number of pages in FSTOR. \nOften 32 (for 128k) or 64 (for 256k).",
+            "description": "Total number of pages in FSTOR.\nOften 32 (for 128k) or 64 (for 256k).",
             "type": "integer"
         },
         "genericUrl": {

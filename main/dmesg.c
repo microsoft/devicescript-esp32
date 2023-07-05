@@ -77,11 +77,16 @@ void uart_log_write(const void *data0, unsigned size) {
 }
 
 void uart_log_init(void) {
-    if (dcfg_get_bool("uartLog")) {
-        DMESG("uartLog on GPIO%d", LOGGING_TX_PIN);
-        log_uart = &UART0;
+    int p = dcfg_get_pin("log.pinTX");
+    if (p == NO_PIN) {
+        DMESG("log.pinTX not set");
     } else {
-        DMESG("uartLog not set");
+        DMESG("log.pinTX at GPIO%d", p);
+        if (p == LOGGING_TX_PIN) {
+            log_uart = &UART0;
+        } else {
+            DMESG("! only GPIO%d supported for TX", LOGGING_TX_PIN);
+        }
     }
 }
 
