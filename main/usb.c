@@ -269,6 +269,8 @@ void usb_init(void) {
 
 void jd_usb_process(void) {
     read_fifo();
+    // try to fill the output buffer just in case
+    jd_usb_pull_ready();
 }
 
 #else
