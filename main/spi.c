@@ -12,7 +12,7 @@ static int mappin(uint8_t pin) {
     return pin;
 }
 
-#define SPI_HOST SPI2_HOST // seems OK on C3, S2 and ESP32
+#define MY_SPI_HOST SPI2_HOST // seems OK on C3, S2 and ESP32
 
 static spi_device_handle_t spi;
 static spi_transaction_t trans;
@@ -44,7 +44,7 @@ int jd_spi_init(const jd_spi_cfg_t *cfg) {
     if (spi) {
         spi_bus_remove_device(spi);
         spi = NULL;
-        spi_bus_free(SPI_HOST);
+        spi_bus_free(MY_SPI_HOST);
     }
 
     spi_bus_config_t buscfg = {
@@ -69,14 +69,14 @@ int jd_spi_init(const jd_spi_cfg_t *cfg) {
 
     int r;
 
-    r = spi_bus_initialize(SPI_HOST, &buscfg, SPI_DMA_CH_AUTO);
+    r = spi_bus_initialize(MY_SPI_HOST, &buscfg, SPI_DMA_CH_AUTO);
     if (r)
         return r;
 
-    r = spi_bus_add_device(SPI_HOST, &devcfg, &spi);
+    r = spi_bus_add_device(MY_SPI_HOST, &devcfg, &spi);
     if (r) {
         spi = NULL;
-        spi_bus_free(SPI_HOST);
+        spi_bus_free(MY_SPI_HOST);
         return r;
     }
 
