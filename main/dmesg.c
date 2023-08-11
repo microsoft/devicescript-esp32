@@ -48,6 +48,21 @@ void __wrap_esp_panic_handler(void *info) {
     __real_esp_panic_handler(info);
 }
 
+static void esp_error_check_failed_print(const char *msg, esp_err_t rc, const char *file, int line,
+                                         const char *function, const char *expression,
+                                         intptr_t addr) {
+    DMESG("%s failed: esp_err_t %x (%s) at %p", msg, rc, esp_err_to_name(rc),
+          (void *)esp_cpu_get_call_addr(addr));
+    DMESG("file: \"%s\" line %d func: %s expression: %s", file, line, function, expression);
+}
+
+void __wrap__esp_error_check_failed(esp_err_t rc, const char *file, int line, const char *function,
+                                    const char *expression) {
+    esp_error_check_failed_print("ESP_ERROR_CHECK", rc, file, line, function, expression,
+                                 (intptr_t)__builtin_return_address(0));
+    abort();
+}
+
 #endif
 
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)

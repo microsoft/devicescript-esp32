@@ -6,6 +6,7 @@ include(build/options.cmake)
 idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=esp_panic_handler" APPEND)
 idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=uart_hal_write_txfifo" APPEND)
 idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=panic_restart" APPEND)
+idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=_esp_error_check_failed" APPEND)
 
 project(espjd)
 
