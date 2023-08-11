@@ -58,6 +58,7 @@ const void *dcfg_base_addr(void);
 
 #define JD_SPI 1
 #define JD_I2C 1
+#define JD_LED_STRIP 1
 
 extern uint32_t flash_size, flash_base;
 #define JD_FSTOR_TOTAL_SIZE flash_size
