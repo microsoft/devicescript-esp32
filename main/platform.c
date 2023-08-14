@@ -55,7 +55,9 @@ void target_reset(void) {
     esp_sleep_enable_timer_wakeup(20000);
     esp_deep_sleep_start();
     // just in case...
+#ifdef CONFIG_IDF_TARGET_ESP32
     esp_restart_noos_dig();
+#endif
 }
 
 void target_standby(uint32_t duration_ms) {
@@ -97,7 +99,9 @@ void reboot_to_uf2(void) {
     esp_reset_reason_set_hint((esp_reset_reason_t)0x11F2);
 #endif
 
+#ifdef CONFIG_IDF_TARGET_ESP32
     esp_restart_noos_dig();
+#endif
 }
 
 void jd_crypto_get_random(uint8_t *buf, unsigned size) {

@@ -5,6 +5,8 @@
 #include "esp_private/periph_ctrl.h"
 #include "esp_timer.h"
 #include "driver/uart.h"
+#include "soc/uart_periph.h"
+
 #include "hal/uart_ll.h"
 #include "hal/gpio_ll.h"
 #include "rom/gpio.h"
