@@ -2,14 +2,16 @@
     "$schema": "../esp32deviceconfig.schema.json",
     "devName": "Kittenbot Grape:Bit ESP32-C3 DeviceScript",
     "productId": "0x3635315b",
-    "$description": "Stemcraft C3",
+    "$description": "Grape:Bit ESP32-C3",
+    "url": "https://www.kittenbot.cc/products/kittenbot-grapebit-20-pack",
     "jacdac": {
         "$connector": "Jacdac",
         "pin": 5
     },
     "led": {
-        "pin": 8,
-        "activeHigh": true
+        "type": 1,
+        "pin": 10,
+        "num": 4
     },
     "i2c": {
         "$connector": "Qwiic",
@@ -17,22 +19,19 @@
         "pinSDA": 6
     },
     "pins": {
-        "P1": 2
+        "P1": 2,
+        "P2": 0
     },
-    "log": {
-        "pinTX": 0,
-        "baud": 115200
-    },
-    "services": [
+    "$services": [
         {
             "name": "buttonA",
             "service": "button",
-            "pin": 9
+            "pin": 21
         },
         {
             "name": "buttonB",
             "service": "button",
-            "pin": 21
+            "pin": 9
         },
         {
             "name": "imu",
