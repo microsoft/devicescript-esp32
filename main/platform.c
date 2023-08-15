@@ -100,8 +100,12 @@ void reboot_to_uf2(void) {
 #endif
 
 #ifdef CONFIG_IDF_TARGET_ESP32
-    esp_restart_noos_dig();
+    // On the ESP32, cache error status can only be cleared by system reset
+    if (esp_cache_err_get_cpuid() != -1) {
+        esp_restart_noos_dig();
+    }
 #endif
+    esp_restart_noos();
 }
 
 void jd_crypto_get_random(uint8_t *buf, unsigned size) {
