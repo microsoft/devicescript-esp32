@@ -499,6 +499,11 @@
                     "default": 0,
                     "description": "0 - use `pin` or `rgb` as regular pins\n1 - use `pin` as WS2812B (supported only on some boards)\n2 - use `pin` as APA102 DATA, and `pinCLK` as CLOCK\n3 - use `pin` as SK9822 DATA, and `pinCLK` as CLOCK\nOther options (in range 100+) are also possible on some boards.",
                     "type": "integer"
+                },
+                "num": {
+                    "default": 1,
+                    "description": "number of LEDs",
+                    "type": "integer"
                 }
             },
             "type": "object"

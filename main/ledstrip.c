@@ -55,7 +55,9 @@ void jd_rgbext_set(uint8_t r, uint8_t g, uint8_t b) {
         rgbext_buf[0] = r;
         rgbext_buf[1] = g;
         rgbext_buf[2] = b;
-        transmit(rgbext_chan, rgbext_encoder, rgbext_buf, sizeof(rgbext_buf));
+        uint8_t n = dcfg_get_u32("led.num", 1);
+        for (uint8_t i = 0; i < n; ++i)
+            transmit(rgbext_chan, rgbext_encoder, rgbext_buf, sizeof(rgbext_buf));
     }
 }
 
