@@ -1,4 +1,4 @@
-# Jacdac+DeviceScript Runtime for ESP32
+# DeviceScript Runtime for ESP32
 
 This repo contains implementation of DeviceScript virtual machine and runtime for ESP32.
 See https://microsoft.github.io/devicescript/devices/esp32 .
