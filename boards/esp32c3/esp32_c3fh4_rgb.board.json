@@ -1,0 +1,36 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "ESP32-C3FH4-RGB",
+    "productId": "0x3a90885c",
+    "$description": "A tiny ESP32-C3 board with 5x5 LED array.",
+    "url": "https://github.com/01Space/ESP32-C3FH4-RGB",
+    "$services": [
+        {
+            "name": "buttonBOOT",
+            "pin": 9,
+            "service": "button"
+        }
+    ],
+    "i2c": {
+        "$connector": "Qwiic",
+        "pinSCL": 1,
+        "pinSDA": 0
+    },
+    "led": {
+        "pin": 10,
+        "isMono": true
+    },
+    "log": {
+        "pinTX": 21
+    },
+    "pins": {
+        "P2": 2,
+        "P3": 3,
+        "P4": 4,
+        "P5": 5,
+        "P6": 6,
+        "P7": 7,
+        "LEDS": 8,
+        "P20": 20
+    }
+}
