@@ -1,0 +1,60 @@
+{
+    "$schema": "../esp32deviceconfig.schema.json",
+    "devName": "Kittenbot Grape:Bit ESP32-C3 DeviceScript",
+    "productId": "0x3635315b",
+    "$description": "Grape:Bit ESP32-C3",
+    "url": "https://www.kittenbot.cc/products/kittenbot-grapebit-20-pack",
+    "jacdac": {
+        "$connector": "Jacdac",
+        "pin": 5
+    },
+    "led": {
+        "type": 1,
+        "pin": 10,
+        "num": 4
+    },
+    "i2c": {
+        "$connector": "Qwiic",
+        "pinSCL": 7,
+        "pinSDA": 6
+    },
+    "pins": {
+        "P1": 2,
+        "P2": 0
+    },
+    "$services": [
+        {
+            "name": "buttonA",
+            "service": "button",
+            "pin": 21
+        },
+        {
+            "name": "buttonB",
+            "service": "button",
+            "pin": 9
+        },
+        {
+            "name": "imu",
+            "service": "accelerometer"
+        },
+        {
+            "name": "music",
+            "service": "buzzer",
+            "pin": 3
+        },
+        {
+            "name": "M1",
+            "service": "motor",
+            "pwm": 1,
+            "dir": -1,
+            "en": -1
+        },
+        {
+            "name": "M2",
+            "service": "motor",
+            "pwm": 4,
+            "dir": -1,
+            "en": -1
+        }
+    ]
+}
