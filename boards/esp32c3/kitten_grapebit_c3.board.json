@@ -3,7 +3,7 @@
     "devName": "Kittenbot Grape:Bit ESP32-C3 DeviceScript",
     "productId": "0x3635315b",
     "$description": "Grape:Bit ESP32-C3",
-    "url": "https://www.kittenbot.cc/products/kittenbot-grapebit-20-pack",
+    "url": "https://www.kittenbot.cc/products/kittenbot-grapebit",
     "jacdac": {
         "$connector": "Jacdac",
         "pin": 5
@@ -14,7 +14,6 @@
         "num": 4
     },
     "i2c": {
-        "$connector": "Qwiic",
         "pinSCL": 7,
         "pinSDA": 6
     },
@@ -28,14 +27,11 @@
             "service": "button",
             "pin": 21
         },
+        
         {
             "name": "buttonB",
             "service": "button",
             "pin": 9
-        },
-        {
-            "name": "imu",
-            "service": "accelerometer"
         },
         {
             "name": "music",
