@@ -1,8 +1,8 @@
 {
     "$schema": "../esp32deviceconfig.schema.json",
-    "devName": "Kittenbot Grape:Bit ESP32-C3 DeviceScript",
+    "devName": "KittenBot Grape:Bit ESP32-C3",
     "productId": "0x3635315b",
-    "$description": "Grape:Bit ESP32-C3",
+    "$description": "A round board packed with IMU, buzzer, motor control, 4 RGB LEDs, and Jacdac.",
     "url": "https://www.kittenbot.cc/products/kittenbot-grapebit",
     "jacdac": {
         "$connector": "Jacdac",
