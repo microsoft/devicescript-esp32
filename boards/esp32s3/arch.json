@@ -13,7 +13,8 @@
         "analogIn": "1-10",
         "io": "0-18,21,33-48",
         "input": "io",
-        "flash": "26-32,35-37",
+        "flash": "26-32",
+        "octal-flash": "33-37",
         "debug": "39-42",
         "analogOut": "17,18",
         "usb": "19,20"
