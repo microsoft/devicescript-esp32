@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/devicescript-esp32/main/boards/esp32deviceconfig.schema.json",
+  "devName": "M5Stamp",
+  "productId": "0x32f390a2",
+  "$description": "STAMPS3 is a highly integrated embedded controller designed for IoT applications. It utilizes the Espressif ESP32-S3FN8 main control chip and features 8MB of SPI flash memory. Powered by a high-performance Xtensa 32-bit LX7 dual-core processor, STAMPS3 delivers impressive processing power with a main frequency of up to 240MHz. This module is specifically designed to meet the demands of IoT projects that require embedded main control modules.",
+  "archId": "esp32s3",
+  "url": "https://docs.m5stack.com/en/core/StampS3",
+  "log": {
+      "pinTX": "P43"
+  },
+  "pins": {
+      "P0": 0,
+
+      "P1": 1,
+      "P2": 2,
+      "P3": 3,
+      "P4": 4,
+      "P5": 5,
+      "P6": 6,
+      "P7": 7,
+      "P8": 8,
+      "P9": 9,
+      "P10": 10,
+
+      "P11": 11,
+      "P12": 12,
+      "P13": 13,
+      "P14": 14,
+      "P15": 15,
+
+      "P16": 16,
+      "P17": 17,
+      "P18": 18,
+
+      "P21": 21,
+
+      "P33": 33,
+      "P34": 34,
+      "P35": 35,
+      "P36": 36,
+      "P37": 37,
+      "P38": 38,
+      
+      "P39": 39,
+
+      "P40": 40,
+      
+      "P41": 41,
+      "P42": 42,
+      "P43": 43,
+      "P45": 45,
+      "P46": 46
+  }
+}
