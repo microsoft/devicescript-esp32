@@ -9,9 +9,8 @@
         "pin": 5
     },
     "led": {
-        "type": 1,
-        "pin": 10,
-        "num": 4
+        "type": 0,
+        "pin": 8
     },
     "i2c": {
         "pinSCL": 7,
@@ -19,7 +18,8 @@
     },
     "pins": {
         "P1": 2,
-        "P2": 0
+        "P2": 0,
+        "LED": 10
     },
     "$services": [
         {
@@ -27,7 +27,6 @@
             "service": "button",
             "pin": 21
         },
-        
         {
             "name": "buttonB",
             "service": "button",
@@ -41,16 +40,12 @@
         {
             "name": "M1",
             "service": "motor",
-            "pwm": 1,
-            "dir": -1,
-            "en": -1
+            "pin1": 1
         },
         {
             "name": "M2",
             "service": "motor",
-            "pwm": 4,
-            "dir": -1,
-            "en": -1
+            "pin1": 4
         }
     ]
 }
